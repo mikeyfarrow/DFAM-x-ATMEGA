@@ -32,7 +32,7 @@ Discarded input sections
                 0x00000000       0x28 MIDI.o
  .debug_ranges  0x00000000       0x48 MIDI.o
  .debug_line    0x00000000      0x1f1 MIDI.o
- .debug_str     0x00000000      0x2da MIDI.o
+ .debug_str     0x00000000      0x2e1 MIDI.o
  .comment       0x00000000       0x31 MIDI.o
  .debug_frame   0x00000000       0x78 MIDI.o
  .text          0x00000000        0x0 c:/program files (x86)/atmel/studio/7.0/toolchain/avr8/avr8-gnu-toolchain/bin/../lib/gcc/avr/5.4.0/avr5\libgcc.a(_exit.o)
@@ -494,11 +494,11 @@ END GROUP
  *(.debug_frame)
  .debug_frame   0x00000000       0x54 main.o
 
-.debug_str      0x00000000     0x39b7
+.debug_str      0x00000000     0x39be
  *(.debug_str)
  .debug_str     0x00000000      0x208 C:/Program Files (x86)/Atmel/Studio/7.0/Packs/atmel/ATmega_DFP/1.7.374/gcc/dev/atmega328/avr5/crtatmega328.o
- .debug_str     0x00000208     0x37af main.o
-                               0x3ace (size before relaxing)
+ .debug_str     0x00000208     0x37b6 main.o
+                               0x3ad5 (size before relaxing)
 
 .debug_loc      0x00000000       0x26
  *(.debug_loc)

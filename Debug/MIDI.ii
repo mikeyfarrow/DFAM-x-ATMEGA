@@ -1,0 +1,2386 @@
+# 1 ".././MIDI.cpp"
+# 1 "C:\\Users\\mkfar\\Desktop\\Enlistments\\Microchip-Studio-Projects\\MAFD-repo\\Debug//"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 ".././MIDI.cpp"
+# 28 ".././MIDI.cpp"
+# 1 ".././MIDI.h" 1
+# 28 ".././MIDI.h"
+       
+
+# 1 ".././midi_Defs.h" 1
+# 28 ".././midi_Defs.h"
+       
+
+# 1 ".././midi_Namespace.h" 1
+# 28 ".././midi_Namespace.h"
+       
+
+
+
+
+
+
+
+namespace midi {
+
+}
+# 31 ".././midi_Defs.h" 2
+
+
+
+
+# 1 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\inttypes.h" 1 3
+# 37 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\inttypes.h" 3
+# 1 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stdint.h" 1 3 4
+# 9 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stdint.h" 3 4
+# 1 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 1 3 4
+# 125 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+
+# 125 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+typedef signed int int8_t __attribute__((__mode__(__QI__)));
+typedef unsigned int uint8_t __attribute__((__mode__(__QI__)));
+typedef signed int int16_t __attribute__ ((__mode__ (__HI__)));
+typedef unsigned int uint16_t __attribute__ ((__mode__ (__HI__)));
+typedef signed int int32_t __attribute__ ((__mode__ (__SI__)));
+typedef unsigned int uint32_t __attribute__ ((__mode__ (__SI__)));
+
+typedef signed int int64_t __attribute__((__mode__(__DI__)));
+typedef unsigned int uint64_t __attribute__((__mode__(__DI__)));
+# 146 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+typedef int16_t intptr_t;
+
+
+
+
+typedef uint16_t uintptr_t;
+# 163 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+typedef int8_t int_least8_t;
+
+
+
+
+typedef uint8_t uint_least8_t;
+
+
+
+
+typedef int16_t int_least16_t;
+
+
+
+
+typedef uint16_t uint_least16_t;
+
+
+
+
+typedef int32_t int_least32_t;
+
+
+
+
+typedef uint32_t uint_least32_t;
+
+
+
+
+
+
+
+typedef int64_t int_least64_t;
+
+
+
+
+
+
+typedef uint64_t uint_least64_t;
+# 217 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+typedef int8_t int_fast8_t;
+
+
+
+
+typedef uint8_t uint_fast8_t;
+
+
+
+
+typedef int16_t int_fast16_t;
+
+
+
+
+typedef uint16_t uint_fast16_t;
+
+
+
+
+typedef int32_t int_fast32_t;
+
+
+
+
+typedef uint32_t uint_fast32_t;
+
+
+
+
+
+
+
+typedef int64_t int_fast64_t;
+
+
+
+
+
+
+typedef uint64_t uint_fast64_t;
+# 277 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\stdint.h" 3 4
+typedef int64_t intmax_t;
+
+
+
+
+typedef uint64_t uintmax_t;
+# 10 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stdint.h" 2 3 4
+# 38 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\inttypes.h" 2 3
+# 77 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\inttypes.h" 3
+typedef int32_t int_farptr_t;
+
+
+
+typedef uint32_t uint_farptr_t;
+# 36 ".././midi_Defs.h" 2
+
+# 36 ".././midi_Defs.h"
+typedef uint8_t byte;
+
+
+namespace midi {
+# 51 ".././midi_Defs.h"
+static const uint16_t ActiveSensingTimeout = 300;
+
+
+
+
+typedef byte StatusByte;
+typedef byte DataByte;
+typedef byte Channel;
+typedef byte FilterMode;
+
+
+
+static const uint8_t ErrorParse = 0;
+static const uint8_t ErrorActiveSensingTimeout = 1;
+static const uint8_t WarningSplitSysEx = 2;
+
+
+
+
+using ErrorCallback = void (*)(int8_t);
+using NoteOffCallback = void (*)(Channel channel, byte note, byte velocity);
+using NoteOnCallback = void (*)(Channel channel, byte note, byte velocity);
+using AfterTouchPolyCallback = void (*)(Channel channel, byte note, byte velocity);
+using ControlChangeCallback = void (*)(Channel channel, byte, byte);
+using ProgramChangeCallback = void (*)(Channel channel, byte);
+using AfterTouchChannelCallback = void (*)(Channel channel, byte);
+using PitchBendCallback = void (*)(Channel channel, int);
+using SystemExclusiveCallback = void (*)(byte * array, unsigned size);
+using TimeCodeQuarterFrameCallback = void (*)(byte data);
+using SongPositionCallback = void (*)(unsigned beats);
+using SongSelectCallback = void (*)(byte songnumber);
+using TuneRequestCallback = void (*)(void);
+using ClockCallback = void (*)(void);
+using StartCallback = void (*)(void);
+using TickCallback = void (*)(void);
+using ContinueCallback = void (*)(void);
+using StopCallback = void (*)(void);
+using ActiveSensingCallback = void (*)(void);
+using SystemResetCallback = void (*)(void);
+
+
+
+
+enum MidiType: uint8_t
+{
+    InvalidType = 0x00,
+    NoteOff = 0x80,
+    NoteOn = 0x90,
+    AfterTouchPoly = 0xA0,
+    ControlChange = 0xB0,
+    ProgramChange = 0xC0,
+    AfterTouchChannel = 0xD0,
+    PitchBend = 0xE0,
+    SystemExclusive = 0xF0,
+ SystemExclusiveStart = SystemExclusive,
+    TimeCodeQuarterFrame = 0xF1,
+    SongPosition = 0xF2,
+    SongSelect = 0xF3,
+    Undefined_F4 = 0xF4,
+    Undefined_F5 = 0xF5,
+    TuneRequest = 0xF6,
+ SystemExclusiveEnd = 0xF7,
+    Clock = 0xF8,
+    Undefined_F9 = 0xF9,
+    Tick = Undefined_F9,
+    Start = 0xFA,
+    Continue = 0xFB,
+    Stop = 0xFC,
+    Undefined_FD = 0xFD,
+    ActiveSensing = 0xFE,
+    SystemReset = 0xFF,
+};
+
+
+
+
+struct Thru
+{
+    enum Mode
+    {
+        Off = 0,
+        Full = 1,
+        SameChannel = 2,
+        DifferentChannel = 3,
+    };
+};
+
+
+
+
+
+
+
+enum MidiControlChangeNumber: uint8_t
+{
+
+    BankSelect = 0,
+    ModulationWheel = 1,
+    BreathController = 2,
+
+    FootController = 4,
+    PortamentoTime = 5,
+    DataEntryMSB = 6,
+    ChannelVolume = 7,
+    Balance = 8,
+
+    Pan = 10,
+    ExpressionController = 11,
+    EffectControl1 = 12,
+    EffectControl2 = 13,
+
+
+    GeneralPurposeController1 = 16,
+    GeneralPurposeController2 = 17,
+    GeneralPurposeController3 = 18,
+    GeneralPurposeController4 = 19,
+
+    BankSelectLSB = 32,
+    ModulationWheelLSB = 33,
+    BreathControllerLSB = 34,
+
+    FootControllerLSB = 36,
+    PortamentoTimeLSB = 37,
+    DataEntryLSB = 38,
+    ChannelVolumeLSB = 39,
+    BalanceLSB = 40,
+
+    PanLSB = 42,
+    ExpressionControllerLSB = 43,
+    EffectControl1LSB = 44,
+    EffectControl2LSB = 45,
+
+
+
+    Sustain = 64,
+    Portamento = 65,
+    Sostenuto = 66,
+    SoftPedal = 67,
+    Legato = 68,
+    Hold = 69,
+
+
+    SoundController1 = 70,
+    SoundController2 = 71,
+    SoundController3 = 72,
+    SoundController4 = 73,
+    SoundController5 = 74,
+    SoundController6 = 75,
+    SoundController7 = 76,
+    SoundController8 = 77,
+    SoundController9 = 78,
+    SoundController10 = 79,
+    GeneralPurposeController5 = 80,
+    GeneralPurposeController6 = 81,
+    GeneralPurposeController7 = 82,
+    GeneralPurposeController8 = 83,
+    PortamentoControl = 84,
+
+    Effects1 = 91,
+    Effects2 = 92,
+    Effects3 = 93,
+    Effects4 = 94,
+    Effects5 = 95,
+    DataIncrement = 96,
+    DataDecrement = 97,
+    NRPNLSB = 98,
+    NRPNMSB = 99,
+    RPNLSB = 100,
+    RPNMSB = 101,
+
+
+
+    AllSoundOff = 120,
+    ResetAllControllers = 121,
+    LocalControl = 122,
+    AllNotesOff = 123,
+    OmniModeOff = 124,
+    OmniModeOn = 125,
+    MonoModeOn = 126,
+    PolyModeOn = 127
+};
+
+struct RPN
+{
+    enum RegisteredParameterNumbers: uint16_t
+    {
+        PitchBendSensitivity = 0x0000,
+        ChannelFineTuning = 0x0001,
+        ChannelCoarseTuning = 0x0002,
+        SelectTuningProgram = 0x0003,
+        SelectTuningBank = 0x0004,
+        ModulationDepthRange = 0x0005,
+        NullFunction = (0x7f << 7) + 0x7f,
+    };
+};
+
+}
+# 31 ".././MIDI.h" 2
+# 1 ".././midi_Platform.h" 1
+# 28 ".././midi_Platform.h"
+       
+
+
+
+namespace midi {
+# 44 ".././midi_Platform.h"
+struct DefaultPlatform
+{
+   static unsigned long now() { return 0; };
+};
+
+
+
+}
+# 32 ".././MIDI.h" 2
+# 1 ".././midi_Settings.h" 1
+# 28 ".././midi_Settings.h"
+       
+
+
+
+namespace midi {
+# 49 ".././midi_Settings.h"
+struct DefaultSettings
+{
+
+
+
+
+
+    static const bool UseRunningStatus = false;
+
+
+
+
+
+    static const bool HandleNullVelocityNoteOnAsNoteOff = true;
+
+
+
+
+
+    static const bool Use1ByteParsing = true;
+
+
+
+
+    static const unsigned SysExMaxSize = 128;
+
+
+
+
+
+    static const bool UseSenderActiveSensing = false;
+
+
+
+
+
+    static const bool UseReceiverActiveSensing = false;
+# 101 ".././midi_Settings.h"
+    static const uint16_t SenderActiveSensingPeriodicity = 0;
+};
+
+}
+# 33 ".././MIDI.h" 2
+# 1 ".././midi_Message.h" 1
+# 28 ".././midi_Message.h"
+       
+
+
+
+
+# 1 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 1 3
+# 46 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+# 1 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stddef.h" 1 3 4
+# 216 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stddef.h" 3 4
+
+# 216 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\lib\\gcc\\avr\\5.4.0\\include\\stddef.h" 3 4
+typedef unsigned int size_t;
+# 47 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 2 3
+# 58 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern "C" {
+# 125 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int ffs(int __val) __attribute__((__const__));
+
+
+
+
+
+extern int ffsl(long __val) __attribute__((__const__));
+
+
+
+
+
+__extension__ extern int ffsll(long long __val) __attribute__((__const__));
+# 150 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memccpy(void *, const void *, int, size_t);
+# 162 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memchr(const void *, int, size_t) __attribute__((__pure__));
+# 180 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int memcmp(const void *, const void *, size_t) __attribute__((__pure__));
+# 191 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memcpy(void *, const void *, size_t);
+# 203 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memmem(const void *, size_t, const void *, size_t) __attribute__((__pure__));
+# 213 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memmove(void *, const void *, size_t);
+# 225 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memrchr(const void *, int, size_t) __attribute__((__pure__));
+# 235 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern void *memset(void *, int, size_t);
+# 248 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strcat(char *, const char *);
+# 262 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strchr(const char *, int) __attribute__((__pure__));
+# 274 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strchrnul(const char *, int) __attribute__((__pure__));
+# 287 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int strcmp(const char *, const char *) __attribute__((__pure__));
+# 305 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strcpy(char *, const char *);
+# 320 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int strcasecmp(const char *, const char *) __attribute__((__pure__));
+# 333 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strcasestr(const char *, const char *) __attribute__((__pure__));
+# 344 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strcspn(const char *__s, const char *__reject) __attribute__((__pure__));
+# 364 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strdup(const char *s1);
+# 377 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strlcat(char *, const char *, size_t);
+# 388 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strlcpy(char *, const char *, size_t);
+# 399 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strlen(const char *) __attribute__((__pure__));
+# 411 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strlwr(char *);
+# 422 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strncat(char *, const char *, size_t);
+# 434 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int strncmp(const char *, const char *, size_t) __attribute__((__pure__));
+# 449 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strncpy(char *, const char *, size_t);
+# 464 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern int strncasecmp(const char *, const char *, size_t) __attribute__((__pure__));
+# 478 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strnlen(const char *, size_t) __attribute__((__pure__));
+# 491 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strpbrk(const char *__s, const char *__accept) __attribute__((__pure__));
+# 505 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strrchr(const char *, int) __attribute__((__pure__));
+# 515 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strrev(char *);
+# 533 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strsep(char **, const char *);
+# 544 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern size_t strspn(const char *__s, const char *__accept) __attribute__((__pure__));
+# 557 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strstr(const char *, const char *) __attribute__((__pure__));
+# 576 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strtok(char *, const char *);
+# 593 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strtok_r(char *, const char *, char **);
+# 606 "c:\\program files (x86)\\atmel\\studio\\7.0\\toolchain\\avr8\\avr8-gnu-toolchain\\avr\\include\\string.h" 3
+extern char *strupr(char *);
+
+
+
+extern int strcoll(const char *s1, const char *s2);
+extern char *strerror(int errnum);
+extern size_t strxfrm(char *dest, const char *src, size_t n);
+
+
+
+}
+# 34 ".././midi_Message.h" 2
+
+
+
+# 36 ".././midi_Message.h"
+namespace midi {
+
+
+
+
+template<unsigned SysExMaxSize>
+struct Message
+{
+
+
+
+    inline Message()
+        : channel(0)
+        , type(midi::InvalidType)
+        , data1(0)
+        , data2(0)
+        , valid(false)
+    {
+        memset(sysexArray, 0, sSysExMaxSize * sizeof(DataByte));
+    }
+
+    inline Message(const Message& inOther)
+        : channel(inOther.channel)
+        , type(inOther.type)
+        , data1(inOther.data1)
+        , data2(inOther.data2)
+        , valid(inOther.valid)
+        , length(inOther.length)
+    {
+        if (type == midi::SystemExclusive)
+        {
+            memcpy(sysexArray, inOther.sysexArray, sSysExMaxSize * sizeof(DataByte));
+        }
+    }
+
+
+
+    static const unsigned sSysExMaxSize = SysExMaxSize;
+
+
+
+
+    Channel channel;
+
+
+
+
+    MidiType type;
+
+
+
+
+    DataByte data1;
+
+
+
+
+
+    DataByte data2;
+
+
+
+
+
+    DataByte sysexArray[sSysExMaxSize];
+
+
+
+
+
+    bool valid;
+
+
+
+    unsigned length;
+
+    inline unsigned getSysExSize() const
+    {
+        const unsigned size = unsigned(data2) << 8 | data1;
+        return size > sSysExMaxSize ? sSysExMaxSize : size;
+    }
+    inline bool isSystemRealTime () const
+    {
+          return (type & 0xf8) == 0xf8;
+    }
+    inline bool isSystemCommon () const
+    {
+          return (type & 0xf8) == 0xf0;
+    }
+    inline bool isChannelMessage () const
+    {
+          return (type & 0xf0) != 0xf0;
+    }
+};
+
+}
+# 34 ".././MIDI.h" 2
+
+# 1 ".././serialMIDI.h" 1
+# 27 ".././serialMIDI.h"
+       
+
+
+
+
+
+namespace midi {
+
+struct DefaultSerialSettings
+{
+
+
+
+
+ static const long BaudRate = 31250;
+};
+
+
+
+class SerialMidiTransport
+{
+ private:
+ MidiType mTxStatus;
+
+ public:
+ SerialMidiTransport(uint8_t cableNumber = 0)
+ {
+
+ };
+
+ void begin()
+ {
+
+ };
+
+ void end()
+ {
+
+ };
+
+ bool beginTransmission(MidiType status)
+ {
+  return true;
+ };
+
+ void write(uint8_t byte)
+ {
+
+ };
+
+ void endTransmission()
+ {
+
+ };
+
+ uint8_t read()
+ {
+  return 0x00;
+ };
+
+ unsigned available()
+ {
+  return 0;
+ };
+};
+
+}
+# 36 ".././MIDI.h" 2
+
+
+
+namespace midi {
+# 52 ".././MIDI.h"
+template<class Transport, class _Settings = DefaultSettings, class _Platform = DefaultPlatform>
+class MidiInterface
+{
+public:
+    typedef _Settings Settings;
+    typedef _Platform Platform;
+    typedef Message<Settings::SysExMaxSize> MidiMessage;
+
+public:
+    inline MidiInterface(Transport&);
+    inline ~MidiInterface();
+
+public:
+    MidiInterface& begin(Channel inChannel = 1);
+
+
+
+
+public:
+    inline MidiInterface& sendNoteOn(DataByte inNoteNumber,
+                           DataByte inVelocity,
+                           Channel inChannel);
+
+    inline MidiInterface& sendNoteOff(DataByte inNoteNumber,
+                            DataByte inVelocity,
+                            Channel inChannel);
+
+    inline MidiInterface& sendProgramChange(DataByte inProgramNumber,
+                                  Channel inChannel);
+
+    inline MidiInterface& sendControlChange(DataByte inControlNumber,
+                                  DataByte inControlValue,
+                                  Channel inChannel);
+
+    inline MidiInterface& sendPitchBend(int inPitchValue, Channel inChannel);
+    inline MidiInterface& sendPitchBend(double inPitchValue, Channel inChannel);
+
+    inline MidiInterface& sendPolyPressure(DataByte inNoteNumber,
+                                 DataByte inPressure,
+                                 Channel inChannel) __attribute__ ((deprecated));
+
+    inline MidiInterface& sendAfterTouch(DataByte inPressure,
+                               Channel inChannel);
+    inline MidiInterface& sendAfterTouch(DataByte inNoteNumber,
+                               DataByte inPressure,
+                               Channel inChannel);
+
+    inline MidiInterface& sendSysEx(unsigned inLength,
+                          const byte* inArray,
+                          bool inArrayContainsBoundaries = false);
+
+    inline MidiInterface& sendTimeCodeQuarterFrame(DataByte inTypeNibble,
+                                         DataByte inValuesNibble);
+    inline MidiInterface& sendTimeCodeQuarterFrame(DataByte inData);
+
+    inline MidiInterface& sendSongPosition(unsigned inBeats);
+    inline MidiInterface& sendSongSelect(DataByte inSongNumber);
+    inline MidiInterface& sendTuneRequest();
+
+    inline MidiInterface& sendCommon(MidiType inType, unsigned = 0);
+
+    inline MidiInterface& sendClock() { return sendRealTime(Clock); };
+    inline MidiInterface& sendStart() { return sendRealTime(Start); };
+    inline MidiInterface& sendStop() { return sendRealTime(Stop); };
+    inline MidiInterface& sendTick() { return sendRealTime(Tick); };
+    inline MidiInterface& sendContinue() { return sendRealTime(Continue); };
+    inline MidiInterface& sendActiveSensing() { return sendRealTime(ActiveSensing); };
+    inline MidiInterface& sendSystemReset() { return sendRealTime(SystemReset); };
+
+    inline MidiInterface& sendRealTime(MidiType inType);
+
+    inline MidiInterface& beginRpn(unsigned inNumber,
+                         Channel inChannel);
+    inline MidiInterface& sendRpnValue(unsigned inValue,
+                             Channel inChannel);
+    inline MidiInterface& sendRpnValue(byte inMsb,
+                             byte inLsb,
+                             Channel inChannel);
+    inline MidiInterface& sendRpnIncrement(byte inAmount,
+                                 Channel inChannel);
+    inline MidiInterface& sendRpnDecrement(byte inAmount,
+                                 Channel inChannel);
+    inline MidiInterface& endRpn(Channel inChannel);
+
+    inline MidiInterface& beginNrpn(unsigned inNumber,
+                          Channel inChannel);
+    inline MidiInterface& sendNrpnValue(unsigned inValue,
+                              Channel inChannel);
+    inline MidiInterface& sendNrpnValue(byte inMsb,
+                              byte inLsb,
+                              Channel inChannel);
+    inline MidiInterface& sendNrpnIncrement(byte inAmount,
+                                  Channel inChannel);
+    inline MidiInterface& sendNrpnDecrement(byte inAmount,
+                                  Channel inChannel);
+    inline MidiInterface& endNrpn(Channel inChannel);
+
+    inline MidiInterface& send(const MidiMessage&);
+
+public:
+    MidiInterface& send(MidiType inType,
+              DataByte inData1,
+              DataByte inData2,
+              Channel inChannel);
+
+
+
+
+public:
+    inline bool read();
+    inline bool read(Channel inChannel);
+
+public:
+    inline MidiType getType() const;
+    inline Channel getChannel() const;
+    inline DataByte getData1() const;
+    inline DataByte getData2() const;
+    inline const byte* getSysExArray() const;
+    inline unsigned getSysExArrayLength() const;
+    inline bool check() const;
+
+public:
+    inline Channel getInputChannel() const;
+    inline MidiInterface& setInputChannel(Channel inChannel);
+
+public:
+    static inline MidiType getTypeFromStatusByte(byte inStatus);
+    static inline Channel getChannelFromStatusByte(byte inStatus);
+    static inline bool isChannelMessage(MidiType inType);
+
+
+
+
+public:
+    inline MidiInterface& setHandleMessage(void (*fptr)(const MidiMessage&)) { mMessageCallback = fptr; return *this; };
+    inline MidiInterface& setHandleError(ErrorCallback fptr) { mErrorCallback = fptr; return *this; };
+    inline MidiInterface& setHandleNoteOff(NoteOffCallback fptr) { mNoteOffCallback = fptr; return *this; };
+    inline MidiInterface& setHandleNoteOn(NoteOnCallback fptr) { mNoteOnCallback = fptr; return *this; };
+    inline MidiInterface& setHandleAfterTouchPoly(AfterTouchPolyCallback fptr) { mAfterTouchPolyCallback = fptr; return *this; };
+    inline MidiInterface& setHandleControlChange(ControlChangeCallback fptr) { mControlChangeCallback = fptr; return *this; };
+    inline MidiInterface& setHandleProgramChange(ProgramChangeCallback fptr) { mProgramChangeCallback = fptr; return *this; };
+    inline MidiInterface& setHandleAfterTouchChannel(AfterTouchChannelCallback fptr) { mAfterTouchChannelCallback = fptr; return *this; };
+    inline MidiInterface& setHandlePitchBend(PitchBendCallback fptr) { mPitchBendCallback = fptr; return *this; };
+    inline MidiInterface& setHandleSystemExclusive(SystemExclusiveCallback fptr) { mSystemExclusiveCallback = fptr; return *this; };
+    inline MidiInterface& setHandleTimeCodeQuarterFrame(TimeCodeQuarterFrameCallback fptr) { mTimeCodeQuarterFrameCallback = fptr; return *this; };
+    inline MidiInterface& setHandleSongPosition(SongPositionCallback fptr) { mSongPositionCallback = fptr; return *this; };
+    inline MidiInterface& setHandleSongSelect(SongSelectCallback fptr) { mSongSelectCallback = fptr; return *this; };
+    inline MidiInterface& setHandleTuneRequest(TuneRequestCallback fptr) { mTuneRequestCallback = fptr; return *this; };
+    inline MidiInterface& setHandleClock(ClockCallback fptr) { mClockCallback = fptr; return *this; };
+    inline MidiInterface& setHandleStart(StartCallback fptr) { mStartCallback = fptr; return *this; };
+    inline MidiInterface& setHandleTick(TickCallback fptr) { mTickCallback = fptr; return *this; };
+    inline MidiInterface& setHandleContinue(ContinueCallback fptr) { mContinueCallback = fptr; return *this; };
+    inline MidiInterface& setHandleStop(StopCallback fptr) { mStopCallback = fptr; return *this; };
+    inline MidiInterface& setHandleActiveSensing(ActiveSensingCallback fptr) { mActiveSensingCallback = fptr; return *this; };
+    inline MidiInterface& setHandleSystemReset(SystemResetCallback fptr) { mSystemResetCallback = fptr; return *this; };
+
+    inline MidiInterface& disconnectCallbackFromType(MidiType inType);
+
+private:
+    void launchCallback();
+
+    void (*mMessageCallback)(const MidiMessage& message) = nullptr;
+    ErrorCallback mErrorCallback = nullptr;
+    NoteOffCallback mNoteOffCallback = nullptr;
+    NoteOnCallback mNoteOnCallback = nullptr;
+    AfterTouchPolyCallback mAfterTouchPolyCallback = nullptr;
+    ControlChangeCallback mControlChangeCallback = nullptr;
+    ProgramChangeCallback mProgramChangeCallback = nullptr;
+    AfterTouchChannelCallback mAfterTouchChannelCallback = nullptr;
+    PitchBendCallback mPitchBendCallback = nullptr;
+    SystemExclusiveCallback mSystemExclusiveCallback = nullptr;
+    TimeCodeQuarterFrameCallback mTimeCodeQuarterFrameCallback = nullptr;
+    SongPositionCallback mSongPositionCallback = nullptr;
+    SongSelectCallback mSongSelectCallback = nullptr;
+    TuneRequestCallback mTuneRequestCallback = nullptr;
+    ClockCallback mClockCallback = nullptr;
+    StartCallback mStartCallback = nullptr;
+    TickCallback mTickCallback = nullptr;
+    ContinueCallback mContinueCallback = nullptr;
+    StopCallback mStopCallback = nullptr;
+    ActiveSensingCallback mActiveSensingCallback = nullptr;
+    SystemResetCallback mSystemResetCallback = nullptr;
+
+
+
+
+public:
+    inline Thru::Mode getFilterMode() const;
+    inline bool getThruState() const;
+
+    inline MidiInterface& turnThruOn(Thru::Mode inThruFilterMode = Thru::Full);
+    inline MidiInterface& turnThruOff();
+    inline MidiInterface& setThruFilterMode(Thru::Mode inThruFilterMode);
+
+private:
+    void thruFilter(byte inChannel);
+
+
+
+
+private:
+    bool parse();
+    inline void handleNullVelocityNoteOnAsNoteOff();
+    inline bool inputFilter(Channel inChannel);
+    inline void resetInput();
+    inline void updateLastSentTime();
+
+
+
+
+public:
+    Transport* getTransport() { return &mTransport; };
+
+private:
+    Transport& mTransport;
+
+
+
+
+private:
+    Channel mInputChannel;
+    StatusByte mRunningStatus_RX;
+    StatusByte mRunningStatus_TX;
+    byte mPendingMessage[3];
+    unsigned mPendingMessageExpectedLength;
+    unsigned mPendingMessageIndex;
+    unsigned mCurrentRpnNumber;
+    unsigned mCurrentNrpnNumber;
+    bool mThruActivated : 1;
+    Thru::Mode mThruFilterMode : 7;
+    MidiMessage mMessage;
+    unsigned long mLastMessageSentTime;
+    unsigned long mLastMessageReceivedTime;
+    unsigned long mSenderActiveSensingPeriodicity;
+    bool mReceiverActiveSensingActivated;
+    int8_t mLastError;
+
+private:
+    inline StatusByte getStatus(MidiType inType,
+                                Channel inChannel) const;
+};
+
+
+
+unsigned encodeSysEx(const byte* inData,
+                     byte* outSysEx,
+                     unsigned inLength,
+                     bool inFlipHeaderBits = false);
+unsigned decodeSysEx(const byte* inSysEx,
+                     byte* outData,
+                     unsigned inLength,
+                     bool inFlipHeaderBits = false);
+
+}
+
+# 1 ".././MIDI.hpp" 1
+# 28 ".././MIDI.hpp"
+       
+
+namespace midi {
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>::MidiInterface(Transport& inTransport)
+    : mTransport(inTransport)
+    , mInputChannel(0)
+    , mRunningStatus_RX(InvalidType)
+    , mRunningStatus_TX(InvalidType)
+    , mPendingMessageExpectedLength(0)
+    , mPendingMessageIndex(0)
+    , mCurrentRpnNumber(0xffff)
+    , mCurrentNrpnNumber(0xffff)
+    , mThruActivated(true)
+    , mThruFilterMode(Thru::Full)
+    , mLastMessageSentTime(0)
+    , mLastMessageReceivedTime(0)
+    , mSenderActiveSensingPeriodicity(0)
+    , mReceiverActiveSensingActivated(false)
+    , mLastError(0)
+{
+    mSenderActiveSensingPeriodicity = Settings::SenderActiveSensingPeriodicity;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>::~MidiInterface()
+{
+}
+# 71 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::begin(Channel inChannel)
+{
+
+    mTransport.begin();
+
+    mInputChannel = inChannel;
+    mRunningStatus_TX = InvalidType;
+    mRunningStatus_RX = InvalidType;
+
+    mPendingMessageIndex = 0;
+    mPendingMessageExpectedLength = 0;
+
+    mCurrentRpnNumber = 0xffff;
+    mCurrentNrpnNumber = 0xffff;
+
+    mLastMessageSentTime = Platform::now();
+
+    mMessage.valid = false;
+    mMessage.type = InvalidType;
+    mMessage.channel = 0;
+    mMessage.data1 = 0;
+    mMessage.data2 = 0;
+    mMessage.length = 0;
+
+    mThruFilterMode = Thru::Full;
+    mThruActivated = mTransport.thruActivated;
+
+    return *this;
+}
+# 119 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::send(const MidiMessage& inMessage)
+{
+    if (!inMessage.valid)
+        return *this;
+
+    if (mTransport.beginTransmission(inMessage.type))
+    {
+        if (inMessage.isSystemRealTime())
+        {
+            mTransport.write(inMessage.type);
+        } else if (inMessage.isChannelMessage())
+        {
+            const StatusByte status = getStatus(inMessage.type, inMessage.channel);
+            mTransport.write(status);
+            if (inMessage.length > 1) mTransport.write(inMessage.data1);
+            if (inMessage.length > 2) mTransport.write(inMessage.data2);
+        } else if (inMessage.type == MidiType::SystemExclusive)
+        {
+            const unsigned size = inMessage.getSysExSize();
+            for (size_t i = 0; i < size; i++)
+                mTransport.write(inMessage.sysexArray[i]);
+        } else
+        {
+            mTransport.write(inMessage.type);
+            if (inMessage.length > 1) mTransport.write(inMessage.data1);
+            if (inMessage.length > 2) mTransport.write(inMessage.data2);
+        }
+    }
+    mTransport.endTransmission();
+    updateLastSentTime();
+
+    return *this;
+}
+# 166 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::send(MidiType inType,
+                                               DataByte inData1,
+                                               DataByte inData2,
+                                               Channel inChannel)
+{
+    if (inType <= PitchBend)
+    {
+
+        if (inChannel >= 17 ||
+            inChannel == 0 ||
+            inType < 0x80)
+        {
+            return *this;
+        }
+
+        inData1 &= 0x7f;
+        inData2 &= 0x7f;
+
+        const StatusByte status = getStatus(inType, inChannel);
+
+        if (mTransport.beginTransmission(inType))
+        {
+            if (Settings::UseRunningStatus)
+            {
+                if (mRunningStatus_TX != status)
+                {
+
+                    mRunningStatus_TX = status;
+                    mTransport.write(mRunningStatus_TX);
+                }
+            }
+            else
+            {
+
+                mTransport.write(status);
+            }
+
+
+            mTransport.write(inData1);
+            if (inType != ProgramChange && inType != AfterTouchChannel)
+            {
+                mTransport.write(inData2);
+            }
+
+            mTransport.endTransmission();
+            updateLastSentTime();
+        }
+    }
+    else if (inType >= Clock && inType <= SystemReset)
+    {
+        sendRealTime(inType);
+    }
+
+    return *this;
+}
+# 234 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNoteOn(DataByte inNoteNumber,
+                                                     DataByte inVelocity,
+                                                     Channel inChannel)
+{
+    return send(NoteOn, inNoteNumber, inVelocity, inChannel);
+}
+# 253 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNoteOff(DataByte inNoteNumber,
+                                                      DataByte inVelocity,
+                                                      Channel inChannel)
+{
+    return send(NoteOff, inNoteNumber, inVelocity, inChannel);
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendProgramChange(DataByte inProgramNumber,
+                                                            Channel inChannel)
+{
+    return send(ProgramChange, inProgramNumber, 0, inChannel);
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendControlChange(DataByte inControlNumber,
+                                                            DataByte inControlValue,
+                                                            Channel inChannel)
+{
+    return send(ControlChange, inControlNumber, inControlValue, inChannel);
+}
+# 293 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendPolyPressure(DataByte inNoteNumber,
+                                                           DataByte inPressure,
+                                                           Channel inChannel)
+{
+    return send(AfterTouchPoly, inNoteNumber, inPressure, inChannel);
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendAfterTouch(DataByte inPressure,
+                                                         Channel inChannel)
+{
+    return send(AfterTouchChannel, inPressure, 0, inChannel);
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendAfterTouch(DataByte inNoteNumber,
+                                                         DataByte inPressure,
+                                                         Channel inChannel)
+{
+    return send(AfterTouchPoly, inNoteNumber, inPressure, inChannel);
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendPitchBend(int inPitchValue,
+                                                        Channel inChannel)
+{
+    const unsigned bend = unsigned(inPitchValue - int(-8192));
+    return send(PitchBend, (bend & 0x7f), (bend >> 7) & 0x7f, inChannel);
+}
+# 347 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendPitchBend(double inPitchValue,
+                                                        Channel inChannel)
+{
+    const int scale = inPitchValue > 0.0 ? 8191 : - -8192;
+    const int value = int(inPitchValue * double(scale));
+    return sendPitchBend(value, inChannel);
+}
+# 365 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendSysEx(unsigned inLength,
+                                                    const byte* inArray,
+                                                    bool inArrayContainsBoundaries)
+{
+    const bool writeBeginEndBytes = !inArrayContainsBoundaries;
+
+    if (mTransport.beginTransmission(MidiType::SystemExclusiveStart))
+    {
+        if (writeBeginEndBytes)
+            mTransport.write(MidiType::SystemExclusiveStart);
+
+        for (unsigned i = 0; i < inLength; ++i)
+            mTransport.write(inArray[i]);
+
+        if (writeBeginEndBytes)
+            mTransport.write(MidiType::SystemExclusiveEnd);
+
+        mTransport.endTransmission();
+        updateLastSentTime();
+   }
+
+    if (Settings::UseRunningStatus)
+        mRunningStatus_TX = InvalidType;
+
+    return *this;
+}
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendTuneRequest()
+{
+    return sendCommon(TuneRequest);
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendTimeCodeQuarterFrame(DataByte inTypeNibble,
+                                                                            DataByte inValuesNibble)
+{
+    const byte data = byte((((inTypeNibble & 0x07) << 4) | (inValuesNibble & 0x0f)));
+    return sendTimeCodeQuarterFrame(data);
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendTimeCodeQuarterFrame(DataByte inData)
+{
+    return sendCommon(TimeCodeQuarterFrame, inData);
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendSongPosition(unsigned inBeats)
+{
+    return sendCommon(SongPosition, inBeats);
+}
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendSongSelect(DataByte inSongNumber)
+{
+    return sendCommon(SongSelect, inSongNumber);
+}
+# 453 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendCommon(MidiType inType, unsigned inData1)
+{
+    switch (inType)
+    {
+        case TimeCodeQuarterFrame:
+        case SongPosition:
+        case SongSelect:
+        case TuneRequest:
+            break;
+        default:
+
+            return *this;
+    }
+
+    if (mTransport.beginTransmission(inType))
+    {
+            mTransport.write((byte)inType);
+            switch (inType)
+            {
+            case TimeCodeQuarterFrame:
+                mTransport.write(inData1);
+                break;
+            case SongPosition:
+                mTransport.write(inData1 & 0x7f);
+                mTransport.write((inData1 >> 7) & 0x7f);
+                break;
+            case SongSelect:
+                mTransport.write(inData1 & 0x7f);
+                break;
+            case TuneRequest:
+                break;
+
+            default:
+                break;
+
+        }
+        mTransport.endTransmission();
+        updateLastSentTime();
+    }
+
+    if (Settings::UseRunningStatus)
+        mRunningStatus_TX = InvalidType;
+
+    return *this;
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendRealTime(MidiType inType)
+{
+
+
+
+    switch (inType)
+    {
+        case Clock:
+        case Start:
+        case Stop:
+        case Continue:
+        case ActiveSensing:
+        case SystemReset:
+            if (mTransport.beginTransmission(inType))
+            {
+                mTransport.write((byte)inType);
+                mTransport.endTransmission();
+                updateLastSentTime();
+            }
+            break;
+        default:
+
+            break;
+    }
+
+    return *this;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::beginRpn(unsigned inNumber,
+                                                          Channel inChannel)
+{
+    if (mCurrentRpnNumber != inNumber)
+    {
+        const byte numMsb = 0x7f & (inNumber >> 7);
+        const byte numLsb = 0x7f & inNumber;
+        sendControlChange(RPNLSB, numLsb, inChannel);
+        sendControlChange(RPNMSB, numMsb, inChannel);
+        mCurrentRpnNumber = inNumber;
+    }
+
+    return *this;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendRpnValue(unsigned inValue,
+                                                              Channel inChannel)
+{;
+    const byte valMsb = 0x7f & (inValue >> 7);
+    const byte valLsb = 0x7f & inValue;
+    sendControlChange(DataEntryMSB, valMsb, inChannel);
+    sendControlChange(DataEntryLSB, valLsb, inChannel);
+
+    return *this;
+}
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendRpnValue(byte inMsb,
+                                                              byte inLsb,
+                                                              Channel inChannel)
+{
+    sendControlChange(DataEntryMSB, inMsb, inChannel);
+    sendControlChange(DataEntryLSB, inLsb, inChannel);
+
+    return *this;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendRpnIncrement(byte inAmount,
+                                                                  Channel inChannel)
+{
+    sendControlChange(DataIncrement, inAmount, inChannel);
+
+    return *this;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendRpnDecrement(byte inAmount,
+                                                                  Channel inChannel)
+{
+    sendControlChange(DataDecrement, inAmount, inChannel);
+
+    return *this;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::endRpn(Channel inChannel)
+{
+    sendControlChange(RPNLSB, 0x7f, inChannel);
+    sendControlChange(RPNMSB, 0x7f, inChannel);
+    mCurrentRpnNumber = 0xffff;
+
+    return *this;
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::beginNrpn(unsigned inNumber,
+                                                           Channel inChannel)
+{
+    if (mCurrentNrpnNumber != inNumber)
+    {
+        const byte numMsb = 0x7f & (inNumber >> 7);
+        const byte numLsb = 0x7f & inNumber;
+        sendControlChange(NRPNLSB, numLsb, inChannel);
+        sendControlChange(NRPNMSB, numMsb, inChannel);
+        mCurrentNrpnNumber = inNumber;
+    }
+
+    return *this;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNrpnValue(unsigned inValue,
+                                                               Channel inChannel)
+{
+    const byte valMsb = 0x7f & (inValue >> 7);
+    const byte valLsb = 0x7f & inValue;
+    sendControlChange(DataEntryMSB, valMsb, inChannel);
+    sendControlChange(DataEntryLSB, valLsb, inChannel);
+
+    return *this;
+}
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNrpnValue(byte inMsb,
+                                                               byte inLsb,
+                                                               Channel inChannel)
+{
+    sendControlChange(DataEntryMSB, inMsb, inChannel);
+    sendControlChange(DataEntryLSB, inLsb, inChannel);
+
+    return *this;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNrpnIncrement(byte inAmount,
+                                                                   Channel inChannel)
+{
+    sendControlChange(DataIncrement, inAmount, inChannel);
+
+    return *this;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::sendNrpnDecrement(byte inAmount,
+                                                                   Channel inChannel)
+{
+    sendControlChange(DataDecrement, inAmount, inChannel);
+
+    return *this;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::endNrpn(Channel inChannel)
+{
+    sendControlChange(NRPNLSB, 0x7f, inChannel);
+    sendControlChange(NRPNMSB, 0x7f, inChannel);
+    mCurrentNrpnNumber = 0xffff;
+
+    return *this;
+}
+
+template<class Transport, class Settings, class Platform>
+inline void MidiInterface<Transport, Settings, Platform>::updateLastSentTime()
+{
+    if (Settings::UseSenderActiveSensing && mSenderActiveSensingPeriodicity)
+        mLastMessageSentTime = Platform::now();
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+StatusByte MidiInterface<Transport, Settings, Platform>::getStatus(MidiType inType,
+                                                          Channel inChannel) const
+{
+    return StatusByte(((byte)inType | ((inChannel - 1) & 0x0f)));
+}
+# 751 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+inline bool MidiInterface<Transport, Settings, Platform>::read()
+{
+    return read(mInputChannel);
+}
+
+
+
+template<class Transport, class Settings, class Platform>
+inline bool MidiInterface<Transport, Settings, Platform>::read(Channel inChannel)
+{
+# 771 ".././MIDI.hpp"
+    if (Settings::UseSenderActiveSensing && (mSenderActiveSensingPeriodicity > 0) && (Platform::now() - mLastMessageSentTime) > mSenderActiveSensingPeriodicity)
+    {
+        sendActiveSensing();
+        mLastMessageSentTime = Platform::now();
+    }
+
+    if (Settings::UseReceiverActiveSensing && mReceiverActiveSensingActivated && (mLastMessageReceivedTime + ActiveSensingTimeout < Platform::now()))
+    {
+        mReceiverActiveSensingActivated = false;
+
+        mLastError |= 1UL << ErrorActiveSensingTimeout;
+        if (mErrorCallback)
+            mErrorCallback(mLastError);
+    }
+
+
+    if (inChannel >= 17)
+        return false;
+
+    if (!parse())
+        return false;
+
+
+
+    if (Settings::UseReceiverActiveSensing && mMessage.type == ActiveSensing)
+    {
+
+
+        mReceiverActiveSensingActivated = true;
+
+
+        if (mLastError & (1 << (ErrorActiveSensingTimeout - 1)))
+        {
+            mLastError &= ~(1UL << ErrorActiveSensingTimeout);
+            if (mErrorCallback)
+                mErrorCallback(mLastError);
+        }
+    }
+
+
+    if (Settings::UseReceiverActiveSensing && mReceiverActiveSensingActivated)
+        mLastMessageReceivedTime = Platform::now();
+
+
+
+    handleNullVelocityNoteOnAsNoteOff();
+
+    const bool channelMatch = inputFilter(inChannel);
+    if (channelMatch)
+        launchCallback();
+
+    thruFilter(inChannel);
+
+    return channelMatch;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+bool MidiInterface<Transport, Settings, Platform>::parse()
+{
+    if (mTransport.available() == 0)
+        return false;
+
+
+    mLastError &= ~(1UL << ErrorParse);
+# 848 ".././MIDI.hpp"
+    const byte extracted = mTransport.read();
+
+
+    if (extracted == Undefined_FD)
+        return (Settings::Use1ByteParsing) ? false : parse();
+
+    if (mPendingMessageIndex == 0)
+    {
+
+        mPendingMessage[0] = extracted;
+
+
+        if (isChannelMessage(getTypeFromStatusByte(mRunningStatus_RX)))
+        {
+
+
+
+
+            if (extracted < 0x80)
+            {
+                mPendingMessage[0] = mRunningStatus_RX;
+                mPendingMessage[1] = extracted;
+                mPendingMessageIndex = 1;
+            }
+
+
+
+        }
+
+        const MidiType pendingType = getTypeFromStatusByte(mPendingMessage[0]);
+
+        switch (pendingType)
+        {
+
+            case Start:
+            case Continue:
+            case Stop:
+            case Clock:
+            case Tick:
+            case ActiveSensing:
+            case SystemReset:
+            case TuneRequest:
+
+                mMessage.type = pendingType;
+                mMessage.channel = 0;
+                mMessage.data1 = 0;
+                mMessage.data2 = 0;
+                mMessage.valid = true;
+
+
+
+                mPendingMessageIndex = 0;
+                mPendingMessageExpectedLength = 0;
+
+                return true;
+                break;
+
+
+            case ProgramChange:
+            case AfterTouchChannel:
+            case TimeCodeQuarterFrame:
+            case SongSelect:
+                mPendingMessageExpectedLength = 2;
+                break;
+
+
+            case NoteOn:
+            case NoteOff:
+            case ControlChange:
+            case PitchBend:
+            case AfterTouchPoly:
+            case SongPosition:
+                mPendingMessageExpectedLength = 3;
+                break;
+
+            case SystemExclusiveStart:
+            case SystemExclusiveEnd:
+
+
+                mPendingMessageExpectedLength = MidiMessage::sSysExMaxSize;
+                mRunningStatus_RX = InvalidType;
+                mMessage.sysexArray[0] = pendingType;
+                break;
+
+            case InvalidType:
+            default:
+
+                mLastError |= 1UL << ErrorParse;
+                if (mErrorCallback)
+                    mErrorCallback(mLastError);
+
+                resetInput();
+                return false;
+                break;
+        }
+
+        if (mPendingMessageIndex >= (mPendingMessageExpectedLength - 1))
+        {
+
+            mMessage.type = pendingType;
+            mMessage.channel = getChannelFromStatusByte(mPendingMessage[0]);
+            mMessage.data1 = mPendingMessage[1];
+            mMessage.data2 = 0;
+            mMessage.length = 1;
+
+            mPendingMessageIndex = 0;
+            mPendingMessageExpectedLength = 0;
+            mMessage.valid = true;
+
+            return true;
+        }
+        else
+        {
+
+            mPendingMessageIndex++;
+        }
+
+        return (Settings::Use1ByteParsing) ? false : parse();
+    }
+    else
+    {
+
+        if (extracted >= 0x80)
+        {
+
+
+            switch (extracted)
+            {
+                case Clock:
+                case Start:
+                case Tick:
+                case Continue:
+                case Stop:
+                case ActiveSensing:
+                case SystemReset:
+# 991 ".././MIDI.hpp"
+                    mMessage.type = (MidiType)extracted;
+                    mMessage.data1 = 0;
+                    mMessage.data2 = 0;
+                    mMessage.channel = 0;
+                    mMessage.length = 1;
+                    mMessage.valid = true;
+
+                    return true;
+
+
+                case SystemExclusiveStart:
+                case SystemExclusiveEnd:
+                    if ((mMessage.sysexArray[0] == SystemExclusiveStart)
+                    || (mMessage.sysexArray[0] == SystemExclusiveEnd))
+                    {
+
+                        mMessage.sysexArray[mPendingMessageIndex++] = extracted;
+                        mMessage.type = SystemExclusive;
+
+
+                        mMessage.data1 = mPendingMessageIndex & 0xff;
+                        mMessage.data2 = byte(mPendingMessageIndex >> 8);
+                        mMessage.channel = 0;
+                        mMessage.length = mPendingMessageIndex;
+                        mMessage.valid = true;
+
+                        resetInput();
+
+                        return true;
+                    }
+                    else
+                    {
+
+                        mLastError |= 1UL << ErrorParse;
+                        if (mErrorCallback)
+                            mErrorCallback(mLastError);
+
+                        resetInput();
+                        return false;
+                    }
+
+                default:
+                    break;
+
+            }
+        }
+
+
+        if ((mPendingMessage[0] == SystemExclusiveStart)
+        || (mPendingMessage[0] == SystemExclusiveEnd))
+            mMessage.sysexArray[mPendingMessageIndex] = extracted;
+        else
+            mPendingMessage[mPendingMessageIndex] = extracted;
+
+
+        if (mPendingMessageIndex >= (mPendingMessageExpectedLength - 1))
+        {
+
+
+
+
+
+            if ((mPendingMessage[0] == SystemExclusiveStart)
+            || (mPendingMessage[0] == SystemExclusiveEnd))
+            {
+                auto lastByte = mMessage.sysexArray[Settings::SysExMaxSize - 1];
+                mMessage.sysexArray[Settings::SysExMaxSize - 1] = SystemExclusiveStart;
+                mMessage.type = SystemExclusive;
+
+
+                mMessage.data1 = Settings::SysExMaxSize & 0xff;
+                mMessage.data2 = byte(Settings::SysExMaxSize >> 8);
+                mMessage.channel = 0;
+                mMessage.length = Settings::SysExMaxSize;
+                mMessage.valid = true;
+
+
+
+                launchCallback();
+
+                mMessage.sysexArray[0] = SystemExclusiveEnd;
+                mMessage.sysexArray[1] = lastByte;
+
+                mPendingMessageIndex = 2;
+
+                return false;
+            }
+
+            mMessage.type = getTypeFromStatusByte(mPendingMessage[0]);
+
+            if (isChannelMessage(mMessage.type))
+                mMessage.channel = getChannelFromStatusByte(mPendingMessage[0]);
+            else
+                mMessage.channel = 0;
+
+            mMessage.data1 = mPendingMessage[1];
+
+            mMessage.data2 = mPendingMessageExpectedLength == 3 ? mPendingMessage[2] : 0;
+            mMessage.length = mPendingMessageExpectedLength;
+
+
+            mPendingMessageIndex = 0;
+            mPendingMessageExpectedLength = 0;
+
+            mMessage.valid = true;
+
+
+            switch (mMessage.type)
+            {
+                case NoteOff:
+                case NoteOn:
+                case AfterTouchPoly:
+                case ControlChange:
+                case ProgramChange:
+                case AfterTouchChannel:
+                case PitchBend:
+
+                    mRunningStatus_RX = mPendingMessage[0];
+                    break;
+
+                default:
+
+                    mRunningStatus_RX = InvalidType;
+                    break;
+            }
+            return true;
+        }
+        else
+        {
+
+            mPendingMessageIndex++;
+
+            return (Settings::Use1ByteParsing) ? false : parse();
+        }
+    }
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline void MidiInterface<Transport, Settings, Platform>::handleNullVelocityNoteOnAsNoteOff()
+{
+    if (Settings::HandleNullVelocityNoteOnAsNoteOff &&
+        getType() == NoteOn && getData2() == 0)
+    {
+        mMessage.type = NoteOff;
+    }
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline bool MidiInterface<Transport, Settings, Platform>::inputFilter(Channel inChannel)
+{
+
+
+
+
+    if (mMessage.type >= NoteOff && mMessage.type <= PitchBend)
+    {
+
+        if ((mMessage.channel == inChannel) ||
+            (inChannel == 0))
+        {
+            return true;
+        }
+        else
+        {
+
+            return false;
+        }
+    }
+    else
+    {
+
+        return true;
+    }
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline void MidiInterface<Transport, Settings, Platform>::resetInput()
+{
+    mPendingMessageIndex = 0;
+    mPendingMessageExpectedLength = 0;
+    mRunningStatus_RX = InvalidType;
+}
+
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiType MidiInterface<Transport, Settings, Platform>::getType() const
+{
+    return mMessage.type;
+}
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline Channel MidiInterface<Transport, Settings, Platform>::getChannel() const
+{
+    return mMessage.channel;
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline DataByte MidiInterface<Transport, Settings, Platform>::getData1() const
+{
+    return mMessage.data1;
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline DataByte MidiInterface<Transport, Settings, Platform>::getData2() const
+{
+    return mMessage.data2;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline const byte* MidiInterface<Transport, Settings, Platform>::getSysExArray() const
+{
+    return mMessage.sysexArray;
+}
+
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline unsigned MidiInterface<Transport, Settings, Platform>::getSysExArrayLength() const
+{
+    return mMessage.getSysExSize();
+}
+
+
+template<class Transport, class Settings, class Platform>
+inline bool MidiInterface<Transport, Settings, Platform>::check() const
+{
+    return mMessage.valid;
+}
+
+
+
+template<class Transport, class Settings, class Platform>
+inline Channel MidiInterface<Transport, Settings, Platform>::getInputChannel() const
+{
+    return mInputChannel;
+}
+
+
+
+
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::setInputChannel(Channel inChannel)
+{
+    mInputChannel = inChannel;
+
+    return *this;
+}
+# 1269 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiType MidiInterface<Transport, Settings, Platform>::getTypeFromStatusByte(byte inStatus)
+{
+    if ((inStatus < 0x80) ||
+        (inStatus == Undefined_F4) ||
+        (inStatus == Undefined_F5) ||
+        (inStatus == Undefined_FD))
+        return InvalidType;
+
+    if (inStatus < 0xf0)
+
+        return MidiType(inStatus & 0xf0);
+
+    return MidiType(inStatus);
+}
+
+
+
+template<class Transport, class Settings, class Platform>
+inline Channel MidiInterface<Transport, Settings, Platform>::getChannelFromStatusByte(byte inStatus)
+{
+    return Channel((inStatus & 0x0f) + 1);
+}
+
+template<class Transport, class Settings, class Platform>
+bool MidiInterface<Transport, Settings, Platform>::isChannelMessage(MidiType inType)
+{
+    return (inType == NoteOff ||
+            inType == NoteOn ||
+            inType == ControlChange ||
+            inType == AfterTouchPoly ||
+            inType == AfterTouchChannel ||
+            inType == PitchBend ||
+            inType == ProgramChange);
+}
+# 1313 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::disconnectCallbackFromType(MidiType inType)
+{
+    switch (inType)
+    {
+        case NoteOff: mNoteOffCallback = nullptr; break;
+        case NoteOn: mNoteOnCallback = nullptr; break;
+        case AfterTouchPoly: mAfterTouchPolyCallback = nullptr; break;
+        case ControlChange: mControlChangeCallback = nullptr; break;
+        case ProgramChange: mProgramChangeCallback = nullptr; break;
+        case AfterTouchChannel: mAfterTouchChannelCallback = nullptr; break;
+        case PitchBend: mPitchBendCallback = nullptr; break;
+        case SystemExclusive: mSystemExclusiveCallback = nullptr; break;
+        case TimeCodeQuarterFrame: mTimeCodeQuarterFrameCallback = nullptr; break;
+        case SongPosition: mSongPositionCallback = nullptr; break;
+        case SongSelect: mSongSelectCallback = nullptr; break;
+        case TuneRequest: mTuneRequestCallback = nullptr; break;
+        case Clock: mClockCallback = nullptr; break;
+        case Start: mStartCallback = nullptr; break;
+        case Tick: mTickCallback = nullptr; break;
+        case Continue: mContinueCallback = nullptr; break;
+        case Stop: mStopCallback = nullptr; break;
+        case ActiveSensing: mActiveSensingCallback = nullptr; break;
+        case SystemReset: mSystemResetCallback = nullptr; break;
+        default:
+            break;
+    }
+
+    return *this;
+}
+
+
+
+
+template<class Transport, class Settings, class Platform>
+void MidiInterface<Transport, Settings, Platform>::launchCallback()
+{
+    if (mMessageCallback != 0) mMessageCallback(mMessage);
+
+
+    switch (mMessage.type)
+    {
+
+        case NoteOff: if (mNoteOffCallback != nullptr) mNoteOffCallback(mMessage.channel, mMessage.data1, mMessage.data2); break;
+        case NoteOn: if (mNoteOnCallback != nullptr) mNoteOnCallback(mMessage.channel, mMessage.data1, mMessage.data2); break;
+
+
+        case Clock: if (mClockCallback != nullptr) mClockCallback(); break;
+        case Start: if (mStartCallback != nullptr) mStartCallback(); break;
+        case Tick: if (mTickCallback != nullptr) mTickCallback(); break;
+        case Continue: if (mContinueCallback != nullptr) mContinueCallback(); break;
+        case Stop: if (mStopCallback != nullptr) mStopCallback(); break;
+        case ActiveSensing: if (mActiveSensingCallback != nullptr) mActiveSensingCallback(); break;
+
+
+        case ControlChange: if (mControlChangeCallback != nullptr) mControlChangeCallback(mMessage.channel, mMessage.data1, mMessage.data2); break;
+        case PitchBend: if (mPitchBendCallback != nullptr) mPitchBendCallback(mMessage.channel, (int)((mMessage.data1 & 0x7f) | ((mMessage.data2 & 0x7f) << 7)) + -8192); break;
+        case AfterTouchPoly: if (mAfterTouchPolyCallback != nullptr) mAfterTouchPolyCallback(mMessage.channel, mMessage.data1, mMessage.data2); break;
+        case AfterTouchChannel: if (mAfterTouchChannelCallback != nullptr) mAfterTouchChannelCallback(mMessage.channel, mMessage.data1); break;
+
+        case ProgramChange: if (mProgramChangeCallback != nullptr) mProgramChangeCallback(mMessage.channel, mMessage.data1); break;
+        case SystemExclusive: if (mSystemExclusiveCallback != nullptr) mSystemExclusiveCallback(mMessage.sysexArray, mMessage.getSysExSize()); break;
+
+
+        case TimeCodeQuarterFrame: if (mTimeCodeQuarterFrameCallback != nullptr) mTimeCodeQuarterFrameCallback(mMessage.data1); break;
+        case SongPosition: if (mSongPositionCallback != nullptr) mSongPositionCallback(unsigned((mMessage.data1 & 0x7f) | ((mMessage.data2 & 0x7f) << 7))); break;
+        case SongSelect: if (mSongSelectCallback != nullptr) mSongSelectCallback(mMessage.data1); break;
+        case TuneRequest: if (mTuneRequestCallback != nullptr) mTuneRequestCallback(); break;
+
+        case SystemReset: if (mSystemResetCallback != nullptr) mSystemResetCallback(); break;
+
+
+        case InvalidType:
+        default:
+            break;
+
+    }
+}
+# 1407 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::setThruFilterMode(Thru::Mode inThruFilterMode)
+{
+    mThruFilterMode = inThruFilterMode;
+    mThruActivated = mThruFilterMode != Thru::Off;
+
+    return *this;
+}
+
+template<class Transport, class Settings, class Platform>
+inline Thru::Mode MidiInterface<Transport, Settings, Platform>::getFilterMode() const
+{
+    return mThruFilterMode;
+}
+
+template<class Transport, class Settings, class Platform>
+inline bool MidiInterface<Transport, Settings, Platform>::getThruState() const
+{
+    return mThruActivated;
+}
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::turnThruOn(Thru::Mode inThruFilterMode)
+{
+    mThruActivated = true;
+    mThruFilterMode = inThruFilterMode;
+
+    return *this;
+}
+
+template<class Transport, class Settings, class Platform>
+inline MidiInterface<Transport, Settings, Platform>& MidiInterface<Transport, Settings, Platform>::turnThruOff()
+{
+    mThruActivated = false;
+    mThruFilterMode = Thru::Off;
+
+    return *this;
+}
+# 1455 ".././MIDI.hpp"
+template<class Transport, class Settings, class Platform>
+void MidiInterface<Transport, Settings, Platform>::thruFilter(Channel inChannel)
+{
+
+    if (!mThruActivated || (mThruFilterMode == Thru::Off))
+        return;
+
+
+    if (mMessage.type >= NoteOff && mMessage.type <= PitchBend)
+    {
+        const bool filter_condition = ((mMessage.channel == inChannel) ||
+                                       (inChannel == 0));
+
+
+        switch (mThruFilterMode)
+        {
+            case Thru::Full:
+                send(mMessage.type,
+                     mMessage.data1,
+                     mMessage.data2,
+                     mMessage.channel);
+                break;
+
+            case Thru::SameChannel:
+                if (filter_condition)
+                {
+                    send(mMessage.type,
+                         mMessage.data1,
+                         mMessage.data2,
+                         mMessage.channel);
+                }
+                break;
+
+            case Thru::DifferentChannel:
+                if (!filter_condition)
+                {
+                    send(mMessage.type,
+                         mMessage.data1,
+                         mMessage.data2,
+                         mMessage.channel);
+                }
+                break;
+
+            default:
+                break;
+        }
+    }
+    else
+    {
+
+        switch (mMessage.type)
+        {
+
+            case Clock:
+            case Start:
+            case Stop:
+            case Continue:
+            case ActiveSensing:
+            case SystemReset:
+            case TuneRequest:
+                sendRealTime(mMessage.type);
+                break;
+
+            case SystemExclusive:
+
+                sendSysEx(getSysExArrayLength(), getSysExArray(), true);
+                break;
+
+            case SongSelect:
+                sendSongSelect(mMessage.data1);
+                break;
+
+            case SongPosition:
+                sendSongPosition(mMessage.data1 | ((unsigned)mMessage.data2 << 7));
+                break;
+
+            case TimeCodeQuarterFrame:
+                sendTimeCodeQuarterFrame(mMessage.data1,mMessage.data2);
+                break;
+
+            default:
+                break;
+        }
+    }
+}
+
+}
+# 308 ".././MIDI.h" 2
+# 29 ".././MIDI.cpp" 2
+
+
+
+namespace midi {
+# 46 ".././MIDI.cpp"
+unsigned encodeSysEx(const byte* inData,
+                     byte* outSysEx,
+                     unsigned inLength,
+                     bool inFlipHeaderBits)
+{
+    unsigned outLength = 0;
+    byte count = 0;
+    outSysEx[0] = 0;
+
+    for (unsigned i = 0; i < inLength; ++i)
+    {
+        const byte data = inData[i];
+        const byte msb = data >> 7;
+        const byte body = data & 0x7f;
+
+        outSysEx[0] |= (msb << (inFlipHeaderBits ? count : (6 - count)));
+        outSysEx[1 + count] = body;
+
+        if (count++ == 6)
+        {
+            outSysEx += 8;
+            outLength += 8;
+            outSysEx[0] = 0;
+            count = 0;
+        }
+    }
+    return outLength + count + (count != 0 ? 1 : 0);
+}
+# 87 ".././MIDI.cpp"
+unsigned decodeSysEx(const byte* inSysEx,
+                     byte* outData,
+                     unsigned inLength,
+                     bool inFlipHeaderBits)
+{
+    unsigned count = 0;
+    byte msbStorage = 0;
+    byte byteIndex = 0;
+
+    for (unsigned i = 0; i < inLength; ++i)
+    {
+        if ((i % 8) == 0)
+        {
+            msbStorage = inSysEx[i];
+            byteIndex = 6;
+        }
+        else
+        {
+            const byte body = inSysEx[i];
+            const byte shift = inFlipHeaderBits ? 6 - byteIndex : byteIndex;
+            const byte msb = byte(((msbStorage >> shift) & 1) << 7);
+            byteIndex--;
+            outData[count++] = msb | body;
+        }
+    }
+    return count;
+}
+
+}

@@ -32,6 +32,8 @@
 
 BEGIN_MIDI_NAMESPACE
 
+// https://github.com/Juppi88/avr-serial
+
 struct DefaultSerialSettings
 {
 	/*! Override the default MIDI baudrate to transmit over USB serial, to
@@ -54,8 +56,6 @@ class SerialMidiTransport
 		// initialize fields ...
 	};
 
-	public:
-	
 	void begin()
 	{
 		
@@ -66,9 +66,10 @@ class SerialMidiTransport
 		
 	};
 
-	uint8_t beginTransmission(MidiType status)
+	// called by MIDI.hpp at line 129?
+	bool beginTransmission(MidiType status)
 	{
-		return 0;
+		return true;
 	};
 
 	void write(uint8_t byte)
@@ -92,7 +93,6 @@ class SerialMidiTransport
 	};
 };
 
-
 END_MIDI_NAMESPACE
 
 #define MIDI_CREATE_INSTANCE(CableNr, Name)  \
@@ -103,4 +103,5 @@ MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> Name((MIDI_NA
 MIDI_NAMESPACE::SerialMidiTransport serial##Name(CableNr);\
 MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::usbMidiTransport, Settings> Name((MIDI_NAMESPACE::SerialMidiTransport&)serial##Name);
 
-#define MIDI_CREATE_DEFAULT_INSTANCE()  MIDI_CREATE_INSTANCE(0, MIDI)
+#define MIDI_CREATE_DEFAULT_INSTANCE()  \
+MIDI_CREATE_INSTANCE(0, MIDI)

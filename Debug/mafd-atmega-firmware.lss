@@ -23,11 +23,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING
   9 .debug_frame  00000054  00000000  00000000  00002cd0  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    000039b7  00000000  00000000  00002d24  2**0
+ 10 .debug_str    000039be  00000000  00000000  00002d24  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000026  00000000  00000000  000066db  2**0
+ 11 .debug_loc    00000026  00000000  00000000  000066e2  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000028  00000000  00000000  00006701  2**0
+ 12 .debug_ranges 00000028  00000000  00000000  00006708  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -106,10 +106,10 @@ Disassembly of section .text:
   a6:	0c 94 00 00 	jmp	0	; 0x0 <__vectors>
 
 000000aa <_Z41__static_initialization_and_destruction_0ii>:
-int main(void)
 {
-    while (1) 
+    while (1)
     {
+		
     }
 }
   aa:	01 97       	sbiw	r24, 0x01	; 1
@@ -227,15 +227,16 @@ int main(void)
 0000018c <main>:
 #include "serialMIDI.h"
 
-MIDI_CREATE_DEFAULT_INSTANCE();
+MIDI_CREATE_DEFAULT_INSTANCE()
 
 int main(void)
 {
  18c:	ff cf       	rjmp	.-2      	; 0x18c <main>
 
 0000018e <_GLOBAL__sub_I_serialMIDI>:
-    while (1) 
+    while (1)
     {
+		
     }
 }
  18e:	6f ef       	ldi	r22, 0xFF	; 255
