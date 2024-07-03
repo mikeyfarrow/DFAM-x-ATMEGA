@@ -6,11 +6,12 @@
  */ 
 
 #include <avr/io.h>
+#include "serialMIDI.h"
 
+MIDI_CREATE_DEFAULT_INSTANCE();
 
 int main(void)
 {
-    /* Replace with your application code */
     while (1) 
     {
     }
