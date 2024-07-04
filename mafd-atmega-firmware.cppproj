@@ -188,6 +188,9 @@
     <Compile Include="midi_Defs.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="midi_Events.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="midi_Message.h">
       <SubType>compile</SubType>
     </Compile>

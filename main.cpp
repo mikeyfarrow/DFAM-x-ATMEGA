@@ -7,14 +7,13 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sfr_defs.h>
-//#include <util/delay.h>
 #include <avr/eeprom.h>
 
 #include "./MIDI.h"
 #include "./midi_Defs.h"
+#include "./midi_Events.h"
 #include "./utilities.h"
 #include "./debug_leds.h"
-
 
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
 #define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)
@@ -25,27 +24,20 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 
 /*
 	serial_init - Initialize the USART port
-	
-		MIDI spec:
-		- no parity bit
-		- baud rate is 31.25 Kbaud
-		- 1 start bit
-		- 8 data bits
-		- 1 stop bit
-		
-		transer rate for the 10 total bytes is 320 microseconds per serial byte
+		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250
 */
-void serial_init() {
-	UBRR0H = BAUD_RATE_BYTES >> 8; // set the baud rate registers
+void serial_init()
+{	
+	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
 	UBRR0L = BAUD_RATE_BYTES;
 	
 	UCSR0B |= (1 << TXEN0 ); // Turn on transmitter
 	UCSR0B |= (1 << RXEN0 ); // Turn on receiver
-	UCSR0C = (3 << UCSZ00 ); // Set for async . operation , no parity , one stop bit , 8 data bits
+	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 }
 
 /*
-serial_in - Read a byte from the USART0 and return it
+	serial_in - Read a byte from the USART0 and return it
 */
 char serial_in()
 {
@@ -91,62 +83,54 @@ void handle_midi_message(char midi_byte)
 	bank_B_off();
 	switch (midi_byte)
 	{
-		case MIDI_NAMESPACE::Clock: /*********************** CLOCK ***********************/
+		case MIDI_NAMESPACE::Clock: /********** CLOCK ***********************/
 			bank_B(0);
 			break;
 				
-		case MIDI_NAMESPACE::Start: /*********************** START ***********************/
+		case MIDI_NAMESPACE::Start: /********** START ***********************/
 			bank_B(1);
 			break;
 				
-		case MIDI_NAMESPACE::Stop: /*********************** STOP ************************/
+		case MIDI_NAMESPACE::Stop:  /********** STOP ************************/
 			bank_B(2);
 			break;
 				
-		default:                 /************************* N/A *************************/
+		default:				    /********** N/A *************************/
 			bank_B(3);
 			break;
 	}
+} 
+void register_midi_callbacks()
+{
+	MIDI.setHandleNoteOn(cb_NoteOn);
+	MIDI.setHandleStart(cb_Start);
+	MIDI.setHandleStop(cb_Stop);
+	MIDI.setHandleClock(cb_Clock);
 }
 
-// PORTx for writing outputs
-// PINx is read only
 int main()
 {
-	char messages[4] = { MIDI_NAMESPACE::Stop, MIDI_NAMESPACE::Start, MIDI_NAMESPACE::Clock, MIDI_NAMESPACE::Continue };
-	int idx = 0;
+	char messages[4] = { MIDI_NAMESPACE::Start, MIDI_NAMESPACE::Start, MIDI_NAMESPACE::Clock, MIDI_NAMESPACE::NoteOn };
 	int num_messages = 4;
-	
-	// INTIALIZE GPIOs
 	init_led_io();
-	clear_all_LEDs();
 	serial_init();
+	register_midi_callbacks();
 	
+	clear_all_LEDs();
 	clear_eeprom();
-	
+
+	int idx = 0;
 	while (1)
 	{
-		if (idx % 3 == 0) status_led_green();
+		if	(idx % 3 == 0) status_led_green();
 		else if (idx % 3 == 1) status_led_red();
 		else status_led_off();
 		
-		bank_A_off();
+		MIDI.read();
 		
-		//_delay_ms(200);
 		serial_out(messages[idx]);
 		
-		//eeprom_write_byte((uint8_t*) eep_idx, 0x44);
-		//eep_idx++;
-		
-		//eeprom_write_byte((uint8_t*) eep_idx, messages[idx]);
-		//eep_idx++;
-		
-		//_delay_ms(200);
-		char midi_byte = serial_in();
-		
-		handle_midi_message(midi_byte);
-		
-		idx = (idx + 1) % num_messages;
+		idx = (idx + 1) % 3;
 	}
 	return 0;
 }
