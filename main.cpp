@@ -1,5 +1,5 @@
 /*
- * FILE: midi_Events.h
+ * FILE: main.cpp
  *
  * This file controls the event loop which is responsible for receiving and
  * transmitting MIDI messages. The event loop also handles analog IO via
