@@ -1,3 +1,11 @@
+/*
+ * FILE: midi_Events.h
+ *
+ * This file controls the event loop which is responsible for receiving and
+ * transmitting MIDI messages. The event loop also handles analog IO via
+ * ATMEGA's GPIO and the SPI communication with the DAC.
+ */
+
 // See:
 //		https://www.arnabkumardas.com/arduino-tutorial/usart-programming/
 //		https://ece-classes.usc.edu/ee459/library/documents/Serial_Port.pdf
@@ -37,37 +45,17 @@ void serial_init()
 }
 
 /*
-	serial_in - Read a byte from the USART0 and return it
-*/
-char serial_in()
-{
-	bank_A(0);
-	while ( !( UCSR0A & (1 << RXC0 )) ) return 0; // wait until there's a message
-	
-	bank_A(1);
-	char ch = UDR0;
-	
-	eeprom_write_byte((uint8_t*) eep_idx, 0x22);
-	eep_idx++;
-	
-	eeprom_write_byte((uint8_t*) eep_idx, ch);
-	bank_A(2);
-	eep_idx++;
-	
-	return ch;
-}
-
-/*
-serial_out - Output a byte to the USART0 port
+	serial_out - Output a byte to the USART0 port
 */
 void serial_out(char ch)
 {
 	while ((UCSR0A & (1 << UDRE0 )) == 0) ;
-	
 	UDR0 = ch;
-
 }
 
+/*
+	clear_eeprom - overwrites entire EEPROM memspace with 0
+*/
 void clear_eeprom()
 {
 	uint16_t addr = 0;
@@ -78,28 +66,6 @@ void clear_eeprom()
 	}
 }
 
-void handle_midi_message(char midi_byte)
-{
-	bank_B_off();
-	switch (midi_byte)
-	{
-		case MIDI_NAMESPACE::Clock: /********** CLOCK ***********************/
-			bank_B(0);
-			break;
-				
-		case MIDI_NAMESPACE::Start: /********** START ***********************/
-			bank_B(1);
-			break;
-				
-		case MIDI_NAMESPACE::Stop:  /********** STOP ************************/
-			bank_B(2);
-			break;
-				
-		default:				    /********** N/A *************************/
-			bank_B(3);
-			break;
-	}
-} 
 void register_midi_callbacks()
 {
 	MIDI.setHandleNoteOn(cb_NoteOn);
@@ -110,8 +76,6 @@ void register_midi_callbacks()
 
 int main()
 {
-	char messages[4] = { MIDI_NAMESPACE::Start, MIDI_NAMESPACE::Start, MIDI_NAMESPACE::Clock, MIDI_NAMESPACE::NoteOn };
-	int num_messages = 4;
 	init_led_io();
 	serial_init();
 	register_midi_callbacks();
@@ -126,9 +90,7 @@ int main()
 		else if (idx % 3 == 1) status_led_red();
 		else status_led_off();
 		
-		MIDI.read();
-		
-		serial_out(messages[idx]);
+		MIDI.read(); // check for new message without blocking
 		
 		idx = (idx + 1) % 3;
 	}
