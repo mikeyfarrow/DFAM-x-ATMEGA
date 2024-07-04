@@ -105,3 +105,4 @@ MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::usbMidiTransport, Settings> Name((
 
 #define MIDI_CREATE_DEFAULT_INSTANCE()  \
 MIDI_CREATE_INSTANCE(0, MIDI)
+

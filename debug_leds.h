@@ -15,14 +15,26 @@
 #define BILED_G PORTC5
 #define BILED_PORT PORTC
 
+
 #define LED_B1 PORTD2
 #define LED_B2 PORTD3
 #define LED_B3 PORTD4
 #define LED_B4 PORTD5
 #define BANK_B_PORT PORTD
 
+
 uint8_t BANK_A_LEDS[4] = {LED_A1, LED_A2, LED_A3, LED_A4};
 uint8_t BANK_B_LEDS[4] = {LED_B1, LED_B2, LED_B3, LED_B4};
+
+#define bank_A_on()		BANK_A_PORT |= (1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4)
+#define bank_A_off()	BANK_A_PORT &= ~((1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4))
+#define bank_A(i)		set_bit(BANK_A_PORT, BANK_A_LEDS[i])
+
+
+#define bank_B_on()		BANK_B_PORT |= (1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4)
+#define bank_B_off()	BANK_B_PORT &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4))
+#define bank_B(i)		set_bit(BANK_B_PORT, BANK_B_LEDS[i])
+
 
 void status_led_red()
 {
@@ -42,16 +54,6 @@ void status_led_off()
 	clear_bit(PORTC, PORTC5);
 }
 
-void clear_bank_a()
-{
-	PORTC &= ~((1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4));
-}
-
-void clear_bank_b()
-{
-	PORTD &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4));
-}
-
 void set_all_LEDs()
 {
 	status_led_green();
@@ -65,7 +67,6 @@ void clear_all_LEDs()
 	PORTC &= ~((1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4));
 	PORTD &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4));
 }
-
 
 void init_led_io()
 {
