@@ -173,34 +173,37 @@
     <Compile Include="debug_leds.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="lib\MIDI.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\MIDI.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\MIDI.hpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\midi_Defs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\midi_Message.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\midi_Namespace.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\midi_Platform.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="lib\midi_Settings.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="MIDI.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="MIDI.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="MIDI.hpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midi_Defs.h">
+    <Compile Include="MCP_4822.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="midi_Events.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midi_Message.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midi_Namespace.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midi_Platform.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="midi_Settings.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="serialMIDI.h">
@@ -209,6 +212,14 @@
     <Compile Include="utilities.h">
       <SubType>compile</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="notes.txt">
+      <SubType>compile</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(AVRSTUDIO_EXE_PATH)\\Vs\\Compiler.targets" />
 </Project>

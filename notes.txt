@@ -1,0 +1,20 @@
+NOTES, TODO, and IMPLEMENTATION DETAILS
+=======================================
+
+# DAC4822
+
+- Bypass capacitors:
+   - V+ to ground -> 10μF tant, 0.1μF ceramic
+   - Output (both) -> 1μF ? The tested range for stability is .001μF through 4.7 μF
+
+- Gain setting:
+   - If G = 1 is selected, the V_REF is 2.048V and has 500 μV of resolution
+     If G = 2 is selected, the V_REF is 4.096V and has 1 mV of resolution
+	 
+- Talking to the MCU:
+	- Serial Peripheral Interface (SPI) details in datasheet
+	- TODO: does the current code block in that while loop?
+
+- Resources:
+   - https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20002249B.pdf
+      - See page 28 and page 30

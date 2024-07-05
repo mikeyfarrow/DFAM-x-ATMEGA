@@ -9,7 +9,7 @@
 #ifndef MIDI_EVENTS_H_
 #define MIDI_EVENTS_H_
 
-#include "debug_leds.h"
+#include "./debug_leds.h"
 
 void cb_NoteOn(byte channel, byte pitch, byte velocity)
 {

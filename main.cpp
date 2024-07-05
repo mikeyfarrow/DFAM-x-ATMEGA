@@ -17,11 +17,13 @@
 #include <avr/sfr_defs.h>
 #include <avr/eeprom.h>
 
-#include "./MIDI.h"
-#include "./midi_Defs.h"
+#include "lib/MIDI.h"
+#include "lib/midi_Defs.h"
+
 #include "./midi_Events.h"
 #include "./utilities.h"
 #include "./debug_leds.h"
+#include "./MCP_4822.h"
 
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
 #define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)

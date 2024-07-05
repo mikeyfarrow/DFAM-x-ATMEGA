@@ -32,7 +32,7 @@
 #include "midi_Settings.h"
 #include "midi_Message.h"
 
-#include "serialMIDI.h"
+#include "../serialMIDI.h"
 
 // -----------------------------------------------------------------------------
 

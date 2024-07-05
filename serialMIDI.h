@@ -9,13 +9,11 @@
 #include <avr/io.h>
 #include <avr/eeprom.h>
 
-#include "midi_Namespace.h"
-#include "midi_Defs.h"
-#include "MIDI.h"
+#include "lib/midi_Namespace.h"
+#include "lib/midi_Defs.h"
+#include "lib/MIDI.h"
 
 BEGIN_MIDI_NAMESPACE
-
-// https://github.com/Juppi88/avr-serial
 
 struct DefaultSerialSettings
 {
