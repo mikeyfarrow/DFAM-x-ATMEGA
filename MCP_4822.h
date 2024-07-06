@@ -43,38 +43,8 @@
 // Loop until any current SPI transmissions have completed
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
-/*
-uint16_t eep_idx = 0;
-
-void eep_write_byte(char ch)
-{
-	if (eep_idx > E2END)
-	{
-		eep_idx = 0;
-	}
-	eeprom_write_byte((uint8_t*)eep_idx, ch);
-	eep_idx++;
-}
-
-void eep_write_delim()
-{
-	eep_write_byte(0xBB);
-	eep_write_byte(0xBB);
-}
-
-void clear_eeprom()
-{
-	uint16_t addr = 0;
-	while (addr <= E2END)
-	{
-		eeprom_write_byte((uint8_t*)addr, 0);
-		addr += 1;
-	}
-}
-*/
-
 // Initialize the SPI as master
-void init_SPI_DAC()
+void init_DAC_SPI()
 {
 	// make the MOSI, SCK, and SS pins outputs
 	SPI_DDR |= ( 1 << SPI_MOSI ) | ( 1 << SPI_SCK ) | ( 1 << SPI_SS );
