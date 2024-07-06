@@ -22,8 +22,9 @@
 
 #include "./midi_Events.h"
 #include "./utilities.h"
-#include "./debug_leds.h"
 #include "./MCP_4822.h"
+#include "./debug_leds.h"
+#include "./digital_outputs.h"
 
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
 #define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)
@@ -36,7 +37,7 @@ MIDI_CREATE_DEFAULT_INSTANCE();
 	serial_init - Initialize the USART port
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250
 */
-void serial_init()
+void init_midi_UART()
 {	
 	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
 	UBRR0L = BAUD_RATE_BYTES;
@@ -78,21 +79,30 @@ void register_midi_callbacks()
 
 int main()
 {
-	init_led_io();
-	serial_init();
+	init_led_outputs();
+	init_digital_outputs();
+	init_midi_UART();
+	init_DAC_SPI();
+	
 	register_midi_callbacks();
 	
 	clear_all_LEDs();
 	clear_eeprom();
+	
+	send_pulse();
+	send_trigger();
 
 	int idx = 0;
 	while (1)
 	{
-		if	(idx % 3 == 0) status_led_green();
-		else if (idx % 3 == 1) status_led_red();
-		else status_led_off();
+		if	(idx % 3 == 0) { status_led_green(); }
+		else if (idx % 3 == 1) { status_led_red(); }
+		else { status_led_off(); }
 		
 		MIDI.read(); // check for new message without blocking
+		
+		output_dac(0, 4095);
+		output_dac(1, 4095);
 		
 		idx = (idx + 1) % 3;
 	}

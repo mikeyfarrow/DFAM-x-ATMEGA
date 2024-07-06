@@ -1,7 +1,8 @@
 /*
  * MCP_4822.h 
- 
- * handles all SPI communication between ATMEGA328P and the DAC, MCP4822
+ * 
+ * handles all SPI communication between ATMEGA328P and the DAC, MCP4822,
+ * including all V/octave outputs
  *
  */ 
 
@@ -9,28 +10,96 @@
 #ifndef MCP_4822_H_
 #define MCP_4822_H_
 
+
+
+#define F_CPU 16000000UL // 16 MHz (required by delay.h)
+
 #include <avr/io.h>
+#include <util/delay.h>
+#include <avr/sfr_defs.h>
+#include <avr/eeprom.h>
 
 #define DAC_CS_PORT PORTB
 #define DAC_CS PB2
 
-#define DAC_ABSEL 7
-#define DAC_IGN 6
-#define DAC_GAIN 5
-#define DAC_SHDN 4
+#define MCP4822_ABSEL 7
+#define MCP4822_IGN 6
+#define MCP4822_GAIN 5
+#define MCP4822_SHDN 4
 
-// data is between 0-4095, config bits will be added
-void write_DAC_byte(uint8_t channel, uint16_t data, uint8_t gain=1)
+// SPI Definitions
+#define SPI_DDR		DDRB
+#define SPI_MISO	PORTB4
+#define SPI_MOSI	PORTB3
+#define SPI_SCK		PORTB5
+#define SPI_SS		PORTB2
+
+#define SPI_SPCR	SPCR
+#define SPI_SPSR	SPSR
+#define SPI_SPIF	SPIF
+#define SPI_SPE		SPE
+#define SPI_MSTR	MSTR
+
+// Loop until any current SPI transmissions have completed
+#define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
+
+/*
+uint16_t eep_idx = 0;
+
+void eep_write_byte(char ch)
 {
-	DAC_CS_PORT &= ~(1<<DAC_CS); // set channel select pin low to enable DAC
+	if (eep_idx > E2END)
+	{
+		eep_idx = 0;
+	}
+	eeprom_write_byte((uint8_t*)eep_idx, ch);
+	eep_idx++;
+}
 
-	SPDR = (channel<<DAC_ABSEL) | (0<<DAC_IGN) | (gain<<DAC_GAIN) | (1<<DAC_SHDN) | ((data>>8) & 0x0F);
-	while (!(SPSR & (1<<SPIF)))
-	;
+void eep_write_delim()
+{
+	eep_write_byte(0xBB);
+	eep_write_byte(0xBB);
+}
+
+void clear_eeprom()
+{
+	uint16_t addr = 0;
+	while (addr <= E2END)
+	{
+		eeprom_write_byte((uint8_t*)addr, 0);
+		addr += 1;
+	}
+}
+*/
+
+// Initialize the SPI as master
+void init_SPI_DAC()
+{
+	// make the MOSI, SCK, and SS pins outputs
+	SPI_DDR |= ( 1 << SPI_MOSI ) | ( 1 << SPI_SCK ) | ( 1 << SPI_SS );
+
+	// make sure the MISO pin is input
+	SPI_DDR &= ~( 1 << SPI_MISO );
+
+	// set up the SPI module: SPI enabled, MSB first, master mode,
+	//  clock polarity and phase = 0, F_osc/16
+	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR );// | ( 1 << SPI_SPR0 );
+	SPI_SPSR = 1;     // set double SPI speed for F_osc/2
+}
+
+// data is between 0-4095, config bits will be added 
+void output_dac(uint8_t channel, uint16_t data)
+{
+	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
+	
+	SPDR = (channel<<MCP4822_ABSEL) | (0<<MCP4822_IGN) | (0<<MCP4822_GAIN) | (1<<MCP4822_SHDN) | ((data>>8) & 0x0F);
+	spi_wait();
+	
 	SPDR = data & 0x00FF;
-	while (!(SPSR & (1<<SPIF)))
-	;
-	DAC_CS_PORT |= (1<<DAC_CS);	// set channel select pin high to latch data
+	spi_wait();
+	
+	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
 }
 
 #endif /* MCP_4822_H_ */

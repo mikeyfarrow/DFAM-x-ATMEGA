@@ -56,6 +56,18 @@
       <ToolNumber>00B028060786</ToolNumber>
       <ToolName>AVRISP mkII</ToolName>
     </com_atmel_avrdbg_tool_ispmk2>
+    <com_atmel_avrdbg_tool_simulator>
+      <ToolOptions xmlns="">
+        <InterfaceProperties>
+        </InterfaceProperties>
+        <InterfaceName>
+        </InterfaceName>
+      </ToolOptions>
+      <ToolType xmlns="">com.atmel.avrdbg.tool.simulator</ToolType>
+      <ToolNumber xmlns="">
+      </ToolNumber>
+      <ToolName xmlns="">Simulator</ToolName>
+    </com_atmel_avrdbg_tool_simulator>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <ToolchainSettings>
@@ -171,6 +183,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="debug_leds.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="digital_outputs.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="EEPROM_Writer.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="EEPROM_Writer.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="lib\MIDI.cpp">

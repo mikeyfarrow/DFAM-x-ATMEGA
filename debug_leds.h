@@ -68,7 +68,7 @@ void clear_all_LEDs()
 	PORTD &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4));
 }
 
-void init_led_io()
+void init_led_outputs()
 {
 	// all C ports are outputs
 	DDRC = 0xFF;
