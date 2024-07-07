@@ -12,7 +12,11 @@
 #include "lib/midi_Namespace.h"
 #include "lib/midi_Defs.h"
 #include "lib/MIDI.h"
-//#include "./circular_buffer.h"
+
+
+#define CPU_HZ 16000000UL
+#define USART_BAUD_RATE 31250 // MIDI Baud Rate
+#define BAUD_RATE_BYTES (((CPU_HZ / (USART_BAUD_RATE * 16UL))) - 1)
 
 #define BUFFER_MAX_SIZE 100
 
@@ -37,7 +41,7 @@ class SerialMidiTransport
 			pointed to by val_ptr and returns 1. If there is no data in the
 			buffer, then returns 0.
 	*/
-	uint8_t get(uint8_t* val_ptr)
+	uint8_t circ_buffer_get(uint8_t* val_ptr)
 	{
 		if (read_idx == write_idx)
 		{
@@ -51,13 +55,28 @@ class SerialMidiTransport
 	
 	public:
 	SerialMidiTransport() { };
+		
+	/*	init_midi_UART - Initialize the USART port
+			MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
+	*/
+	void init_midi_UART()
+	{	
+		UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
+		UBRR0L = BAUD_RATE_BYTES;
 	
-	/*
-		put - adds the item to the buffer and returns 1. If the add fails
+		UCSR0B |= (1 << TXEN0 ); // enable transmitter
+		UCSR0B |= (1 << RXEN0 ); // enable receiver
+		UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
+		UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
+	
+		DDRD |= _BV(PORTD1);
+	}
+		
+	/*	put - adds the item to the buffer and returns 1. If the add fails
 			because the buffer is full, then we do not add the item and
 			return 0
 	*/
-	uint8_t put(uint8_t item)
+	uint8_t circ_buffer_put(uint8_t item)
 	{
 		if ((write_idx + 1) % BUFFER_MAX_SIZE == read_idx)
 		{
@@ -69,6 +88,8 @@ class SerialMidiTransport
 		write_idx = (write_idx + 1) % BUFFER_MAX_SIZE;
 		return 1;
 	};
+	
+	
 
 	void begin() { };  /* UART already initialized*/          /* nothing to do */
 	void end() { };											  /* nothing to do */
@@ -79,9 +100,12 @@ class SerialMidiTransport
 		/* TODO: implement serial write (for MIDI Tx) */
 	};
 
+	/*
+		SerialMidi
+	*/
 	uint8_t read()
 	{
-		if (get(&latest_serial_byte))
+		if (circ_buffer_get(&latest_serial_byte))
 		{
 			return latest_serial_byte;
 		}
@@ -99,15 +123,3 @@ class SerialMidiTransport
 };
 
 END_MIDI_NAMESPACE
-
-#define MIDI_CREATE_INSTANCE(CableNr, Name)  \
-MIDI_NAMESPACE::SerialMidiTransport serial##Name(CableNr);\
-MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> Name((MIDI_NAMESPACE::SerialMidiTransport&)serial##Name);
-
-#define MIDI_CREATE_CUSTOM_INSTANCE(CableNr, Name, Settings)  \
-MIDI_NAMESPACE::SerialMidiTransport serial##Name(CableNr);\
-MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::usbMidiTransport, Settings> Name((MIDI_NAMESPACE::SerialMidiTransport&)serial##Name);
-
-#define MIDI_CREATE_DEFAULT_INSTANCE()  \
-MIDI_CREATE_INSTANCE(0, MIDI)
-

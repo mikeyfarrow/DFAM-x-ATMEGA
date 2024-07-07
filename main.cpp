@@ -10,7 +10,7 @@
 //		https://www.arnabkumardas.com/arduino-tutorial/usart-programming/
 //		https://ece-classes.usc.edu/ee459/library/documents/Serial_Port.pdf
 
-#define F_CPU 16000000UL // Defining the CPU Frequency
+#define F_CPU 16000000UL // 16 MHz (required by delay.h)
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -22,15 +22,11 @@
 #include "lib/midi_Defs.h"
 
 #include "./debug_leds.h"
-//#include "./rotary_encoder.h"
 #include "./midi_Events.h"
 #include "./utilities.h"
 #include "./MCP_4822.h"
 #include "./digital_outputs.h"
 #include "./EEPROM_Writer.h"
-
-#define USART_BAUD_RATE 31250 // MIDI Baud Rate
-#define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)
 
 typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
 typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
@@ -40,42 +36,7 @@ EEPROM_Writer ew = EEPROM_Writer();
 
 /* create MIDI instances */
 SerialTransport serialMIDI;
-MidiInterface MIDI((SerialTransport&) serialMIDI);
-
-//MIDI_CREATE_DEFAULT_INSTANCE();
-
-/*
-	init_midi_UART - Initialize the USART port
-		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250
-*/
-void init_midi_UART()
-{	
-	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
-	UBRR0L = BAUD_RATE_BYTES;
-	
-	UCSR0B |= (1 << TXEN0 ); // enable transmitter
-	UCSR0B |= (1 << RXEN0 ); // enable receiver
-	UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
-	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
-	
-	DDRD |= _BV(PORTD1);
-}
-
-// UART Rx interrupt
-ISR(USART_RX_vect) {
-	uint8_t latest_byte = UDR0;
-	
-	if (serialMIDI.put(latest_byte))
-	{
-		status2_green();
-	}
-	else
-	{
-		// TODO: Remove this!! this is just to detect if the buffer overflows
-		status2_red();
-		_delay_ms(1000);
-	}
-}
+MidiInterface	MIDI((SerialTransport&) serialMIDI);
 
 /*
 	serial_out - Output a byte to the USART0 port
@@ -100,7 +61,7 @@ int main()
 {
 	init_led_outputs();
 	init_digital_outputs();
-	init_midi_UART();
+	serialMIDI.init_midi_UART();
 	init_DAC_SPI();
 	init_trig_timer();
 

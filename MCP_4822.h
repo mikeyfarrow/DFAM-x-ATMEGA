@@ -10,8 +10,6 @@
 #ifndef MCP_4822_H_
 #define MCP_4822_H_
 
-#define F_CPU 16000000UL // 16 MHz (required by delay.h)
-
 #include <avr/io.h>
 #include <util/delay.h>
 #include <avr/sfr_defs.h>
