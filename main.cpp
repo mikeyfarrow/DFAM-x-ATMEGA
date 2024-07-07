@@ -49,12 +49,12 @@ void serial_out(char ch)
 
 void register_midi_callbacks()
 {
-	MIDI.setHandleNoteOn(cb_NoteOn);
-	MIDI.setHandleStart(cb_Start);
-	MIDI.setHandleStop(cb_Stop);
-	MIDI.setHandleClock(cb_Clock);
-	MIDI.setHandleContinue(cb_Continue);
-	MIDI.setHandleControlChange(cb_ControlChange);
+	MIDI.setHandleNoteOn(handleNoteOn);
+	MIDI.setHandleStart(handleStart);
+	MIDI.setHandleStop(handleStop);
+	MIDI.setHandleClock(handleClock);
+	MIDI.setHandleContinue(handleContinue);
+	MIDI.setHandleControlChange(handleCC);
 }
 
 int main()
