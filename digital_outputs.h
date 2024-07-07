@@ -29,7 +29,8 @@
 #define TRIG_OUT PORTD7
 #define VEL_OUT PORTD6
 
-volatile uint8_t TRIG_TIMER = 0;
+#define TRIG_DUR 25 // the number of times to run the interrupt for each trig
+volatile uint8_t trig_timer = 0;
 
 void init_digital_outputs()
 {
@@ -40,16 +41,13 @@ void init_digital_outputs()
 	// TODO: pull downs? ups?
 }
 
-
 /*
 	Interrupt timer for Timer0, comp A, triggered every 1ms
 	If the trigger has been high for 10 counts, then trigger is cleared
 */
 ISR(TIMER0_COMPA_vect) {
-	//PORTC ^= 0xFF;
-	
-	TRIG_TIMER++;
-	if (TRIG_TIMER >= 25)
+	trig_timer++;
+	if (trig_timer >= TRIG_DUR)
 	{
 		clear_bit(TRIG_PORT, TRIG_OUT);
 	}
@@ -75,21 +73,34 @@ void init_trig_timer()
 	sei(); // enable interrupts globally
 }
 
-
-void send_trigger()
+/*
+	trigger - sends a pulse on the trigger output lasting 
+*/
+void trigger()
 {
 	set_bit(TRIG_PORT, TRIG_OUT);
-	TRIG_TIMER = 0;
+	trig_timer = 0;
 }
 
-void send_pulse()
+/*
+	advance_clock - sends a single pulse on the ADV/CLOCK output
+*/
+void advance_clock()
 {
 	set_bit(ADV_PORT, ADV_OUT);
+	clear_bit(ADV_PORT, ADV_OUT);
 }
 
-void send_burst_of_pulses()
+
+/*
+	advance_clock - sends a number of pulses on the ADV/CLOCK output
+*/
+void advance_clock(uint8_t steps)
 {
-	
+	for (int i = 0; i < steps; i++)
+	{
+		advance_clock();
+	}
 }
 
 #endif /* DIGITAL_OUTPUTS_H_ */

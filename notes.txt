@@ -15,6 +15,28 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 	- Serial Peripheral Interface (SPI) details in datasheet
 	- TODO: does the current code block in that while loop?
 
+- Resolution
+	0000 0000 0000 ==> 0 mV
+	0000 0000 0001 ==> 1 mV
+	...
+	1111 1111 1111 ==> 4095 mV ???
+
+			MIDI
+	note	dec.	hex
+	---------------------
+	C-1	->	0	
+	C0	->	12		 
+	C1	->  24
+	...
+	C8	->  108
+	B8  ->  119
+	C9	->  120
+	G9	->  127
+
+	C-1 to B8, i.e. 0 to 119, is a
+		- 10 octave range with
+		- 120 note values
+
 - Resources:
    - https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20002249B.pdf
       - See page 28 and page 30

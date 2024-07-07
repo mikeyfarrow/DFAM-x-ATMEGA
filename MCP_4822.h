@@ -10,8 +10,6 @@
 #ifndef MCP_4822_H_
 #define MCP_4822_H_
 
-
-
 #define F_CPU 16000000UL // 16 MHz (required by delay.h)
 
 #include <avr/io.h>
@@ -40,6 +38,10 @@
 #define SPI_SPE		SPE
 #define SPI_MSTR	MSTR
 
+#define MIDI_NOTE_MIN 0
+#define MIDI_NOTE_MAX 119
+#define DAC_CAL_VALUE 34.133333d
+
 // Loop until any current SPI transmissions have completed
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
@@ -56,6 +58,23 @@ void init_DAC_SPI()
 	//  clock polarity and phase = 0, F_osc/16
 	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR );// | ( 1 << SPI_SPR0 );
 	SPI_SPSR = 1;     // set double SPI speed for F_osc/2
+}
+
+/*
+	midi_to_data - converts a MIDI note into the data bits used by the DAC
+		midi_note 0 -> C-1
+*/
+uint16_t midi_to_data(uint8_t midi_note)
+{
+	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
+	{
+		// error?
+		return 0;
+	}
+	else
+	{
+		return midi_note * DAC_CAL_VALUE; // add 0.5 ?
+	}
 }
 
 // data is between 0-4095, config bits will be added 

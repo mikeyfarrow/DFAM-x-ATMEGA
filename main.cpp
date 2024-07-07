@@ -21,6 +21,7 @@
 #include "lib/midi_Defs.h"
 
 #include "./debug_leds.h"
+//#include "./rotary_encoder.h"
 #include "./midi_Events.h"
 #include "./utilities.h"
 #include "./MCP_4822.h"
@@ -47,6 +48,8 @@ void init_midi_UART()
 	UCSR0B |= (1 << TXEN0 ); // Turn on transmitter
 	UCSR0B |= (1 << RXEN0 ); // Turn on receiver
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
+	
+	DDRD |= _BV(PORTD1);
 }
 
 /*
@@ -64,6 +67,8 @@ void register_midi_callbacks()
 	MIDI.setHandleStart(cb_Start);
 	MIDI.setHandleStop(cb_Stop);
 	MIDI.setHandleClock(cb_Clock);
+	MIDI.setHandleContinue(cb_Continue);
+	MIDI.setHandleControlChange(cb_ControlChange);
 }
 
 int main()
@@ -78,21 +83,26 @@ int main()
 	
 	clear_all_LEDs();
 	
-	send_pulse();
-	send_trigger();
+	advance_clock();
+	trigger();
 	
+	
+	
+	serial_out(0xDD);
+	serial_out(0xBB);
 
 	int idx = 0;
 	while (1)
 	{
+		
 		if	(idx % 3 == 0) { status_led_green(); }
 		else if (idx % 3 == 1) { status_led_red(); }
 		else { status_led_off(); }
 		
+		//serial_out(0xBE);
+		//serial_out(0xEF);
 		MIDI.read(); // check for new message without blocking
 		
-		output_dac(0, 4095);
-		output_dac(1, 4095);
 		
 		idx = (idx + 1) % 3;
 	}

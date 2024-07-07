@@ -7,8 +7,8 @@
 
 #define LED_A1 PORTC0
 #define LED_A2 PORTC1
-#define LED_A3 PORTC2
-#define LED_A4 PORTC3
+#define LED_A3 PORTC0
+#define LED_A4 PORTC1
 #define BANK_A_PORT PORTC
 
 #define BILED_R PORTC4
