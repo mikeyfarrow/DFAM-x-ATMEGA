@@ -21,35 +21,51 @@
 
 /* Data Direction bits */
 #define DD_ADV DDB0
-#define DD_TRIG DDD7
-#define DD_VEL DDD6
+#define DD_TRIGA DDD7
+#define DD_VELA DDD6
+#define DD_TRIGB DDD4
+#define DD_VELB DDD3
 
 /* Pins for writing output */
 #define ADV_OUT PORTB0
-#define TRIG_OUT PORTD7
-#define VEL_OUT PORTD6
+#define TRIG_A_OUT PORTD7
+#define VEL_A_OUT PORTD6
+
+#define TRIG_B_OUT PORTD4
+#define VEL_B_OUT PORTD3
 
 #define TRIG_DUR 25 // the number of times to run the interrupt for each trig
-volatile uint8_t trig_timer = 0;
+
+volatile uint8_t trig_A_timer = 0;
+volatile uint8_t trig_B_timer = 0;
 
 void init_digital_outputs()
 {
 	DDR_ADV |= (1<<DD_ADV);
-	DDR_TRIG |= (1<<DD_TRIG);
-	DDR_VEL |= (1<<DD_VEL);
+	
+	DDR_TRIG |= (1<<DD_TRIGA);
+	DDR_VEL |= (1<<DD_VELA);
+	
+	DDR_TRIG |= (1<<DD_TRIGB);
+	DDR_VEL |= (1<<DD_VELB);
 	
 	// TODO: pull downs? ups?
 }
 
 /*
 	Interrupt timer for Timer0, comp A, triggered every 1ms
-	If the trigger has been high for 10 counts, then trigger is cleared
+	If the trigger has been high for TRIG_DUR, then trigger is cleared
 */
 ISR(TIMER0_COMPA_vect) {
-	trig_timer++;
-	if (trig_timer >= TRIG_DUR)
+	trig_A_timer++;
+	trig_B_timer++;
+	if (trig_A_timer >= TRIG_DUR)
 	{
-		clear_bit(TRIG_PORT, TRIG_OUT);
+		clear_bit(TRIG_PORT, TRIG_A_OUT);
+	}
+	if (trig_B_timer >= TRIG_DUR)
+	{
+		clear_bit(TRIG_PORT, TRIG_B_OUT);
 	}
 }
 
@@ -74,12 +90,20 @@ void init_trig_timer()
 }
 
 /*
-	trigger - sends a pulse on the trigger output lasting 
+	trigger_A - sends a pulse on the trigger A output 
 */
-void trigger()
+void trigger_A()
 {
-	set_bit(TRIG_PORT, TRIG_OUT);
-	trig_timer = 0;
+	set_bit(TRIG_PORT, TRIG_A_OUT);
+	trig_A_timer = 0;
+}
+/*
+	trigger_A - sends a pulse on the trigger A output lasting 
+*/
+void trigger_B()
+{
+	set_bit(TRIG_PORT, TRIG_B_OUT);
+	trig_B_timer = 0;
 }
 
 /*

@@ -5,76 +5,59 @@
 #include <avr/io.h>
 #include "utilities.h"
 
-#define LED_A1 PORTC0
-#define LED_A2 PORTC1
-#define LED_A3 PORTC0
-#define LED_A4 PORTC1
-#define BANK_A_PORT PORTC
+#define LED1 PORTC0
+#define LED2 PORTC1
+#define LED3 PORTC2
+#define LED4 PORTC3
+#define LED_BANK_PORT PORTC
 
-#define BILED_R PORTC4
-#define BILED_G PORTC5
-#define BILED_PORT PORTC
+#define BILED1_R PORTC4
+#define BILED1_G PORTC5
+#define BILED1_PORT PORTC
 
+#define BILED2_R PORTD2
+#define BILED2_G PORTD5
+#define BILED2_PORT PORTD
 
-#define LED_B1 PORTD2
-#define LED_B2 PORTD3
-#define LED_B3 PORTD4
-#define LED_B4 PORTD5
-#define BANK_B_PORT PORTD
+uint8_t LED_BANK[4] = { LED1, LED2, LED3, LED4 };
 
+#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4)
+#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4))
+#define bank(i)			set_bit(LED_BANK_PORT, LED_BANK[i])
+#define bank_off(i)		clear_bit(LED_BANK_PORT, LED_BANK[i]) 
 
-uint8_t BANK_A_LEDS[4] = {LED_A1, LED_A2, LED_A3, LED_A4};
-uint8_t BANK_B_LEDS[4] = {LED_B1, LED_B2, LED_B3, LED_B4};
-
-#define bank_A_on()		BANK_A_PORT |= (1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4)
-#define bank_A_off()	BANK_A_PORT &= ~((1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4))
-#define bank_A(i)		set_bit(BANK_A_PORT, BANK_A_LEDS[i])
-
-
-#define bank_B_on()		BANK_B_PORT |= (1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4)
-#define bank_B_off()	BANK_B_PORT &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4))
-#define bank_B(i)		set_bit(BANK_B_PORT, BANK_B_LEDS[i])
-
-
-void status_led_red()
-{
-	set_bit(PORTC, PORTC4);
-	clear_bit(PORTC, PORTC5);
-}
-
-void status_led_green()
-{
-	clear_bit(PORTC, PORTC4);
-	set_bit(PORTC, PORTC5);
-}
-
-void status_led_off()
-{
-	clear_bit(PORTC, PORTC4);
-	clear_bit(PORTC, PORTC5);
-}
-
+#define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
+						clear_bit(BILED1_PORT, BILED1_G);	
+#define status1_green()   set_bit(BILED1_PORT, BILED1_G); \
+						  clear_bit(BILED1_PORT, BILED1_R);
+#define status1_off()   clear_bit(BILED1_PORT, BILED1_G); \
+						clear_bit(BILED1_PORT, BILED1_R);
+						
+#define status2_red()   set_bit(BILED2_PORT, BILED2_R); \
+						clear_bit(BILED2_PORT, BILED2_G);	
+#define status2_green()   set_bit(BILED2_PORT, BILED2_G); \
+						  clear_bit(BILED2_PORT, BILED2_R);
+#define status2_off()   clear_bit(BILED2_PORT, BILED2_G); \
+						clear_bit(BILED2_PORT, BILED2_R);
+						
 void set_all_LEDs()
 {
-	status_led_green();
-	PORTC |= (1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4);
-	PORTD |= (1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4);
+	status1_green();
+	status2_green();
+	set_bank();
 }
 
 void clear_all_LEDs()
 {
-	status_led_off();
-	PORTC &= ~((1<<LED_A1) | (1<<LED_A2) | (1<<LED_A3) | (1<<LED_A4));
-	PORTD &= ~((1<<LED_B1) | (1<<LED_B2) | (1<<LED_B3) | (1<<LED_B4));
+	status1_off();
+	status2_off();
+	clear_bank();
 }
 
 void init_led_outputs()
 {
-	// all C ports are outputs
-	DDRC = 0xFF;
-	
-	// D2 - D5 are outputs
-	DDRD |= (1<<DDD2) | (1<<DDD3) | (1<<DDD4) | (1<<DDD5);
+	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC3) | _BV(DDC4) | _BV(DDC5);
+	DDRD |= _BV(DDD2) | _BV(DDD5);
 	
 	set_all_LEDs();
 }

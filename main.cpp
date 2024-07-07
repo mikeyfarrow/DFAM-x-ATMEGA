@@ -80,29 +80,17 @@ int main()
 	init_trig_timer();
 
 	register_midi_callbacks();
-	
 	clear_all_LEDs();
 	
-	advance_clock();
-	trigger();
-	
-	
-	
-	serial_out(0xDD);
-	serial_out(0xBB);
-
 	int idx = 0;
 	while (1)
 	{
 		
-		if	(idx % 3 == 0) { status_led_green(); }
-		else if (idx % 3 == 1) { status_led_red(); }
-		else { status_led_off(); }
+		if	(idx % 3 == 0) { status1_green(); }
+		else if (idx % 3 == 1) { status1_red(); }
+		else { status1_off(); }
 		
-		//serial_out(0xBE);
-		//serial_out(0xEF);
 		MIDI.read(); // check for new message without blocking
-		
 		
 		idx = (idx + 1) % 3;
 	}

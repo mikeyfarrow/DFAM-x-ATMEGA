@@ -16,14 +16,16 @@
 #include "./MCP_4822.h"
 #include "./digital_outputs.h"
 
-#define MIDI_CH_A 0 // midi channel 1
-#define MIDI_CH_B 1 // midi channel 2
+#define Channel_T MIDI_NAMESPACE::Channel
+#define MIDI_CH_VOCT_A 1 // channel converted to v/oct on the primary cv out
+#define MIDI_CH_VOCT_B 2 // channel converted to v/oct on the secondary cv out
+#define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" mode
 
 /**************************/
 /**** Global CONSTANTS ****/
 #define NUM_STEPS 8
 #define PPQN 24
-
+#define MIDI_ROOT_NOTE 48  // an octave below middle C
 
 /**************************/
 /**** Global VARIABLES ****/
@@ -37,7 +39,8 @@ uint8_t MIDI_CHAN_DFAM = 1; // MIDI channel for playing DFAM in "8-voice mono-sy
 uint8_t SWITCH_STATE = 0;
 
 
-#define Channel_T MIDI_NAMESPACE::Channel
+uint8_t KEYBOARD[8] = {MIDI_ROOT_NOTE,	MIDI_ROOT_NOTE+1,	MIDI_ROOT_NOTE+2,	MIDI_ROOT_NOTE+3,
+					 MIDI_ROOT_NOTE+4,	MIDI_ROOT_NOTE+5,	MIDI_ROOT_NOTE+6,	MIDI_ROOT_NOTE+7};
 
 /************************************************************************/
 /*			  HELPER FUNCTIONS                                          */
@@ -49,14 +52,26 @@ uint8_t SWITCH_STATE = 0;
  */
 uint8_t steps_between(int start, int end)
 {
-   if (start == 0 || start == end)
-      return NUM_STEPS - 1;
+	if (start == 0 || start == end)
+		return NUM_STEPS - 1;
 
-   int steps_left = end - start - 1;
-   if (end < start)
-      steps_left += NUM_STEPS;
+	int steps_left = end - start - 1;
+	if (end < start)
+		steps_left += NUM_STEPS;
+	
+	return steps_left;
+}
 
-   return steps_left;
+/*
+	midi_note_to_step - used in "8-voice monosynth" mode to determine how
+		many steps to advance to get to the chosen note
+*/
+uint8_t midi_note_to_step(uint8_t note) {
+	for (int i = 0; i < NUM_STEPS; i++) {
+		if (note == KEYBOARD[i])
+		return i + 1;
+	}
+	return false;
 }
 
 /************************************************************************/
@@ -70,24 +85,46 @@ void cb_ControlChange(Channel_T channel, byte cc_num, byte cc_val )
 			break;
 		
 		default:
-			advance_clock(7);
 			break;
 	}
 }
 
-
-// TODO: figure out midi channel and do both DACs
-void cb_NoteOn(MIDI_NAMESPACE::Channel channel, byte pitch, byte velocity)
+void cb_NoteOn(Channel_T channel, byte pitch, byte velocity)
 {
-	
-	
-	
-	
-	
-	trigger();
-	output_dac(0, midi_to_data(pitch));
-	
-	set_all_LEDs();
+	switch(channel)
+	{
+		case MIDI_CH_VOCT_A:
+			output_dac(0, midi_to_data(pitch));
+			trigger_A();
+			// TODO: velocity
+			break;
+		
+		case MIDI_CH_VOCT_B:
+			output_dac(1, midi_to_data(pitch));
+			trigger_B();
+			// TODO: velocity
+			break;
+		
+		case MIDI_CH_KBRD_MODE:
+			if (!SWITCH_STATE) // We are in keyboard-controlled sequencer mode
+			{
+				uint8_t dfam_step = midi_note_to_step(pitch);
+				if (dfam_step) {
+					int steps_left = steps_between(CUR_DFAM_STEP, dfam_step) + 1;
+
+					// send the velocity
+					//analogWrite(PIN_VEL, velocity);
+
+					// advance the DFAM's sequencer and then trigger the step
+					advance_clock(steps_left);
+					CUR_DFAM_STEP = dfam_step;
+				}
+			}
+			break;
+		
+		default:
+			break;
+	}	
 }
 
 /*
@@ -96,7 +133,6 @@ void cb_NoteOn(MIDI_NAMESPACE::Channel channel, byte pitch, byte velocity)
 void cb_Start()
 {
 	clear_all_LEDs();
-	bank_B_on();
 	
 	uint8_t steps_left = steps_between(CUR_DFAM_STEP, 1);
 	advance_clock(steps_left);
@@ -108,7 +144,6 @@ void cb_Start()
 void cb_Stop()
 {
 	clear_all_LEDs();
-	bank_B_off();
 	
 	if (!FOLLOW_MIDI_CLOCK)
 	{
