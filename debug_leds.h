@@ -23,8 +23,6 @@ uint8_t LED_BANK[4] = { LED1, LED2, LED3, LED4 };
 
 #define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4)
 #define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4))
-#define bank(i)			set_bit(LED_BANK_PORT, LED_BANK[i])
-#define bank_off(i)		clear_bit(LED_BANK_PORT, LED_BANK[i]) 
 
 #define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
 						clear_bit(BILED1_PORT, BILED1_G);	
@@ -52,6 +50,14 @@ void clear_all_LEDs()
 	status1_off();
 	status2_off();
 	clear_bank();
+}
+
+void bank(uint8_t i) {
+	set_bit(LED_BANK_PORT, LED_BANK[i]);
+}
+
+void bank_off(uint8_t i) {
+	clear_bit(LED_BANK_PORT, LED_BANK[i]);
 }
 
 void init_led_outputs()

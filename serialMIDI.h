@@ -12,8 +12,12 @@
 #include "lib/midi_Namespace.h"
 #include "lib/midi_Defs.h"
 #include "lib/MIDI.h"
+//#include "./circular_buffer.h"
+
+#define BUFFER_MAX_SIZE 100
 
 BEGIN_MIDI_NAMESPACE
+
 
 struct DefaultSerialSettings
 {
@@ -23,16 +27,47 @@ struct DefaultSerialSettings
 class SerialMidiTransport
 {
 	private:
-	uint16_t count;
-	uint8_t is_ready;
-	uint8_t latest_serial_byte;
+	uint8_t latest_serial_byte = MidiType::InvalidType;
+	uint8_t midi_rx_buffer[BUFFER_MAX_SIZE];
+	uint8_t write_idx = 0;
+	uint8_t read_idx = 0;
+	
+	/*
+		get - if there is a value in the buffer, it is saved to the address
+			pointed to by val_ptr and returns 1. If there is no data in the
+			buffer, then returns 0.
+	*/
+	uint8_t get(uint8_t* val_ptr)
+	{
+		if (read_idx == write_idx)
+		{
+			return 0; // buffer is empty
+		}
+		
+		*val_ptr = midi_rx_buffer[read_idx];
+		read_idx = (read_idx + 1) % BUFFER_MAX_SIZE;
+		return 1;
+	};
 	
 	public:
-	SerialMidiTransport(uint8_t cableNumber = 0)
+	SerialMidiTransport() { };
+	
+	/*
+		put - adds the item to the buffer and returns 1. If the add fails
+			because the buffer is full, then we do not add the item and
+			return 0
+	*/
+	uint8_t put(uint8_t item)
 	{
-		count = 0;
-		is_ready = false;
-		latest_serial_byte = MidiType::InvalidType;
+		if ((write_idx + 1) % BUFFER_MAX_SIZE == read_idx)
+		{
+			// buffer is full, avoid overflow
+			return 0;
+		}
+		
+		midi_rx_buffer[write_idx] = item;
+		write_idx = (write_idx + 1) % BUFFER_MAX_SIZE;
+		return 1;
 	};
 
 	void begin() { };  /* UART already initialized*/          /* nothing to do */
@@ -46,26 +81,20 @@ class SerialMidiTransport
 
 	uint8_t read()
 	{
-		if (!is_ready) 
+		if (get(&latest_serial_byte))
 		{
-			return MidiType::InvalidType;
+			return latest_serial_byte;
 		}
 		else
 		{
-			is_ready = false; // only allow one read
-			return latest_serial_byte;
+			// the buffer must have been empty
+			return MidiType::InvalidType;
 		}
 	};
 
 	unsigned available()
 	{
-		if ( !( UCSR0A & (1 << RXC0 )) ) return 0;
-		
-		latest_serial_byte = UDR0;
-		eeprom_write_byte((uint8_t*)count, latest_serial_byte);
-		count++;
-		is_ready = true;
-		return 1; // TODO: maybe include a buffer for incoming messages
+		return read_idx != write_idx; // return the difference maybe??
 	};
 };
 

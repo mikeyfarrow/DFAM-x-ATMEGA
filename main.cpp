@@ -16,6 +16,7 @@
 #include <avr/interrupt.h>
 #include <avr/sfr_defs.h>
 #include <avr/eeprom.h>
+#include <util/delay.h>
 
 #include "lib/MIDI.h"
 #include "lib/midi_Defs.h"
@@ -31,13 +32,20 @@
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
 #define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)
 
-uint16_t eep_idx = 0;
+typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
+typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
 
-MIDI_CREATE_DEFAULT_INSTANCE();
+/* for debugging */
 EEPROM_Writer ew = EEPROM_Writer();
 
+/* create MIDI instances */
+SerialTransport serialMIDI;
+MidiInterface MIDI((SerialTransport&) serialMIDI);
+
+//MIDI_CREATE_DEFAULT_INSTANCE();
+
 /*
-	serial_init - Initialize the USART port
+	init_midi_UART - Initialize the USART port
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250
 */
 void init_midi_UART()
@@ -45,11 +53,28 @@ void init_midi_UART()
 	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
 	UBRR0L = BAUD_RATE_BYTES;
 	
-	UCSR0B |= (1 << TXEN0 ); // Turn on transmitter
-	UCSR0B |= (1 << RXEN0 ); // Turn on receiver
+	UCSR0B |= (1 << TXEN0 ); // enable transmitter
+	UCSR0B |= (1 << RXEN0 ); // enable receiver
+	UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 	
 	DDRD |= _BV(PORTD1);
+}
+
+// UART Rx interrupt
+ISR(USART_RX_vect) {
+	uint8_t latest_byte = UDR0;
+	
+	if (serialMIDI.put(latest_byte))
+	{
+		status2_green();
+	}
+	else
+	{
+		// TODO: Remove this!! this is just to detect if the buffer overflows
+		status2_red();
+		_delay_ms(1000);
+	}
 }
 
 /*

@@ -194,9 +194,6 @@
     <Compile Include="EEPROM_Writer.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="circular_buffer.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="lib\MIDI.cpp">
       <SubType>compile</SubType>
     </Compile>
