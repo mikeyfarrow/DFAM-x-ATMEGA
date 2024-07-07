@@ -34,7 +34,7 @@
 #define TRIG_B_OUT PORTD4
 #define VEL_B_OUT PORTD3
 
-#define TRIG_DUR 25 // the number of times to run the interrupt for each trig
+#define TRIG_DUR 2 // the number of times to run the interrupt for each trig
 
 volatile uint8_t trig_A_timer = 0;
 volatile uint8_t trig_B_timer = 0;
