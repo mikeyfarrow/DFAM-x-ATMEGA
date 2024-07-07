@@ -38,6 +38,25 @@ EEPROM_Writer ew = EEPROM_Writer();
 SerialTransport serialMIDI;
 MidiInterface	MIDI((SerialTransport&) serialMIDI);
 
+
+/********************************************/
+/*         MIDI Rx INTERRUPT                */
+/********************************************/
+ISR(USART_RX_vect) {
+	uint8_t latest_byte = UDR0;
+	
+	if (serialMIDI.circ_buffer_put(latest_byte))
+	{
+		status2_green();
+	}
+	else
+	{
+		// TODO: Remove this!! this is just to detect if the buffer overflows
+		status2_red();
+		_delay_ms(1000);
+	}
+}
+
 /*
 	serial_out - Output a byte to the USART0 port
 */

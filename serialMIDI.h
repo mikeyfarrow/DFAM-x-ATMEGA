@@ -17,7 +17,6 @@
 #define CPU_HZ 16000000UL
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
 #define BAUD_RATE_BYTES (((CPU_HZ / (USART_BAUD_RATE * 16UL))) - 1)
-
 #define BUFFER_MAX_SIZE 100
 
 BEGIN_MIDI_NAMESPACE
@@ -25,7 +24,7 @@ BEGIN_MIDI_NAMESPACE
 
 struct DefaultSerialSettings
 {
-	static const long BaudRate = 31250;
+	static const long BaudRate = USART_BAUD_RATE;
 };
 
 class SerialMidiTransport
