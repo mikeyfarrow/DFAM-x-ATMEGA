@@ -77,7 +77,7 @@ uint8_t midi_note_to_step(uint8_t note) {
 /************************************************************************/
 /*			  EVENT HANDLERS                                            */
 /************************************************************************/
-void cb_ControlChange(Channel_T channel, byte cc_num, byte cc_val )
+void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
 	{
@@ -89,7 +89,7 @@ void cb_ControlChange(Channel_T channel, byte cc_num, byte cc_val )
 	}
 }
 
-void cb_NoteOn(Channel_T channel, byte pitch, byte velocity)
+void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 {
 	switch(channel)
 	{
@@ -130,7 +130,7 @@ void cb_NoteOn(Channel_T channel, byte pitch, byte velocity)
 /*
 	cb_Start - handles beginning a sequence
 */
-void cb_Start()
+void handleStart()
 {
 	clear_all_LEDs();
 	
@@ -141,7 +141,7 @@ void cb_Start()
 	CUR_DFAM_STEP = 0;
 }
 
-void cb_Stop()
+void handleStop()
 {
 	clear_all_LEDs();
 	
@@ -161,7 +161,7 @@ void cb_Stop()
 /*
 	cb_Clock - 
 */
-void cb_Clock()
+void handleClock()
 {
 	if (FOLLOW_MIDI_CLOCK && SWITCH_STATE)
 	{
@@ -179,7 +179,7 @@ void cb_Clock()
 /*
 	cb_Continue - 
 */
-void cb_Continue()
+void handleContinue()
 {   
 	FOLLOW_MIDI_CLOCK = true;
 }
