@@ -82,8 +82,6 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 	switch (cc_num)
 	{
 		case MIDI_NAMESPACE::ModulationWheel:
-			OCR0A = cc_val << 1;
-			OCR0B = cc_val << 1;
 			break;
 		
 		default:
@@ -136,13 +134,14 @@ void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 */
 void handleStart()
 {
-	clear_all_LEDs();
-	
-	uint8_t steps_left = steps_between(CUR_DFAM_STEP, 1);
-	advance_clock(steps_left);
-	FOLLOW_MIDI_CLOCK = true;
-	CLOCK_COUNT = 0;
-	CUR_DFAM_STEP = 0;
+	if (SWITCH_STATE)
+	{
+		uint8_t steps_left = steps_between(CUR_DFAM_STEP, 1);
+		advance_clock(steps_left);
+		FOLLOW_MIDI_CLOCK = true;
+		CLOCK_COUNT = 0;
+		CUR_DFAM_STEP = 0;
+	}
 }
 
 void handleStop()
@@ -155,7 +154,7 @@ void handleStop()
 		// if we get a STOP when it is already stopped
 		// give the DFAM sequencer a chance to re-sync
 		
-		//CUR_DFAM_STEP = digitalRead(PIN_SWITCH) ? 0 : 1;
+		CUR_DFAM_STEP = bit_is_set(PINC, PINC3) ? 0 : 1;
 		CUR_DFAM_STEP = 1;
 	}
 

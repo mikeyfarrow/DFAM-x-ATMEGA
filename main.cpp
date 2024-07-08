@@ -27,8 +27,8 @@
 typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
 typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
 
-#define TRIG_DUR 2 // the number of times to run the interrupt for each trig
-#define SWITCH_DEBOUNCE_DUR 20
+#define TRIG_DUR 2				// count of Timer1 interrupts per trigger
+#define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 
 /* for debugging */
 EEPROM_Writer ew = EEPROM_Writer();
@@ -155,8 +155,8 @@ void init_timer_interrupts()
 	DDRD |= (1 << DDD6) | (1<<DDD5);		// PD6 & PD5 is now an output
 	TCCR0A |= (1 << COM0A1) | (1<<COM0B1);	// set none-inverted mode for both output compares
     TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
-    OCR0A = 0xFF;							// pwm out #1 duty cycle
-    OCR0B = 0xFF;							// pwm out #2 duty cycle
+    OCR0A = 0x00;							// pwm out #1 duty cycle 0 
+    OCR0B = 0x00;							// pwm out #2 duty cycle 0
     TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
 	
 	

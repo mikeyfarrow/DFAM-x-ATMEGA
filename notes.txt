@@ -40,3 +40,43 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 - Resources:
    - https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20002249B.pdf
       - See page 28 and page 30
+	  
+############################
+### MODES:
+
+- KCS (keyboard controlling sequencer)
+- CCS (clock controlling sequencer)
+
+
+
+############################
+### TESTING SCENARIOS
+
+- Full range tuning calibration test (with Dixie II+)
+- Verify that trigger outs A and B are perfectly synchronized
+- Test out the sensitivity of Velocity outputs (and make it tunable?)
+
+
+
+############################
+### TO INVESTIGATE: 
+
+- Mode switch sometimes does not update the LED?
+- Is 7.2kHz a good PWM frequency?
+
+
+
+############################
+### COOL FEATURES
+
+- MIDI spread mode for Rings
+- Monophonic note order policies
+
+
+############################
+### SETTINGS/CONFIG
+
+- Midi channels: one for outA, one for outB, one for keyboard mode
+- Velocity sensitivity?
+- MIDI root note?
+- Note mapping for KCS mode
