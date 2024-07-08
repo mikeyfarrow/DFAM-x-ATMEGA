@@ -7,7 +7,7 @@
 
 #define LED1 PORTC0
 #define LED2 PORTC1
-//#define LED3 PORTC2
+#define LED3 PORTC2
 //#define LED4 PORTC3
 #define LED_BANK_PORT PORTC
 
@@ -19,10 +19,10 @@
 #define BILED2_G PORTD5
 #define BILED2_PORT PORTD
 
-uint8_t LED_BANK[2] = { LED1, LED2 /*, LED3, LED4 */};
+uint8_t LED_BANK[3] = { LED1, LED2, LED3/*, LED4 */};
 
 #define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) /*| (1<<LED3) | (1<<LED4) */
-#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2))/* | (1<<LED3) | (1<<LED4))*/
+#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))/*  | (1<<LED4))*/
 
 #define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
 						clear_bit(BILED1_PORT, BILED1_G);	

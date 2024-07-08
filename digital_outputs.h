@@ -69,26 +69,6 @@ ISR(TIMER0_COMPA_vect) {
 	}
 }
 
-
-void init_trig_timer()
-{
-	cli(); // disable interrupts globally
-	
-	/**************************************/
-	/*********   TIMER 0 config   *********/
-	/**************************************/
-	TCCR0A = 0; // clear timer registers
-	TCCR0B = 0;
-	TCNT0 = 0;
-
-	OCR0A = 249; // 1000 Hz ==> (16,000,000  /((249+1) * 64))
-	TCCR0A |= (1 << WGM01); // CTC
-	TCCR0B |= (1 << CS01) | (1 << CS00); // Prescaler 64
-	TIMSK0 |= (1 << OCIE0A); // Output Compare Match A Interrupt Enable
-	
-	sei(); // enable interrupts globally
-}
-
 /*
 	trigger_A - sends a pulse on the trigger A output 
 */

@@ -36,7 +36,7 @@ uint8_t CLOCK_DIV = 4;
 uint8_t PULSES_PER_STEP = PPQN / CLOCK_DIV;
 uint8_t MIDI_CHAN_DFAM = 1; // MIDI channel for playing DFAM in "8-voice mono-synth" mode
 
-uint8_t SWITCH_STATE = 0;
+uint8_t SWITCH_STATE = -1; // overflow initially so that state is always updated on start up
 
 
 uint8_t KEYBOARD[8] = {MIDI_ROOT_NOTE,	MIDI_ROOT_NOTE+1,	MIDI_ROOT_NOTE+2,	MIDI_ROOT_NOTE+3,
