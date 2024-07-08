@@ -15,26 +15,13 @@
 #include <avr/sfr_defs.h>
 #include <avr/eeprom.h>
 
-#define DAC_CS_PORT PORTB
-#define DAC_CS PB2
+#include "GPIO.h"
 
 #define MCP4822_ABSEL 7
 #define MCP4822_IGN 6
 #define MCP4822_GAIN 5
 #define MCP4822_SHDN 4
 
-// SPI Definitions
-#define SPI_DDR		DDRB
-#define SPI_MISO	PORTB4
-#define SPI_MOSI	PORTB3
-#define SPI_SCK		PORTB5
-#define SPI_SS		PORTB2
-
-#define SPI_SPCR	SPCR
-#define SPI_SPSR	SPSR
-#define SPI_SPIF	SPIF
-#define SPI_SPE		SPE
-#define SPI_MSTR	MSTR
 
 #define MIDI_NOTE_MIN 0
 #define MIDI_NOTE_MAX 119
@@ -49,6 +36,7 @@ void init_DAC_SPI()
 	// make the MOSI, SCK, and SS pins outputs
 	SPI_DDR |= ( 1 << SPI_MOSI ) | ( 1 << SPI_SCK ) | ( 1 << SPI_SS );
 
+	// TODO: no it is not, not used by DAC
 	// make sure the MISO pin is input
 	SPI_DDR &= ~( 1 << SPI_MISO );
 

@@ -194,6 +194,9 @@
     <Compile Include="EEPROM_Writer.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="GPIO.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="lib\MIDI.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -225,9 +228,6 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="midi_Events.h">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="rotary_encoder.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="serialMIDI.h">

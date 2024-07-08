@@ -8,31 +8,7 @@
 #ifndef DIGITAL_OUTPUTS_H_
 #define DIGITAL_OUTPUTS_H_
 
-
-/* Port Registers */
-#define ADV_PORT PORTB
-#define TRIG_PORT PORTD
-#define VEL_PORT PORTD
-
-/* Data Direction Registers */
-#define DDR_ADV DDRB
-#define DDR_TRIG DDRD
-#define DDR_VEL DDRD
-
-/* Data Direction bits */
-#define DD_ADV DDB0
-#define DD_TRIGA DDD7
-#define DD_VELA DDD6
-#define DD_TRIGB DDD4
-#define DD_VELB DDD5
-
-/* Pins for writing output */
-#define ADV_OUT PORTB0
-#define TRIG_A_OUT PORTD7
-#define VEL_A_OUT PORTD6
-
-#define TRIG_B_OUT PORTD4
-#define VEL_B_OUT PORTD3
+#include "./GPIO.h"
 
 volatile uint8_t trig_A_ticks = 0;
 volatile uint8_t trig_B_ticks = 0;

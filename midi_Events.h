@@ -15,6 +15,7 @@
 #include "./debug_leds.h"
 #include "./MCP_4822.h"
 #include "./digital_outputs.h"
+#include "./GPIO.h"
 
 #define Channel_T MIDI_NAMESPACE::Channel
 #define MIDI_CH_VOCT_A 1 // channel converted to v/oct on the primary cv out
@@ -37,7 +38,6 @@ uint8_t PULSES_PER_STEP = PPQN / CLOCK_DIV;
 uint8_t MIDI_CHAN_DFAM = 1; // MIDI channel for playing DFAM in "8-voice mono-synth" mode
 
 uint8_t SWITCH_STATE = -1; // overflow initially so that state is always updated on start up
-
 
 uint8_t KEYBOARD[8] = {MIDI_ROOT_NOTE,	MIDI_ROOT_NOTE+1,	MIDI_ROOT_NOTE+2,	MIDI_ROOT_NOTE+3,
 					 MIDI_ROOT_NOTE+4,	MIDI_ROOT_NOTE+5,	MIDI_ROOT_NOTE+6,	MIDI_ROOT_NOTE+7};
@@ -96,15 +96,13 @@ void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 		case MIDI_CH_VOCT_A:
 			output_dac(0, midi_to_data(pitch));
 			trigger_A();
-			// TODO: velocity
-			OCR0A = velocity << 1;
+			VEL_A_DUTY = velocity << 1;
 			break;
 		
 		case MIDI_CH_VOCT_B:
 			output_dac(1, midi_to_data(pitch));
 			trigger_B();
-			// TODO: velocity
-			OCR0B = velocity << 1;
+			VEL_B_DUTY = velocity << 1;
 			break;
 		
 		case MIDI_CH_KBRD_MODE:

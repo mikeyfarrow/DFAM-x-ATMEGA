@@ -4,25 +4,14 @@
 
 #include <avr/io.h>
 #include "utilities.h"
+#include "GPIO.h"
 
-#define LED1 PORTC0
-#define LED2 PORTC1
-#define LED3 PORTC2
-//#define LED4 PORTC3
-#define LED_BANK_PORT PORTC
 
-#define BILED1_R PORTC4
-#define BILED1_G PORTC5
-#define BILED1_PORT PORTC
 
-#define BILED2_R PORTD2
-#define BILED2_G PORTD3
-#define BILED2_PORT PORTD
+uint8_t LED_BANK[3] = { LED1, LED2, LED3 };
 
-uint8_t LED_BANK[3] = { LED1, LED2, LED3/*, LED4 */};
-
-#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) /*| (1<<LED3) | (1<<LED4) */
-#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))/*  | (1<<LED4))*/
+#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2)
+#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))
 
 #define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
 						clear_bit(BILED1_PORT, BILED1_G);	
