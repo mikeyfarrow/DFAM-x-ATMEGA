@@ -82,6 +82,8 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 	switch (cc_num)
 	{
 		case MIDI_NAMESPACE::ModulationWheel:
+			OCR0A = cc_val << 1;
+			OCR0B = cc_val << 1;
 			break;
 		
 		default:
@@ -97,12 +99,14 @@ void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 			output_dac(0, midi_to_data(pitch));
 			trigger_A();
 			// TODO: velocity
+			OCR0A = velocity << 1;
 			break;
 		
 		case MIDI_CH_VOCT_B:
 			output_dac(1, midi_to_data(pitch));
 			trigger_B();
 			// TODO: velocity
+			OCR0B = velocity << 1;
 			break;
 		
 		case MIDI_CH_KBRD_MODE:

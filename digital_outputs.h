@@ -24,7 +24,7 @@
 #define DD_TRIGA DDD7
 #define DD_VELA DDD6
 #define DD_TRIGB DDD4
-#define DD_VELB DDD3
+#define DD_VELB DDD5
 
 /* Pins for writing output */
 #define ADV_OUT PORTB0
@@ -34,10 +34,8 @@
 #define TRIG_B_OUT PORTD4
 #define VEL_B_OUT PORTD3
 
-#define TRIG_DUR 2 // the number of times to run the interrupt for each trig
-
-volatile uint8_t trig_A_timer = 0;
-volatile uint8_t trig_B_timer = 0;
+volatile uint8_t trig_A_ticks = 0;
+volatile uint8_t trig_B_ticks = 0;
 
 void init_digital_outputs()
 {
@@ -53,29 +51,12 @@ void init_digital_outputs()
 }
 
 /*
-	Interrupt timer for Timer0, comp A, triggered every 1ms
-	If the trigger has been high for TRIG_DUR, then trigger is cleared
-*/
-ISR(TIMER0_COMPA_vect) {
-	trig_A_timer++;
-	trig_B_timer++;
-	if (trig_A_timer >= TRIG_DUR)
-	{
-		clear_bit(TRIG_PORT, TRIG_A_OUT);
-	}
-	if (trig_B_timer >= TRIG_DUR)
-	{
-		clear_bit(TRIG_PORT, TRIG_B_OUT);
-	}
-}
-
-/*
 	trigger_A - sends a pulse on the trigger A output 
 */
 void trigger_A()
 {
 	set_bit(TRIG_PORT, TRIG_A_OUT);
-	trig_A_timer = 0;
+	trig_A_ticks = 0;
 }
 /*
 	trigger_A - sends a pulse on the trigger A output lasting 
@@ -83,7 +64,7 @@ void trigger_A()
 void trigger_B()
 {
 	set_bit(TRIG_PORT, TRIG_B_OUT);
-	trig_B_timer = 0;
+	trig_B_ticks = 0;
 }
 
 /*

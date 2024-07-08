@@ -16,7 +16,7 @@
 #define BILED1_PORT PORTC
 
 #define BILED2_R PORTD2
-#define BILED2_G PORTD5
+#define BILED2_G PORTD3
 #define BILED2_PORT PORTD
 
 uint8_t LED_BANK[3] = { LED1, LED2, LED3/*, LED4 */};
@@ -62,8 +62,8 @@ void bank_off(uint8_t i) {
 
 void init_led_outputs()
 {
-	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC3) | _BV(DDC4) | _BV(DDC5);
-	DDRD |= _BV(DDD2) | _BV(DDD5);
+	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
+	DDRD |= _BV(DDD2) | _BV(DDD3);
 	
 	set_all_LEDs();
 }

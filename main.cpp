@@ -27,12 +27,17 @@
 typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
 typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
 
+#define TRIG_DUR 2 // the number of times to run the interrupt for each trig
+#define SWITCH_DEBOUNCE_DUR 20
+
 /* for debugging */
 EEPROM_Writer ew = EEPROM_Writer();
 
 /* create MIDI instances */
 SerialTransport serialMIDI;
 MidiInterface	MIDI((SerialTransport&) serialMIDI);
+
+volatile uint8_t debounce_ticks = 0;
 
 
 /********************************************/
@@ -107,38 +112,70 @@ void check_mode_switch()
 	}
 }
 
-/******   SWITCH DEBOUNCE TIMER   ******/
-ISR(TIMER1_COMPA_vect) { 
-	check_mode_switch();
+/******************	   SWITCH DEBOUNCE & CLEAR TRIGGER TIMER   ******************/
+/*
+	Interrupt is triggered every 1 millisecond.
+	If the trigger has been high for TRIG_DUR, then trigger is cleared.
+	Mode switch is updated in the time interval defined by SWITCH_DEBOUNCE_DIR. */
+/********************************************************************************/
+ISR(TIMER1_COMPA_vect) {
+	
+	trig_A_ticks++;
+	trig_B_ticks++;
+	debounce_ticks++;
+	
+	if (trig_A_ticks >= TRIG_DUR)
+	{
+		clear_bit(TRIG_PORT, TRIG_A_OUT);
+	}
+	
+	if (trig_B_ticks >= TRIG_DUR)
+	{
+		clear_bit(TRIG_PORT, TRIG_B_OUT);
+	}
+	
+	if (debounce_ticks >= SWITCH_DEBOUNCE_DUR)
+	{
+		debounce_ticks = 0;
+		check_mode_switch();
+	}
 }
+
 
 void init_timer_interrupts()
 {
 	// disable interrupts globally
 	cli(); 
+    
+	/**********************************************************/
+	/*     TIMER 0 - fast PWM with outputs on PD6 and PD3     */
+	/*				 frequency = 8 kHz			     		  */
+	/* see https://avr-guide.github.io/pwm-on-the-atmega328/  */
+	/**********************************************************/
+	DDRD |= (1 << DDD6) | (1<<DDD5);		// PD6 & PD5 is now an output
+	TCCR0A |= (1 << COM0A1) | (1<<COM0B1);	// set none-inverted mode for both output compares
+    TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
+    OCR0A = 0xFF;							// pwm out #1 duty cycle
+    OCR0B = 0xFF;							// pwm out #2 duty cycle
+    TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
 	
-	// see: http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
-	
-	/**************************************/
-	/*********   TIMER 0 config   *********/
-	TCCR0A = 0;											// clear timer registers
-	TCCR0B = 0;
-	TCNT0 = 0;											// reset the counter
-	OCR0A = 249;										// 1000 Hz i.e. every 1 ms
-	TCCR0A |= (1 << WGM01);								// turn on CTC mode
-	TCCR0B |= (1 << CS01) | (1 << CS00);				// prescaler = 64
-	TIMSK0 |= (1 << OCIE0A);							// Output Compare Match A Interrupt Enable
 	
 	
-	/**************************************/
-	/*********   TIMER 1 config   *********/
-	TCCR1A = 0;											// clear timer registers
-	TCCR1B = 0;
-	TCNT1  = 0;											// reset the counter
-	OCR1A = 39999;										// frequency 50 Hz i.e. every 20 ms
+	/*******************************************************************/
+	/*     TIMER 1 - Interrupt every 1 millisecond                     */
+	/*														           */
+	/* http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html */
+	/*******************************************************************/
+	TCCR1A = 0;		// set entire TCCR1A register to 0
+	TCCR1B = 0;		// same for TCCR1B
+	TCNT1  = 0;		// initialize counter value to 0
+	OCR1A = 15999;										// 1000 Hz i.e. 1 ms
 	TCCR1B |= (1 << WGM12);								// turn on CTC mode
-	TCCR1B |= (0 << CS12) | (1 << CS11) | (0 << CS10);  // prescaler = 8
+	TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);	// clock div. = 1
 	TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
+
+	// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
+	
 	
 	// enable interrupts globally
 	sei();
