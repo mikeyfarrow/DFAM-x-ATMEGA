@@ -36,9 +36,9 @@ class SerialMidiTransport
 	uint8_t read_idx = 0;
 	
 	/*
-		get - if there is a value in the buffer, it is saved to the address
-			pointed to by val_ptr and returns 1. If there is no data in the
-			buffer, then returns 0.
+		circ_buffer_get - if there is a value in the buffer, it is saved to
+			the address pointed to by val_ptr and returns 1. If there is no
+			data in the buffer, then returns 0.
 	*/
 	uint8_t circ_buffer_get(uint8_t* val_ptr)
 	{

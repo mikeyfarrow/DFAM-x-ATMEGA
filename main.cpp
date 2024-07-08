@@ -6,10 +6,6 @@
  * ATMEGA's GPIO and the SPI communication with the DAC.
  */
 
-// See:
-//		https://www.arnabkumardas.com/arduino-tutorial/usart-programming/
-//		https://ece-classes.usc.edu/ee459/library/documents/Serial_Port.pdf
-
 #define F_CPU 16000000UL // 16 MHz (required by delay.h)
 
 #include <avr/io.h>
@@ -47,7 +43,8 @@ ISR(USART_RX_vect) {
 	
 	if (serialMIDI.circ_buffer_put(latest_byte))
 	{
-		status2_green();
+		// nothing to do?
+		// status2_green();
 	}
 	else
 	{
@@ -76,28 +73,32 @@ void register_midi_callbacks()
 	MIDI.setHandleControlChange(handleCC);
 }
 
+void running_status(uint16_t count)
+{
+	if	(count % 3 == 0) { status1_green(); }
+	else if (count % 3 == 1) { status1_red(); }
+	else{ status1_off(); }	
+}
+
 int main()
 {
-	init_led_outputs();
-	init_digital_outputs();
-	serialMIDI.init_midi_UART();
-	init_DAC_SPI();
-	init_trig_timer();
-
+	init_led_outputs();				/* for debugging */
+	init_digital_outputs();			/* advance clock out, trigger out x2,  ...velocities? */
+	serialMIDI.init_midi_UART();	/* MIDI on the UART Tx/Rx pins */
+	init_DAC_SPI();					/* for sending commands to the DAC */
+	init_trig_timer();				
+	
 	register_midi_callbacks();
 	clear_all_LEDs();
 	
-	int idx = 0;
+	uint16_t idx = 0;
 	while (1)
 	{
+		running_status(idx);
+
+		MIDI.read(); /* check for new message without blocking */
 		
-		if	(idx % 3 == 0) { status1_green(); }
-		else if (idx % 3 == 1) { status1_red(); }
-		else { status1_off(); }
-		
-		MIDI.read(); // check for new message without blocking
-		
-		idx = (idx + 1) % 3;
+		idx++;
 	}
 	return 0;
 }

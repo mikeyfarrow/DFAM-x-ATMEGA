@@ -29,26 +29,21 @@ class Rotary_Encoder
 {
 	private:
 	uint8_t last_A;
-	uint8_t count;
+	int16_t count;
+	
 	void update_LEDs()
 	{
 		switch (count)
 		{
 			case 0:
-				bank_B_off();
-				bank_B(0);
-				//trigger();
+				trigger_A();
 				break;
 			case 1:
-				bank_B_off();
-				bank_B(0);
-				bank_B(1);
+				trigger_B();
 				break;
 			case 2:
-				bank_B_off();
-				bank_B(0);
-				bank_B(1);
-				bank_B(2);
+				trigger_A();
+				trigger_B();
 				break;
 			default:
 				break;
@@ -73,24 +68,22 @@ class Rotary_Encoder
 		if (cur_A != last_A)
 		{
 			uint8_t cur_B = bit_is_set(ENC_PIN, ENC_B);
-			if (cur_A != cur_B)
+			if (cur_A && !cur_B)
 			{
 				// CW rotation
 				count++;
-				status_led_green();
-				PORTD ^= _BV(PORTD7);
+				status2_green();
 			}
-			else
+			else if (!cur_A && cur_B)
 			{
 				// CCW rotation
 				count--;
-				status_led_red();
-				PORTD ^= _BV(PORTD7);
+				status2_red();
 			}
 			count = count < 0 ? 2 : count;
 			count = count > 2 ? 0 : count;
 			last_A = cur_A;
-			update_LEDs();
+			//update_LEDs();
 		}
 		
 	};
