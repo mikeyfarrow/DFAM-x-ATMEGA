@@ -33,3 +33,4 @@
 
 # Microchip Studio binaries
 Debug/*
+.vs/mafd-atmega-firmware/v14/.atsuo
