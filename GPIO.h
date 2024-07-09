@@ -29,11 +29,12 @@
 
 
 /************************************************************************/
-/*     INPUTS: Mode switch                                              */
+/*     INPUTS: mode switch & sync button                                */
 /************************************************************************/
 #define MODE_SWITCH_PIN PINC
 #define MODE_SWITCH		PINC3
-
+#define SYNC_BTN_PIN	PINB
+#define SYNC_BTN		PINB1
 
 
 

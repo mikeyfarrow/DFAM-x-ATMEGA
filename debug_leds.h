@@ -10,7 +10,7 @@
 
 uint8_t LED_BANK[3] = { LED1, LED2, LED3 };
 
-#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2)
+#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3)
 #define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))
 
 #define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
@@ -53,8 +53,6 @@ void init_led_outputs()
 {
 	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
 	DDRD |= _BV(DDD2) | _BV(DDD3);
-	
-	set_all_LEDs();
 }
 
 #endif /*_DEBUG_LEDS_H_ */

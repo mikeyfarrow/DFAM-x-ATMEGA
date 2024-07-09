@@ -88,7 +88,7 @@ void running_status(uint16_t count)
 
 void check_mode_switch()
 {
-	uint8_t cur_switch = bit_is_set(PINC, PINC3);
+	uint8_t cur_switch = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH);
 	if (cur_switch == SWITCH_STATE)
 		return;
 
@@ -106,9 +106,17 @@ void check_mode_switch()
 	}
 	else
 	{
-		clear_bank();
 		bank_off(0);
+		// TODO:
 		//handleStop();
+	}
+}
+
+void check_sync_switch()
+{
+	if (!bit_is_set(SYNC_BTN_PIN, SYNC_BTN))
+	{
+		CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
 	}
 }
 
@@ -138,6 +146,7 @@ ISR(TIMER1_COMPA_vect) {
 	{
 		debounce_ticks = 0;
 		check_mode_switch();
+		check_sync_switch();
 	}
 }
 
@@ -191,9 +200,11 @@ int main()
 	init_timer_interrupts();
 	
 	DDRC &= ~_BV(DDC3); // set PC3 as input
+	DDRB &= ~_BV(DDB1); // set PB1 as input
 	
 	register_midi_callbacks();
 	clear_all_LEDs();
+	check_mode_switch();
 	
 	uint16_t idx = 0;
 	while (1)
@@ -201,7 +212,6 @@ int main()
 		running_status(idx);
 		
 		MIDI.read(); /* check for new message without blocking */
-		
 		idx++;
 	}
 	return 0;

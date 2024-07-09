@@ -37,10 +37,10 @@ uint8_t CLOCK_DIV = 4;
 uint8_t PULSES_PER_STEP = PPQN / CLOCK_DIV;
 uint8_t MIDI_CHAN_DFAM = 1; // MIDI channel for playing DFAM in "8-voice mono-synth" mode
 
-uint8_t SWITCH_STATE = -1; // overflow initially so that state is always updated on start up
+volatile uint8_t SWITCH_STATE = -1; // overflow initially so that state is always updated on start up
 
-uint8_t KEYBOARD[8] = {MIDI_ROOT_NOTE,	MIDI_ROOT_NOTE+1,	MIDI_ROOT_NOTE+2,	MIDI_ROOT_NOTE+3,
-					 MIDI_ROOT_NOTE+4,	MIDI_ROOT_NOTE+5,	MIDI_ROOT_NOTE+6,	MIDI_ROOT_NOTE+7};
+// by default use the C major scale starting an octave below middle C
+uint8_t KEYBOARD_STEP_TABLE[8] = {48, 50, 52, 53, 55, 57, 59, 60};
 
 /************************************************************************/
 /*			  HELPER FUNCTIONS                                          */
@@ -68,8 +68,8 @@ uint8_t steps_between(int start, int end)
 */
 uint8_t midi_note_to_step(uint8_t note) {
 	for (int i = 0; i < NUM_STEPS; i++) {
-		if (note == KEYBOARD[i])
-		return i + 1;
+		if (note == KEYBOARD_STEP_TABLE[i])
+			return i + 1;
 	}
 	return false;
 }
@@ -91,40 +91,41 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 
 void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 {
-	switch(channel)
+	if (channel == MIDI_CH_VOCT_A)
 	{
-		case MIDI_CH_VOCT_A:
-			output_dac(0, midi_to_data(pitch));
-			trigger_A();
-			VEL_A_DUTY = velocity << 1;
-			break;
-		
-		case MIDI_CH_VOCT_B:
-			output_dac(1, midi_to_data(pitch));
-			trigger_B();
-			VEL_B_DUTY = velocity << 1;
-			break;
-		
-		case MIDI_CH_KBRD_MODE:
-			if (!SWITCH_STATE) // We are in keyboard-controlled sequencer mode
-			{
-				uint8_t dfam_step = midi_note_to_step(pitch);
-				if (dfam_step) {
-					int steps_left = steps_between(CUR_DFAM_STEP, dfam_step) + 1;
+		output_dac(0, midi_to_data(pitch));
+		trigger_A();
+		VEL_A_DUTY = velocity << 1;
+	}
+	
+	if (channel == MIDI_CH_VOCT_B)
+	{
+		output_dac(1, midi_to_data(pitch));
+		trigger_B();
+		VEL_B_DUTY = velocity << 1;		
+	}
+	
+	if (channel == MIDI_CH_KBRD_MODE)
+	{
+		if (!SWITCH_STATE) // We are in keyboard-controlled sequencer mode
+		{
+			uint8_t dfam_step = midi_note_to_step(pitch);
+			if (dfam_step) {
+				int steps_left = steps_between(CUR_DFAM_STEP, dfam_step) + 1;
 
-					// send the velocity
-					//analogWrite(PIN_VEL, velocity);
+				// TODO: where should I send the velocity?
+				// send it out on Vel. B? I will have to check mode during note on to only
+				// apply Vel. B when not in KCS mode.
+				
+				// send the velocity
+				//analogWrite(PIN_VEL, velocity);
 
-					// advance the DFAM's sequencer and then trigger the step
-					advance_clock(steps_left);
-					CUR_DFAM_STEP = dfam_step;
-				}
+				// advance the DFAM's sequencer and then trigger the step
+				advance_clock(steps_left);
+				CUR_DFAM_STEP = dfam_step;
 			}
-			break;
-		
-		default:
-			break;
-	}	
+		}		
+	}
 }
 
 /*
@@ -144,7 +145,7 @@ void handleStart()
 
 void handleStop()
 {
-	clear_all_LEDs();
+	//clear_all_LEDs();
 	
 	if (!FOLLOW_MIDI_CLOCK)
 	{
@@ -152,8 +153,7 @@ void handleStop()
 		// if we get a STOP when it is already stopped
 		// give the DFAM sequencer a chance to re-sync
 		
-		CUR_DFAM_STEP = bit_is_set(PINC, PINC3) ? 0 : 1;
-		CUR_DFAM_STEP = 1;
+		CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
 	}
 
 	FOLLOW_MIDI_CLOCK = false;

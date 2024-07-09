@@ -23,9 +23,28 @@
 #define MCP4822_SHDN 4
 
 
-#define MIDI_NOTE_MIN 0
-#define MIDI_NOTE_MAX 119
-#define DAC_CAL_VALUE 34.133333d
+/*
+MIDI notes are shifted down by MIDI_NOTE_MIN so that the lowest note is 0.
+	
+For a range of 99 notes:
+	- DAC is 12-bit so highest possible value is 4095.
+	- Scale the notes so that midi note 0 --> 0x000
+							    and note 87 --> 0xFFF (4095)
+	- i.e. midi notes increase in steps of 4095 / 87 = 47.069 mV per step
+	- therefore:
+		- one octave => 12 steps/oct * 47.069 mV/step = 564.828 mV/oct
+		- gain		 => 1000 mV/oct / 564.828 mV/oct  = 1.77x gain 
+*/
+
+#define MIDI_NOTE_MIN 24
+#define MIDI_NOTE_MAX 111
+#define DAC_CAL_VALUE 47.068966d
+
+// For a 120 note range:
+//#define MIDI_NOTE_MIN 0
+//#define MIDI_NOTE_MAX 119
+//#define DAC_CAL_VALUE 34.411765d // --> gain = 2.42
+
 
 // Loop until any current SPI transmissions have completed
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
@@ -59,7 +78,7 @@ uint16_t midi_to_data(uint8_t midi_note)
 	}
 	else
 	{
-		return midi_note * DAC_CAL_VALUE; // add 0.5 ?
+		return (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE; // add 0.5 ?
 	}
 }
 

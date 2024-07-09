@@ -7,40 +7,18 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
    - V+ to ground -> 10μF tant, 0.1μF ceramic
    - Output (both) -> 1μF ? The tested range for stability is .001μF through 4.7 μF
 
-- Gain setting:
-   - If G = 1 is selected, the V_REF is 2.048V and has 500 μV of resolution
-     If G = 2 is selected, the V_REF is 4.096V and has 1 mV of resolution
-	 
-- Talking to the MCU:
-	- Serial Peripheral Interface (SPI) details in datasheet
-	- TODO: does the current code block in that while loop?
-
-- Resolution
-	0000 0000 0000 ==> 0 mV
-	0000 0000 0001 ==> 1 mV
-	...
-	1111 1111 1111 ==> 4095 mV ???
-
-			MIDI
-	note	dec.	hex
-	---------------------
-	C-1	->	0	
-	C0	->	12		 
-	C1	->  24
-	...
-	C8	->  108
-	B8  ->  119
-	C9	->  120
-	G9	->  127
-
-	C-1 to B8, i.e. 0 to 119, is a
-		- 10 octave range with
-		- 120 note values
-
 - Resources:
    - https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20002249B.pdf
       - See page 28 and page 30
 	  
+    DAC8562 - 2x 16-bit - $10 
+	DAC8564 - 4x 16-bit - $15
+	MAX5134 - 4x 16-bit - $17
+
+	DAC8554 - 4x 16-bit - $10.73 mouser
+	AD5667 - dual 16-bit $7.77
+
+
 ############################
 ### MODES:
 
@@ -65,6 +43,10 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 - Is 7.2kHz a good PWM frequency?
 
 
+- MIDI spec: "voices dynamically allocated (notes/drums can re-attack using free voices)"
+			 "Key-based Percussion is always on channel 10"
+   also ->  CC 121 "Reset all Controllers"
+		-> RPN (Registered Parameter Numbers)
 
 ############################
 ### COOL FEATURES
@@ -80,3 +62,9 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 - Velocity sensitivity?
 - MIDI root note?
 - Note mapping for KCS mode
+
+* KCS Mode Options:
+	- Backwards
+	- Random
+	- Skip n
+	- Step probability 
