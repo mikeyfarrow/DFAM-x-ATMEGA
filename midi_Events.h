@@ -18,9 +18,11 @@
 #include "./GPIO.h"
 
 #define Channel_T MIDI_NAMESPACE::Channel
-#define MIDI_CH_VOCT_A 1 // channel converted to v/oct on the primary cv out
-#define MIDI_CH_VOCT_B 2 // channel converted to v/oct on the secondary cv out
-#define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" mode
+
+#define MIDI_CH_VOCT_A 1	// channel for v/oct on the primary cv out
+#define MIDI_CH_VOCT_B 2	// channel for  v/oct on the secondary cv out (can be the same channel)
+#define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" aka KCS mode
+
 #define KCS_MODE !SWITCH_STATE
 #define CCS_MODE SWITCH_STATE
 
@@ -30,7 +32,8 @@
 #define PPQN 24
 #define MIDI_ROOT_NOTE 48  // an octave below middle C
 
-const uint8_t DIVISIONS[7] = {1, 2, 3, 4, 6, 8, 12};
+#define NUM_DIVISIONS 7
+const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 
 /**************************/
 /**** Global VARIABLES ****/
@@ -138,6 +141,7 @@ void check_sync_switch()
 #define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
 #define CC_CLOCK_DIV MIDI_NAMESPACE::GeneralPurposeController3
 
+
 void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
@@ -155,7 +159,7 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 			
 		case CC_CLOCK_DIV:
 		{
-			uint8_t div_idx = (cc_val >> 3) / 2;
+			uint8_t div_idx = (int) cc_val * NUM_DIVISIONS / 127.0;
 			CLOCK_DIV = DIVISIONS[div_idx];
 			break;
 		}
