@@ -141,7 +141,6 @@ void check_sync_switch()
 #define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
 #define CC_CLOCK_DIV MIDI_NAMESPACE::GeneralPurposeController3
 
-
 void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)

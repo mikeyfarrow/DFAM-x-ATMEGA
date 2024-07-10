@@ -29,14 +29,28 @@ typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
 
 #define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 
-/* for debugging */
-EEPROM_Writer ew = EEPROM_Writer();
-
 /* create MIDI instances */
 SerialTransport serialMIDI;
 MidiInterface	MIDI((SerialTransport&) serialMIDI);
 
 volatile uint8_t debounce_ticks = 0;
+
+void register_midi_callbacks()
+{
+	MIDI.setHandleNoteOn(handleNoteOn);
+	MIDI.setHandleStart(handleStart);
+	MIDI.setHandleStop(handleStop);
+	MIDI.setHandleClock(handleClock);
+	MIDI.setHandleContinue(handleContinue);
+	MIDI.setHandleControlChange(handleCC);
+}
+
+void running_status(uint16_t count)
+{
+	if	(count % 3 == 0) { status1_green(); }
+	else if (count % 3 == 1) { status1_red(); }
+	else{ status1_off(); }	
+}
 
 /********************************************/
 /*         MIDI Rx INTERRUPT                */
@@ -55,32 +69,6 @@ ISR(USART_RX_vect) {
 		status2_red();
 		_delay_ms(1000);
 	}
-}
-
-/*
-	serial_out - Output a byte to the USART0 port
-*/
-void serial_out(char ch)
-{
-	while ((UCSR0A & (1 << UDRE0 )) == 0) ;
-	UDR0 = ch;
-}
-
-void register_midi_callbacks()
-{
-	MIDI.setHandleNoteOn(handleNoteOn);
-	MIDI.setHandleStart(handleStart);
-	MIDI.setHandleStop(handleStop);
-	MIDI.setHandleClock(handleClock);
-	MIDI.setHandleContinue(handleContinue);
-	MIDI.setHandleControlChange(handleCC);
-}
-
-void running_status(uint16_t count)
-{
-	if	(count % 3 == 0) { status1_green(); }
-	else if (count % 3 == 1) { status1_red(); }
-	else{ status1_off(); }	
 }
 
 /******************	   SWITCH DEBOUNCE & CLEAR TRIGGER TIMER   ******************/
@@ -112,27 +100,22 @@ ISR(TIMER1_COMPA_vect) {
 	}
 }
 
-/**********************************************************/
-/*     TIMER 0 - fast PWM with outputs on PD6 and PD3     */
-/*				 frequency = 8 kHz			     		  */
-/* see https://avr-guide.github.io/pwm-on-the-atmega328/  */
-/**********************************************************/
+/***************************************************/
+/*	TIMER 0 - fast PWM with outputs on PD6 and PD3 */
 void init_pwm_output()
 {
+	// frequency = 8 khz
+	// see https://avr-guide.github.io/pwm-on-the-atmega328/
 	DDRD |= (1 << DDD6) | (1<<DDD5);		// PD6 & PD5 is now an output
 	TCCR0A |= (1 << COM0A1) | (1<<COM0B1);	// set none-inverted mode for both output compares
 	TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
 	OCR0A = 0x00;							// pwm out #1 duty cycle 0
 	OCR0B = 0x00;							// pwm out #2 duty cycle 0
 	TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
-	
 }
 
-/*******************************************************************/
-/*     TIMER 1 - Interrupt every 1 millisecond                     */
-/*														           */
-/* http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html */
-/*******************************************************************/
+/*******************************************/
+/* TIMER 1 - Interrupt every 1 millisecond */
 void init_timer_interrupt()
 {
 	cli(); // disable interrupts globally
@@ -146,15 +129,33 @@ void init_timer_interrupt()
 	TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
 
 	// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
-	
+	//			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html 
 	sei(); // enable interrupts globally
+}
+
+
+
+/*	init_midi_UART - Initialize the USART port
+		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
+*/
+void init_midi_UART()
+{	
+	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
+	UBRR0L = BAUD_RATE_BYTES;
+	
+	UCSR0B |= (1 << TXEN0 ); // enable transmitter
+	UCSR0B |= (1 << RXEN0 ); // enable receiver
+	UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
+	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
+	
+	DDRD |= _BV(PORTD1);
 }
 
 int main()
 {
 	init_led_outputs();				/* for debugging */
 	init_digital_outputs();			/* advance clock out, trigger out x2,  ...velocities? */
-	serialMIDI.init_midi_UART();	/* MIDI on the UART Tx/Rx pins */
+	init_midi_UART();	/* MIDI on the UART Tx/Rx pins */
 	init_DAC_SPI();					/* for sending commands to the DAC */
 	
 	init_pwm_output();

@@ -55,23 +55,7 @@ class SerialMidiTransport
 	public:
 	SerialMidiTransport() { };
 		
-	/*	init_midi_UART - Initialize the USART port
-			MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
-	*/
-	void init_midi_UART()
-	{	
-		UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
-		UBRR0L = BAUD_RATE_BYTES;
-	
-		UCSR0B |= (1 << TXEN0 ); // enable transmitter
-		UCSR0B |= (1 << RXEN0 ); // enable receiver
-		UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
-		UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
-	
-		DDRD |= _BV(PORTD1);
-	}
-		
-	/*	put - adds the item to the buffer and returns 1. If the add fails
+	/*	circ_buffer_put - adds the item to the buffer and returns 1. If the add fails
 			because the buffer is full, then we do not add the item and
 			return 0
 	*/
