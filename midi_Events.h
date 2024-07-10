@@ -110,13 +110,14 @@ void check_mode_switch()
 
 	if (SWITCH_STATE) // switched into "clock-controlled sequencer" mode
 	{
-		CUR_DFAM_STEP = 0;
 		bank(0);
+		CUR_DFAM_STEP = 0;
 	}
 	else			  // switched into "keyboard-controlled sequencer" mode
 	{
 		bank_off(0);
-		handleStop();
+		FOLLOW_MIDI_CLOCK = false;
+		CUR_DFAM_STEP = 1;
 	}
 }
 
@@ -128,7 +129,6 @@ void check_sync_switch()
 {
 	if (!bit_is_set(SYNC_BTN_PIN, SYNC_BTN))
 	{
-		//CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
 		CUR_DFAM_STEP = 1;
 	}
 }

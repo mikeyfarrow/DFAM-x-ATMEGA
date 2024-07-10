@@ -129,11 +129,10 @@ void init_timer_interrupt()
 	TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
 
 	// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
-	//			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html 
+	//			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
+	
 	sei(); // enable interrupts globally
 }
-
-
 
 /*	init_midi_UART - Initialize the USART port
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
@@ -153,11 +152,12 @@ void init_midi_UART()
 
 int main()
 {
-	init_led_outputs();				/* for debugging */
-	init_digital_outputs();			/* advance clock out, trigger out x2,  ...velocities? */
-	init_midi_UART();	/* MIDI on the UART Tx/Rx pins */
-	init_DAC_SPI();					/* for sending commands to the DAC */
+	init_led_outputs();		/* for debugging */
+	init_digital_outputs();	/* advance clock out, trigger out x2,  ...velocities? */
+	init_midi_UART();		/* MIDI on the UART Tx/Rx pins */
+	init_DAC_SPI();			/* for sending commands to the DAC */
 	
+	/* configure timers/counters and interrupts */
 	init_pwm_output();
 	init_timer_interrupt();
 	
@@ -165,7 +165,6 @@ int main()
 	DDRB &= ~_BV(DDB1); // set PB1 as input
 	
 	register_midi_callbacks();
-	clear_all_LEDs();
 	
 	uint16_t idx = 0;
 	while (1)
