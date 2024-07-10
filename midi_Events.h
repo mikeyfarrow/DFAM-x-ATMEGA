@@ -30,6 +30,8 @@
 #define PPQN 24
 #define MIDI_ROOT_NOTE 48  // an octave below middle C
 
+const uint8_t DIVISIONS[7] = {1, 2, 3, 4, 6, 8, 12};
+
 /**************************/
 /**** Global VARIABLES ****/
 
@@ -134,6 +136,7 @@ void check_sync_switch()
 
 #define CC_TRIG_LENGTH MIDI_NAMESPACE::GeneralPurposeController1
 #define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
+#define CC_CLOCK_DIV MIDI_NAMESPACE::GeneralPurposeController3
 
 void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 {
@@ -149,6 +152,14 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 		case CC_ADV_WIDTH:
 			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
 			break;
+			
+		case CC_CLOCK_DIV:
+		{
+			uint8_t div_idx = (cc_val >> 3) / 2;
+			CLOCK_DIV = DIVISIONS[div_idx];
+			break;
+		}
+			
 		default:
 			break;
 	}
@@ -213,15 +224,6 @@ void handleStart()
 
 void handleStop()
 {
-	if (!FOLLOW_MIDI_CLOCK)
-	{
-		// reset the state of the sequencer
-		// if we get a STOP when it is already stopped
-		// give the DFAM sequencer a chance to re-sync
-		
-		CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
-	}
-
 	FOLLOW_MIDI_CLOCK = false;
 }
 
@@ -233,7 +235,7 @@ void handleClock()
 	if (FOLLOW_MIDI_CLOCK && SWITCH_STATE)
 	{
 		// only count clock pulses while sequence is playing and CCS mode is selected
-		CLOCK_COUNT = CLOCK_COUNT % PULSES_PER_STEP + 1;
+		CLOCK_COUNT = CLOCK_COUNT % (PPQN / CLOCK_DIV) + 1;
 
 		if (CLOCK_COUNT == 1) // we have a new step
 		{
