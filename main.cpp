@@ -27,7 +27,6 @@
 typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
 typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
 
-#define TRIG_DUR 2				// count of Timer1 interrupts per trigger
 #define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 
 /* for debugging */
@@ -38,7 +37,6 @@ SerialTransport serialMIDI;
 MidiInterface	MIDI((SerialTransport&) serialMIDI);
 
 volatile uint8_t debounce_ticks = 0;
-
 
 /********************************************/
 /*         MIDI Rx INTERRUPT                */
@@ -58,7 +56,6 @@ ISR(USART_RX_vect) {
 		_delay_ms(1000);
 	}
 }
-
 
 /*
 	serial_out - Output a byte to the USART0 port
@@ -86,40 +83,6 @@ void running_status(uint16_t count)
 	else{ status1_off(); }	
 }
 
-void check_mode_switch()
-{
-	uint8_t cur_switch = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH);
-	if (cur_switch == SWITCH_STATE)
-		return;
-
-	SWITCH_STATE = cur_switch;
-	CLOCK_COUNT = 0;
-
-	int steps_left = steps_between(CUR_DFAM_STEP, 1) + 1;
-	advance_clock(steps_left);
-
-	if (SWITCH_STATE)
-	{
-		FOLLOW_MIDI_CLOCK = true;
-		CUR_DFAM_STEP = 0;
-		bank(0);
-	}
-	else
-	{
-		bank_off(0);
-		// TODO:
-		//handleStop();
-	}
-}
-
-void check_sync_switch()
-{
-	if (!bit_is_set(SYNC_BTN_PIN, SYNC_BTN))
-	{
-		CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
-	}
-}
-
 /******************	   SWITCH DEBOUNCE & CLEAR TRIGGER TIMER   ******************/
 /*
 	Interrupt is triggered every 1 millisecond.
@@ -127,17 +90,16 @@ void check_sync_switch()
 	Mode switch is updated in the time interval defined by SWITCH_DEBOUNCE_DIR. */
 /********************************************************************************/
 ISR(TIMER1_COMPA_vect) {
-	
 	trig_A_ticks++;
 	trig_B_ticks++;
 	debounce_ticks++;
 	
-	if (trig_A_ticks >= TRIG_DUR)
+	if (trig_A_ticks >= trigger_duration_ms)
 	{
 		clear_bit(TRIG_PORT, TRIG_A_OUT);
 	}
 	
-	if (trig_B_ticks >= TRIG_DUR)
+	if (trig_B_ticks >= trigger_duration_ms)
 	{
 		clear_bit(TRIG_PORT, TRIG_B_OUT);
 	}
@@ -150,31 +112,31 @@ ISR(TIMER1_COMPA_vect) {
 	}
 }
 
-
-void init_timer_interrupts()
+/**********************************************************/
+/*     TIMER 0 - fast PWM with outputs on PD6 and PD3     */
+/*				 frequency = 8 kHz			     		  */
+/* see https://avr-guide.github.io/pwm-on-the-atmega328/  */
+/**********************************************************/
+void init_pwm_output()
 {
-	// disable interrupts globally
-	cli(); 
-    
-	/**********************************************************/
-	/*     TIMER 0 - fast PWM with outputs on PD6 and PD3     */
-	/*				 frequency = 8 kHz			     		  */
-	/* see https://avr-guide.github.io/pwm-on-the-atmega328/  */
-	/**********************************************************/
 	DDRD |= (1 << DDD6) | (1<<DDD5);		// PD6 & PD5 is now an output
 	TCCR0A |= (1 << COM0A1) | (1<<COM0B1);	// set none-inverted mode for both output compares
-    TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
-    OCR0A = 0x00;							// pwm out #1 duty cycle 0 
-    OCR0B = 0x00;							// pwm out #2 duty cycle 0
-    TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
+	TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
+	OCR0A = 0x00;							// pwm out #1 duty cycle 0
+	OCR0B = 0x00;							// pwm out #2 duty cycle 0
+	TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
 	
-	
-	
-	/*******************************************************************/
-	/*     TIMER 1 - Interrupt every 1 millisecond                     */
-	/*														           */
-	/* http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html */
-	/*******************************************************************/
+}
+
+/*******************************************************************/
+/*     TIMER 1 - Interrupt every 1 millisecond                     */
+/*														           */
+/* http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html */
+/*******************************************************************/
+void init_timer_interrupt()
+{
+	cli(); // disable interrupts globally
+    
 	TCCR1A = 0;		// set entire TCCR1A register to 0
 	TCCR1B = 0;		// same for TCCR1B
 	TCNT1  = 0;		// initialize counter value to 0
@@ -185,9 +147,7 @@ void init_timer_interrupts()
 
 	// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
 	
-	
-	// enable interrupts globally
-	sei();
+	sei(); // enable interrupts globally
 }
 
 int main()
@@ -197,14 +157,14 @@ int main()
 	serialMIDI.init_midi_UART();	/* MIDI on the UART Tx/Rx pins */
 	init_DAC_SPI();					/* for sending commands to the DAC */
 	
-	init_timer_interrupts();
+	init_pwm_output();
+	init_timer_interrupt();
 	
 	DDRC &= ~_BV(DDC3); // set PC3 as input
 	DDRB &= ~_BV(DDB1); // set PB1 as input
 	
 	register_midi_callbacks();
 	clear_all_LEDs();
-	check_mode_switch();
 	
 	uint16_t idx = 0;
 	while (1)

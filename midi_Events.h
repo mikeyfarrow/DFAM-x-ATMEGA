@@ -21,6 +21,8 @@
 #define MIDI_CH_VOCT_A 1 // channel converted to v/oct on the primary cv out
 #define MIDI_CH_VOCT_B 2 // channel converted to v/oct on the secondary cv out
 #define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" mode
+#define KCS_MODE !SWITCH_STATE
+#define CCS_MODE SWITCH_STATE
 
 /**************************/
 /**** Global CONSTANTS ****/
@@ -30,6 +32,9 @@
 
 /**************************/
 /**** Global VARIABLES ****/
+
+volatile uint8_t trigger_duration_ms = 2;
+
 uint8_t FOLLOW_MIDI_CLOCK = false;
 uint8_t CLOCK_COUNT = 0;
 uint8_t CUR_DFAM_STEP = 0; // the number of the last DFAM step triggered
@@ -45,6 +50,8 @@ uint8_t KEYBOARD_STEP_TABLE[8] = {48, 50, 52, 53, 55, 57, 59, 60};
 /************************************************************************/
 /*			  HELPER FUNCTIONS                                          */
 /************************************************************************/
+
+void handleStop();
 
 /*
  * steps_between - returns the number of steps the DFAM sequencer would need to 
@@ -74,9 +81,60 @@ uint8_t midi_note_to_step(uint8_t note) {
 	return false;
 }
 
+/*
+	check_mode_switch - 
+		There are two modes: CCS (clock-controlled sequencer) or KCS (keyboard-controlled
+		sequencer). SWITCH_STATE is true for CCS, false for KCS.
+	 
+		When the mode switch is flipped we are either switching
+			- from CCS into KCS (sequence could be in Play or Stop)
+			- from KCS into CCS
+		Either way, restart the clock counter and set the DFAM sequencer back to step 1.
+*/
+void check_mode_switch()
+{
+	uint8_t cur_switch = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH);
+	if (cur_switch == SWITCH_STATE)
+		return;
+
+	SWITCH_STATE = cur_switch;
+	CLOCK_COUNT = 0;
+	
+	int steps_left = steps_between(CUR_DFAM_STEP, 1) + 1;
+	advance_clock(steps_left);
+
+	if (SWITCH_STATE) // switched into "clock-controlled sequencer" mode
+	{
+		CUR_DFAM_STEP = 0;
+		bank(0);
+	}
+	else			  // switched into "keyboard-controlled sequencer" mode
+	{
+		bank_off(0);
+		handleStop();
+	}
+}
+
+/*
+	check_sync_switch - in case the DFAM sequencer has gotten out of sync
+		with CUR_DFAM_STEP, restart it back at 0.
+*/
+void check_sync_switch()
+{
+	if (!bit_is_set(SYNC_BTN_PIN, SYNC_BTN))
+	{
+		//CUR_DFAM_STEP = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH) ? 0 : 1;
+		CUR_DFAM_STEP = 1;
+	}
+}
+
 /************************************************************************/
 /*			  EVENT HANDLERS                                            */
 /************************************************************************/
+
+#define CC_TRIG_LENGTH MIDI_NAMESPACE::GeneralPurposeController1
+#define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
+
 void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
@@ -84,6 +142,13 @@ void handleCC(Channel_T channel, byte cc_num, byte cc_val )
 		case MIDI_NAMESPACE::ModulationWheel:
 			break;
 		
+		case CC_TRIG_LENGTH:
+			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
+			break;
+			
+		case CC_ADV_WIDTH:
+			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
+			break;
 		default:
 			break;
 	}
@@ -102,7 +167,11 @@ void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 	{
 		output_dac(1, midi_to_data(pitch));
 		trigger_B();
-		VEL_B_DUTY = velocity << 1;		
+		
+		if (CCS_MODE) // don't apply VelB when in KCS mode
+		{
+			VEL_B_DUTY = velocity << 1;
+		}
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
@@ -117,8 +186,7 @@ void handleNoteOn(Channel_T channel, byte pitch, byte velocity)
 				// send it out on Vel. B? I will have to check mode during note on to only
 				// apply Vel. B when not in KCS mode.
 				
-				// send the velocity
-				//analogWrite(PIN_VEL, velocity);
+				VEL_B_DUTY = velocity << 1;
 
 				// advance the DFAM's sequencer and then trigger the step
 				advance_clock(steps_left);
@@ -145,8 +213,6 @@ void handleStart()
 
 void handleStop()
 {
-	//clear_all_LEDs();
-	
 	if (!FOLLOW_MIDI_CLOCK)
 	{
 		// reset the state of the sequencer
@@ -166,7 +232,7 @@ void handleClock()
 {
 	if (FOLLOW_MIDI_CLOCK && SWITCH_STATE)
 	{
-		// only count clock pulses while sequence is playing and mode is selected
+		// only count clock pulses while sequence is playing and CCS mode is selected
 		CLOCK_COUNT = CLOCK_COUNT % PULSES_PER_STEP + 1;
 
 		if (CLOCK_COUNT == 1) // we have a new step

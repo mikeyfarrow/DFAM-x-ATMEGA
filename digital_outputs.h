@@ -10,8 +10,13 @@
 
 #include "./GPIO.h"
 
+#define MAX_ADV_LENGTH 1000 // millis
+#define MAX_TRIG_LENGTH 100 // millis
+
 volatile uint8_t trig_A_ticks = 0;
 volatile uint8_t trig_B_ticks = 0;
+volatile uint8_t adv_clock_ticks = 0;
+
 
 void init_digital_outputs()
 {
@@ -49,11 +54,13 @@ void trigger_B()
 void advance_clock()
 {
 	set_bit(ADV_PORT, ADV_OUT);
+	
 	/* TODO: Do this instead with PWM? Timer interrupts? */
-	for (int i = 0; i < 1000; i++)
+	for (int i = 0; i < adv_clock_ticks; i++)
 	{
 		/* do nothing, wait a while */
 	}
+	
 	clear_bit(ADV_PORT, ADV_OUT);	
 }
 
