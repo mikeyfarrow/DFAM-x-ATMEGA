@@ -32,8 +32,6 @@
 #include "midi_Settings.h"
 #include "midi_Message.h"
 
-#include "../serialMIDI.h"
-
 // -----------------------------------------------------------------------------
 
 BEGIN_MIDI_NAMESPACE

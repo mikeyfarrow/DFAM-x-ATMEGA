@@ -1,4 +1,4 @@
-/* 
+/*
 * EEPROM_Writer.h
 *
 * Created: 7/5/2024 10:26:45 PM
@@ -13,11 +13,11 @@
 
 class EEPROM_Writer
 {
-private:
+	private:
 	uint16_t idx;
 
-//functions
-public:
+	//functions
+	public:
 	EEPROM_Writer();
 	void write_byte(uint8_t ch);
 	void delimiter();

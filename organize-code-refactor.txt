@@ -1,0 +1,83 @@
+Separation of Concerns
+----------------------
+
+
+- Hardware init:
+	- Setting input/output modes for all pins
+	- Configuring communications (UART input (and out?) from MIDI, SPI output to DAC)
+		- MIDI UART includes Rx interrupt
+	- Configuring timers/counters:timer interrupt + PWM output
+
+- Hardware IO:
+	- setting and clearing LEDs
+	- interrupts to check switches and trigger states
+	- send trigger A+B
+	- send velocity A+B
+	- send Adv/Clock out
+	- send V/oct A+B output to DAC
+
+
+
+CONTROL FLOW
+------------
+- Determined entirely by:
+	- Event loop:
+		- Check for new MIDI message and run callback
+			- What is the callback's scope? It will need to read and write in/out pins
+				- cb will also need all sequencer state
+		- Update running status LEDs
+	- Interrupts (most global scope?):
+		- Every 1ms from Timer1
+			- needs to know trigger_durations and tick_counts for trigs and switched
+			- needs to read and write IO pins
+		- New byte arrived on UART Rx
+			- update circular buffer (who owns this? serialmidi? MidiController?)
+
+
+
+- the "View" (presents and receives info to and from user):
+	- setting and clearing LEDs
+	- flip mode switch, press reset button
+	- midi receive
+
+
+
+====================
+
+"
+I ran into the same problem, also for ESP32. On my end, I just accepted that callbacks
+have to be global free functions. It feels like a simpler solution, and I think it is
+OK practice for embedded projects. 
+"
+
+
+"
+You could probably come around this by creating an normal function that itself calls a
+member function, for example: 
+"
+
+
+class Foo
+{
+public:
+    bar() { std::cout << "hi"; };
+}
+
+Foo foo;
+
+void barCaller() 
+{
+    foo.bar();
+}
+
+//or if you want it for any instance
+void barCaller2(Foo& foo)
+{
+    foo.bar();
+}
+
+barCaller(); //calls bar() on the global foo
+barCaller2(foo); //calls bar on any Foo you pass it
+
+void (*callback)() = barCaller;
+void (*callback2)(Foo&) = barCaller2;

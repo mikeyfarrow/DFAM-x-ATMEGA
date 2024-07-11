@@ -7,6 +7,10 @@
  */
 
 #define F_CPU 16000000UL // 16 MHz (required by delay.h)
+#define CPU_HZ 16000000UL
+#define USART_BAUD_RATE 31250 // MIDI Baud Rate
+#define BAUD_RATE_BYTES (((CPU_HZ / (USART_BAUD_RATE * 16UL))) - 1)
+#define BUFFER_MAX_SIZE 100
 
 #include <avr/io.h>
 #include <avr/interrupt.h>
@@ -14,40 +18,27 @@
 #include <avr/eeprom.h>
 #include <util/delay.h>
 
-#include "lib/MIDI.h"
-#include "lib/midi_Defs.h"
 
-#include "./debug_leds.h"
-#include "./midi_Events.h"
-#include "./utilities.h"
-#include "./MCP_4822.h"
-#include "./digital_outputs.h"
-#include "./EEPROM_Writer.h"
+#include "GPIO.h"
+#include "MidiController.h"
+#include "utilities.h"
 
-typedef	MIDI_NAMESPACE::SerialMidiTransport SerialTransport;
-typedef MIDI_NAMESPACE::MidiInterface<SerialTransport> MidiInterface;
+/** Instantiate the controller **/
+MidiController mctl;
 
-#define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
+// Event handlers
+void register_midi_events();
+void handleCC(byte channel, byte cc_num, byte cc_val);
+void handleNoteOn(byte channel, byte pitch, byte velocity);
+void handleStart();
+void handleStop();
+void handleClock();
+void handleContinue();
 
-/* create MIDI instances */
-SerialTransport serialMIDI;
-MidiInterface	MIDI((SerialTransport&) serialMIDI);
-
-volatile uint8_t debounce_ticks = 0;
-
-void register_midi_callbacks()
-{
-	MIDI.setHandleNoteOn(handleNoteOn);
-	MIDI.setHandleStart(handleStart);
-	MIDI.setHandleStop(handleStop);
-	MIDI.setHandleClock(handleClock);
-	MIDI.setHandleContinue(handleContinue);
-	MIDI.setHandleControlChange(handleCC);
-}
 
 void running_status(uint16_t count)
 {
-	if	(count % 3 == 0) { status1_green(); }
+	if (count % 3 == 0) { status1_green(); }
 	else if (count % 3 == 1) { status1_red(); }
 	else{ status1_off(); }	
 }
@@ -58,10 +49,9 @@ void running_status(uint16_t count)
 ISR(USART_RX_vect) {
 	uint8_t latest_byte = UDR0;
 	
-	if (serialMIDI.circ_buffer_put(latest_byte))
+	if (mctl.incoming_message(latest_byte))
 	{
-		// nothing to do?
-		// status2_green();
+		// nothing to do...
 	}
 	else
 	{
@@ -78,26 +68,7 @@ ISR(USART_RX_vect) {
 	Mode switch is updated in the time interval defined by SWITCH_DEBOUNCE_DIR. */
 /********************************************************************************/
 ISR(TIMER1_COMPA_vect) {
-	trig_A_ticks++;
-	trig_B_ticks++;
-	debounce_ticks++;
-	
-	if (trig_A_ticks >= trigger_duration_ms)
-	{
-		clear_bit(TRIG_PORT, TRIG_A_OUT);
-	}
-	
-	if (trig_B_ticks >= trigger_duration_ms)
-	{
-		clear_bit(TRIG_PORT, TRIG_B_OUT);
-	}
-	
-	if (debounce_ticks >= SWITCH_DEBOUNCE_DUR)
-	{
-		debounce_ticks = 0;
-		check_mode_switch();
-		check_sync_switch();
-	}
+	mctl.timer_tick();
 }
 
 /***************************************************/
@@ -150,6 +121,41 @@ void init_midi_UART()
 	DDRD |= _BV(PORTD1);
 }
 
+// Initialize the SPI as master
+void init_DAC_SPI()
+{
+	// make the MOSI, SCK, and SS pins outputs
+	SPI_DDR |= ( 1 << SPI_MOSI ) | ( 1 << SPI_SCK ) | ( 1 << SPI_SS );
+
+	// TODO: no it is not, not used by DAC
+	// make sure the MISO pin is input
+	SPI_DDR &= ~( 1 << SPI_MISO );
+
+	// set up the SPI module: SPI enabled, MSB first, master mode,
+	//  clock polarity and phase = 0, F_osc/16
+	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR );// | ( 1 << SPI_SPR0 );
+	SPI_SPSR = 1;     // set double SPI speed for F_osc/2
+}
+
+void init_digital_outputs()
+{
+	DDR_ADV |= (1<<DD_ADV);
+	
+	DDR_TRIG |= (1<<DD_TRIGA);
+	DDR_VEL |= (1<<DD_VELA);
+	
+	DDR_TRIG |= (1<<DD_TRIGB);
+	DDR_VEL |= (1<<DD_VELB);
+	
+	// TODO: pull downs? ups?
+}
+
+void init_led_outputs()
+{
+	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
+	DDRD |= _BV(DDD2) | _BV(DDD3);
+}
+
 int main()
 {
 	init_led_outputs();		/* for debugging */
@@ -164,15 +170,40 @@ int main()
 	DDRC &= ~_BV(DDC3); // set PC3 as input
 	DDRB &= ~_BV(DDB1); // set PB1 as input
 	
-	register_midi_callbacks();
+	register_midi_events();
 	
 	uint16_t idx = 0;
 	while (1)
 	{
 		running_status(idx);
-		
-		MIDI.read(); /* check for new message without blocking */
+		mctl.check_for_MIDI();
 		idx++;
 	}
 	return 0;
 }
+
+
+/*
+	Unfortunately we since we cannot include <functional> we cannot call std::bind or
+	anything else to allow us to pass instance methods as callbacks... boo hoo.
+	
+	Instead of attaching the event handlers inside the MidiController using elegant
+	lambdas that capture 'this' and bind it to the callback function, we have the
+	following ugliness:
+*/
+void register_midi_events()
+{
+	mctl.midi.setHandleControlChange(handleCC);
+	mctl.midi.setHandleNoteOn(handleNoteOn);
+	mctl.midi.setHandleStart(handleStart);
+	mctl.midi.setHandleStop(handleStop);
+	mctl.midi.setHandleClock(handleClock);
+	mctl.midi.setHandleContinue(handleContinue);
+}
+
+void handleCC(byte channel, byte cc_num, byte cc_val)		{ mctl.handleCC(channel, cc_num, cc_val); }
+void handleNoteOn(byte channel, byte pitch, byte velocity)	{ mctl.handleNoteOn(channel, pitch, velocity); }
+void handleStart()											{ mctl.handleStart(); }
+void handleStop()											{ mctl.handleStop(); }
+void handleClock()											{ mctl.handleClock(); }
+void handleContinue()										{ mctl.handleContinue(); }

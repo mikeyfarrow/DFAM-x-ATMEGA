@@ -2,12 +2,12 @@
 #ifndef _DEBUG_LEDS_H_
 #define _DEBUG_LEDS_H_ 1
 
+
+
+/*
 #include <avr/io.h>
 #include "utilities.h"
 #include "GPIO.h"
-
-
-
 uint8_t LED_BANK[3] = { LED1, LED2, LED3 };
 
 #define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3)
@@ -48,11 +48,6 @@ void bank(uint8_t i) {
 void bank_off(uint8_t i) {
 	clear_bit(LED_BANK_PORT, LED_BANK[i]);
 }
-
-void init_led_outputs()
-{
-	DDRC = _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
-	DDRD |= _BV(DDD2) | _BV(DDD3);
-}
+*/
 
 #endif /*_DEBUG_LEDS_H_ */

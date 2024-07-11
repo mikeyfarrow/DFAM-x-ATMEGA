@@ -182,16 +182,19 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="debug_leds.h">
+    <Compile Include="CircularBuffer.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="digital_outputs.h">
+    <Compile Include="CircularBuffer.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="EEPROM_Writer.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="EEPROM_Writer.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="GPIO.cpp">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="GPIO.h">
@@ -224,13 +227,16 @@
     <Compile Include="main.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="MCP_4822.h">
+    <Compile Include="MidiController.cpp">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="midi_Events.h">
+    <Compile Include="MidiController.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="serialMIDI.h">
+    <Compile Include="SerialMidiTransport.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="SerialMidiTransport.h">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="utilities.h">
@@ -242,6 +248,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="notes.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="organize-code-refactor.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>
