@@ -29,8 +29,8 @@
 #define MIDI_CH_VOCT_B 2	// channel for  v/oct on the secondary cv out (can be the same channel)
 #define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" aka KCS mode
 
-#define KCS_MODE !SWITCH_STATE
-#define CCS_MODE SWITCH_STATE
+#define KCS_MODE !switch_state
+#define CCS_MODE switch_state
 
 #define CC_TRIG_LENGTH MIDI_NAMESPACE::GeneralPurposeController1
 #define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
@@ -60,11 +60,11 @@ MidiController::MidiController(): transport(), midi((SMT&) transport)
 	trig_B_ticks = 0;
 	adv_clock_ticks = 0;
 	
-	FOLLOW_MIDI_CLOCK = false;
-	CLOCK_COUNT = 0;
-	CUR_DFAM_STEP = 0; // the number of the last DFAM step triggered
-	CLOCK_DIV = 4;
-	SWITCH_STATE = -1;
+	follow_midi_clock = false;
+	clock_count = 0;
+	cur_dfam_step = 0; // the number of the last DFAM step triggered
+	clock_div = 4;
+	switch_state = -1;
 }
 
 void MidiController::check_for_MIDI()
@@ -180,25 +180,25 @@ void MidiController::output_dac(uint8_t channel, uint16_t data)
 void MidiController::check_mode_switch()
 {
 	uint8_t cur_switch = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH);
-	if (cur_switch == SWITCH_STATE)
+	if (cur_switch == switch_state)
 		return;
 
-	SWITCH_STATE = cur_switch;
-	CLOCK_COUNT = 0;
+	switch_state = cur_switch;
+	clock_count = 0;
 	
-	int steps_left = steps_between(CUR_DFAM_STEP, 1) + 1;
+	int steps_left = steps_between(cur_dfam_step, 1) + 1;
 	advance_clock(steps_left);
 
-	if (SWITCH_STATE) // switched into "clock-controlled sequencer" mode
+	if (switch_state) // switched into "clock-controlled sequencer" mode
 	{
 		set_bit(LED_BANK_PORT, LED1);
-		CUR_DFAM_STEP = 0;
+		cur_dfam_step = 0;
 	}
 	else			  // switched into "keyboard-controlled sequencer" mode
 	{
 		clear_bit(LED_BANK_PORT, LED1);
-		FOLLOW_MIDI_CLOCK = false;
-		CUR_DFAM_STEP = 1;
+		follow_midi_clock = false;
+		cur_dfam_step = 1;
 	}
 }
 
@@ -210,7 +210,7 @@ void MidiController::check_sync_switch()
 {
 	if (!bit_is_set(SYNC_BTN_PIN, SYNC_BTN))
 	{
-		CUR_DFAM_STEP = 1;
+		cur_dfam_step = 1;
 	}
 }
 
@@ -254,7 +254,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 		case CC_CLOCK_DIV:
 		{
 			uint8_t div_idx = (int) cc_val * NUM_DIVISIONS / 127.0;
-			CLOCK_DIV = DIVISIONS[div_idx];
+			clock_div = DIVISIONS[div_idx];
 			break;
 		}
 			
@@ -285,11 +285,11 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 	
 	if (channel == MIDI_CH_KBRD_MODE)
 	{
-		if (!SWITCH_STATE) // We are in keyboard-controlled sequencer mode
+		if (!switch_state) // We are in keyboard-controlled sequencer mode
 		{
 			uint8_t dfam_step = midi_note_to_step(pitch);
 			if (dfam_step) {
-				int steps_left = steps_between(CUR_DFAM_STEP, dfam_step) + 1;
+				int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
 
 				// TODO: where should I send the velocity?
 				// send it out on Vel. B? I will have to check mode during note on to only
@@ -299,7 +299,7 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 
 				// advance the DFAM's sequencer and then trigger the step
 				advance_clock(steps_left);
-				CUR_DFAM_STEP = dfam_step;
+				cur_dfam_step = dfam_step;
 			}
 		}		
 	}
@@ -310,19 +310,19 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 */
 void MidiController::handleStart()
 {
-	if (SWITCH_STATE)
+	if (switch_state)
 	{
-		uint8_t steps_left = steps_between(CUR_DFAM_STEP, 1);
+		uint8_t steps_left = steps_between(cur_dfam_step, 1);
 		advance_clock(steps_left);
-		FOLLOW_MIDI_CLOCK = true;
-		CLOCK_COUNT = 0;
-		CUR_DFAM_STEP = 0;
+		follow_midi_clock = true;
+		clock_count = 0;
+		cur_dfam_step = 0;
 	}
 }
 
 void MidiController::handleStop()
 {
-	FOLLOW_MIDI_CLOCK = false;
+	follow_midi_clock = false;
 }
 
 /*
@@ -330,14 +330,14 @@ void MidiController::handleStop()
 */
 void MidiController::handleClock()
 {
-	if (FOLLOW_MIDI_CLOCK && SWITCH_STATE)
+	if (follow_midi_clock && switch_state)
 	{
 		// only count clock pulses while sequence is playing and CCS mode is selected
-		CLOCK_COUNT = CLOCK_COUNT % (PPQN / CLOCK_DIV) + 1;
+		clock_count = clock_count % (PPQN / clock_div) + 1;
 
-		if (CLOCK_COUNT == 1) // we have a new step
+		if (clock_count == 1) // we have a new step
 		{
-			CUR_DFAM_STEP = CUR_DFAM_STEP % NUM_STEPS + 1;
+			cur_dfam_step = cur_dfam_step % NUM_STEPS + 1;
 			advance_clock();
 		}
 	}
@@ -348,7 +348,7 @@ void MidiController::handleClock()
 */
 void MidiController::handleContinue()
 {   
-	FOLLOW_MIDI_CLOCK = true;
+	follow_midi_clock = true;
 }
 
 
@@ -379,7 +379,7 @@ uint8_t MidiController::steps_between(int start, int end)
 */
 uint8_t MidiController::midi_note_to_step(uint8_t note) {
 	for (int i = 0; i < NUM_STEPS; i++) {
-		if (note == KEYBOARD_STEP_TABLE[i])
+		if (note == keyboard_step_table[i])
 			return i + 1;
 	}
 	return false;

@@ -3,8 +3,16 @@
 *
 * Created: 7/10/2024 1:00:25 PM
 * Author: mikey
-*/
 
+* All MIDI event handlers live inside MidiController as instance methods
+*
+* From the outside world:
+*	When there is a MIDI Rx interrupt:
+*		- ask the controller to add a message to the buffer
+
+*	When there is a timer 1ms interrupt:
+*		- ask controller to update ticks for trigA, trigB, and debounce
+*/
 
 #ifndef __MIDICONTROLLER_H__
 #define __MIDICONTROLLER_H__
@@ -16,20 +24,6 @@
 #include "SerialMidiTransport.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
-
-/*
-
-All MIDI event handlers live inside MidiController as instance methods
-
-
-From the outside world:
-	When there is a MIDI Rx interrupt:
-		- ask the controller to add a message to the buffer
-
-	When there is a timer 1ms interrupt:
-		- ask controller to update ticks for trigA, trigB, and debounce
-		- ask controller 
-*/
 
 
 class MidiController
@@ -48,12 +42,12 @@ private:
 	volatile uint8_t debounce_ticks;
 	
 	uint8_t trigger_duration_ms;
-	uint8_t FOLLOW_MIDI_CLOCK;
-	uint8_t CLOCK_COUNT;
-	uint8_t CUR_DFAM_STEP;
-	uint8_t CLOCK_DIV;
-	uint8_t KEYBOARD_STEP_TABLE[8] = {48, 50, 52, 53, 55, 57, 59, 60};
-	volatile uint8_t SWITCH_STATE;
+	uint8_t follow_midi_clock;
+	uint8_t clock_count;
+	uint8_t cur_dfam_step;
+	uint8_t clock_div;
+	uint8_t keyboard_step_table[8] = {48, 50, 52, 53, 55, 57, 59, 60};
+	volatile uint8_t switch_state;
 
 /***** METHODS *****/
 public:

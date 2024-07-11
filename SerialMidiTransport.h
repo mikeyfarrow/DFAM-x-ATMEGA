@@ -24,6 +24,7 @@
 BEGIN_MIDI_NAMESPACE
 class SerialMidiTransport
 {
+
 /***** FIELDS *****/
 public:
 	CircularBuffer midi_rx_buffer;

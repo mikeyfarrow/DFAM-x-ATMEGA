@@ -188,12 +188,6 @@
     <Compile Include="CircularBuffer.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="EEPROM_Writer.cpp">
-      <SubType>compile</SubType>
-    </Compile>
-    <Compile Include="EEPROM_Writer.h">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="GPIO.cpp">
       <SubType>compile</SubType>
     </Compile>
@@ -245,12 +239,13 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib" />
+    <Folder Include="notes" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="notes.txt">
+    <None Include="notes\notes.txt">
       <SubType>compile</SubType>
     </None>
-    <None Include="organize-code-refactor.txt">
+    <None Include="notes\organize-code-refactor.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>

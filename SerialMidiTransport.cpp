@@ -10,8 +10,6 @@
 
 #include "SerialMidiTransport.h"
 
-
-
 SMT::SerialMidiTransport()
 {
 	latest_serial_byte = MidiType::InvalidType;
