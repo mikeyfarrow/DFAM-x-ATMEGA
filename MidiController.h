@@ -30,9 +30,6 @@ class MidiController
 {
 	
 /***** FIELDS *****/
-public:
-	MidiInterface midi;
-
 private:
 	SMT transport;
 	
@@ -48,6 +45,9 @@ private:
 	uint8_t clock_div;
 	uint8_t keyboard_step_table[8] = {48, 50, 52, 53, 55, 57, 59, 60};
 	volatile uint8_t switch_state;
+
+public:
+	MidiInterface midi;
 
 /***** METHODS *****/
 public:

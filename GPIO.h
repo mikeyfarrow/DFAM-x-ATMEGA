@@ -9,6 +9,15 @@
 #define _DFAM_GPIO_H_
 
 #include <avr/io.h>
+#include <avr/sfr_defs.h>
+
+#define CPU_SPEED 16000000UL
+
+#define USART_BAUD_RATE 31250 // MIDI Baud Rate
+#define BAUD_RATE_BYTES (((CPU_SPEED / (USART_BAUD_RATE * 16UL))) - 1)
+
+#define set_bit(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#define clear_bit(sfr, bit) (_SFR_BYTE(sfr) &= ~(_BV(bit)))
 
 /************************************************************************/
 /*		LED outputs for debug											*/
@@ -103,10 +112,19 @@
 #define status2_off()   clear_bit(BILED2_PORT, BILED2_G); \
 						clear_bit(BILED2_PORT, BILED2_R);
 
+/* LED helpers */
 void set_all_LEDs();
 void clear_all_LEDs();
 void bank(uint8_t i);
 void bank_off(uint8_t i);
 
+
+/* hardware initialization */
+void init_led_outputs();
+void init_digital_outputs();
+void init_midi_UART();
+void init_DAC_SPI();
+void init_pwm_output();
+void init_timer_interrupt();
 
 #endif /* _DFAM_GPIO_H_ */

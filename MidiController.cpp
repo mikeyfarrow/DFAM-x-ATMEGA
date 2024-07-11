@@ -7,7 +7,6 @@
 #include <avr/io.h>
 
 #include "GPIO.h"
-#include "utilities.h"
 #include "MidiController.h"
 #include "lib/MIDI.h"
 
@@ -204,7 +203,7 @@ void MidiController::check_mode_switch()
 
 /*
 	check_sync_switch - in case the DFAM sequencer has gotten out of sync
-		with CUR_DFAM_STEP, restart it back at 0.
+		with CUR_DFAM_STEP, restart it.
 */
 void MidiController::check_sync_switch()
 {
@@ -240,9 +239,6 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
 	{
-		case MIDI_NAMESPACE::ModulationWheel:
-			break;
-		
 		case CC_TRIG_LENGTH:
 			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
 			break;
@@ -268,19 +264,19 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 	if (channel == MIDI_CH_VOCT_A)
 	{
 		output_dac(0, midi_to_data(pitch));
-		trigger_A();
 		VEL_A_DUTY = velocity << 1;
+		trigger_A();
 	}
 	
 	if (channel == MIDI_CH_VOCT_B)
 	{
 		output_dac(1, midi_to_data(pitch));
-		trigger_B();
-		
 		if (CCS_MODE) // don't apply VelB when in KCS mode
 		{
 			VEL_B_DUTY = velocity << 1;
 		}
+		trigger_B();
+		
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
@@ -289,15 +285,8 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 		{
 			uint8_t dfam_step = midi_note_to_step(pitch);
 			if (dfam_step) {
-				int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
-
-				// TODO: where should I send the velocity?
-				// send it out on Vel. B? I will have to check mode during note on to only
-				// apply Vel. B when not in KCS mode.
-				
 				VEL_B_DUTY = velocity << 1;
-
-				// advance the DFAM's sequencer and then trigger the step
+				int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
 				advance_clock(steps_left);
 				cur_dfam_step = dfam_step;
 			}

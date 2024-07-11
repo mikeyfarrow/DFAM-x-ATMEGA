@@ -233,9 +233,6 @@
     <Compile Include="SerialMidiTransport.h">
       <SubType>compile</SubType>
     </Compile>
-    <Compile Include="utilities.h">
-      <SubType>compile</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="lib" />
