@@ -213,22 +213,6 @@ void MidiController::check_sync_switch()
 	}
 }
 
-/*
-	midi_to_data - converts a MIDI note into the data bits used by the DAC
-		midi_note 0 -> C-1
-*/
-uint16_t MidiController::midi_to_data(uint8_t midi_note)
-{
-	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
-	{
-		// error?
-		return 0;
-	}
-	else
-	{
-		return (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE; // add 0.5 ?
-	}
-}
 
 
 /************************************************************************/
@@ -264,7 +248,7 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 	if (channel == MIDI_CH_VOCT_A)
 	{
 		output_dac(0, midi_to_data(pitch));
-		VEL_A_DUTY = velocity << 1;
+		VEL_A_DUTY = velocity * 0xFF / 0x7F;
 		trigger_A();
 	}
 	
@@ -273,7 +257,7 @@ void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 		output_dac(1, midi_to_data(pitch));
 		if (CCS_MODE) // don't apply VelB when in KCS mode
 		{
-			VEL_B_DUTY = velocity << 1;
+			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 		}
 		trigger_B();
 		
@@ -341,7 +325,6 @@ void MidiController::handleContinue()
 }
 
 
-
 /************************************************************************/
 /*		HELPER METHODS                                                  */
 /************************************************************************/
@@ -372,4 +355,21 @@ uint8_t MidiController::midi_note_to_step(uint8_t note) {
 			return i + 1;
 	}
 	return false;
+}
+
+/*
+	midi_to_data - converts a MIDI note into the data bits used by the DAC
+		midi_note 0 -> C-1
+*/
+uint16_t MidiController::midi_to_data(uint8_t midi_note)
+{
+	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
+	{
+		// error?
+		return 0;
+	}
+	else
+	{
+		return (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE; // add 0.5 ?
+	}
 }

@@ -25,7 +25,7 @@ void init_pwm_output()
 	TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
 	OCR0A = 0x00;							// pwm out #1 duty cycle 0
 	OCR0B = 0x00;							// pwm out #2 duty cycle 0
-	TCCR0B |= (1 << CS01);					// set prescaler to 8 and start PWM
+	TCCR0B |= (1 << CS00);					// set prescaler to none and start PWM (f=62500Hz)
 }
 
 /*******************************************/

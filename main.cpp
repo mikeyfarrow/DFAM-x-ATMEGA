@@ -32,7 +32,7 @@ void running_status(uint16_t count)
 {
 	if (count % 3 == 0) { status1_green(); }
 	else if (count % 3 == 1) { status1_red(); }
-	else{ status1_off(); }	
+	else{ status1_off(); }
 }
 
 /********************************************/
@@ -53,12 +53,9 @@ ISR(USART_RX_vect) {
 	}
 }
 
-/******************	   SWITCH DEBOUNCE & CLEAR TRIGGER TIMER   ******************/
-/*
-	Interrupt is triggered every 1 millisecond.
-	If the trigger has been high for TRIG_DUR, then trigger is cleared.
-	Mode switch is updated in the time interval defined by SWITCH_DEBOUNCE_DIR. */
-/********************************************************************************/
+/*****************************************************/
+/* TIMER INTERRUPT: Switch debounce + clear trigger  */
+/*****************************************************/
 ISR(TIMER1_COMPA_vect) {
 	mctl.timer_tick();
 }
