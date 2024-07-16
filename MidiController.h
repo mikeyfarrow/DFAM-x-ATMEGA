@@ -24,14 +24,21 @@
 #include "SerialMidiTransport.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
-
+#define MAX_SLIDE_LENGTH 500 // 500 ms
 
 class MidiController
 {
 	
 /***** FIELDS *****/
 private:
-	SMT transport;
+	MIDI_NAMESPACE::SerialMidiTransport transport;
+	
+	volatile uint8_t is_sliding_ch[2];
+	volatile uint16_t slide_step_ch[2];
+	volatile uint16_t slide_length;
+	volatile uint16_t slide_step_max_ch[2];
+	volatile uint8_t slide_start_note_ch[2];
+	volatile uint8_t slide_end_note_ch[2];
 	
 	volatile uint8_t trig_A_ticks;
 	volatile uint8_t trig_B_ticks;
@@ -43,7 +50,7 @@ private:
 	uint8_t clock_count;
 	uint8_t cur_dfam_step;
 	uint8_t clock_div;
-	uint8_t keyboard_step_table[8] = {48, 50, 52, 53, 55, 57, 59, 60};
+	uint8_t keyboard_step_table[8];
 	volatile uint8_t switch_state;
 
 public:
@@ -56,6 +63,7 @@ public:
 	void check_for_MIDI();
 	void timer_tick();
 	uint8_t incoming_message(uint8_t); 
+	void tx_ready();
 	
 	// Event handlers
 	void handleCC(byte channel, byte cc_num, byte cc_val);
@@ -77,6 +85,8 @@ private:
 	// update triggers and sequence state
 	void check_mode_switch();
 	void check_sync_switch();
+	void check_slide(uint8_t ch);
+	void start_slide(byte ch, byte midi_note, byte velocity);
 	
 	// Helper methods
 	static uint8_t steps_between(int start, int end);

@@ -5,6 +5,8 @@
 * Author: mikey
 */
 #include <avr/io.h>
+#include <math.h>
+#include <avr/cpufunc.h>
 
 #include "GPIO.h"
 #include "MidiController.h"
@@ -50,9 +52,18 @@ const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 		initializes the serial transport and MIDI interface
 		handles all MIDI events and sequencer logic
 */
-MidiController::MidiController(): transport(), midi((SMT&) transport)
+MidiController::MidiController():
+	transport(),
+	is_sliding_ch		{false,	false},
+	slide_step_ch		{ UINT16_MAX, UINT16_MAX },
+	slide_step_max_ch	{ UINT16_MAX, UINT16_MAX },
+	slide_start_note_ch { UINT8_MAX, UINT8_MAX },
+	slide_end_note_ch	{ UINT8_MAX, UINT8_MAX },
+	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
+	midi((SMT&) transport)
 {
-	trigger_duration_ms = 2;
+	slide_length = 50;
+	trigger_duration_ms = 10; // *ms/10
 	debounce_ticks = 0;
 	
 	trig_A_ticks = 0;
@@ -71,11 +82,53 @@ void MidiController::check_for_MIDI()
 	midi.read();
 }
 
-void MidiController::timer_tick()
+void MidiController::check_slide(uint8_t ch)
 {
+	if (is_sliding_ch[ch])
+	{
+		if (slide_step_ch[ch] == slide_step_max_ch[ch])
+		{
+			// the slide is complete
+			is_sliding_ch[ch] = false;
+			
+			output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
+		}
+		else
+		{
+			// the slide is ongoing
+			uint16_t start_data = midi_to_data(slide_start_note_ch[ch]);
+			uint16_t end_data = midi_to_data(slide_end_note_ch[ch]);
+			int16_t interval = end_data - start_data;
+			
+			int16_t inc = ((float) slide_step_ch[ch]  * interval) / (float)slide_step_max_ch[ch];
+
+			output_dac(ch, start_data + inc);
+			slide_step_ch[ch]++;
+		}
+	}
+}
+
+/*
+	tx_ready - called to notify the MIDI controller that the USART data register
+		is empty and so is ready for a MIDI Tx
+*/
+void MidiController::tx_ready()
+{
+	uint8_t midi_byte;
+	if (transport.midi_tx_buffer.get(&midi_byte))
+	{
+		UDR0 = midi_byte;
+	}
+}
+
+void MidiController::timer_tick()
+{	
 	trig_A_ticks++;
 	trig_B_ticks++;
 	debounce_ticks++;
+	
+	check_slide(0);
+	check_slide(1);
 	
 	if (trig_A_ticks >= trigger_duration_ms)
 	{
@@ -88,7 +141,7 @@ void MidiController::timer_tick()
 	}
 	
 	if (debounce_ticks >= SWITCH_DEBOUNCE_DUR)
-	{
+	{		
 		debounce_ticks = 0;
 		check_mode_switch();
 		check_sync_switch();
@@ -134,6 +187,7 @@ void MidiController::advance_clock()
 	for (int i = 0; i < adv_clock_ticks; i++)
 	{
 		/* do nothing, wait a while */
+		_NOP();
 	}
 	
 	clear_bit(ADV_PORT, ADV_OUT);	
@@ -167,20 +221,22 @@ void MidiController::output_dac(uint8_t channel, uint16_t data)
 }
 
 /*
-	check_mode_switch - 
-		There are two modes: CCS (clock-controlled sequencer) or KCS (keyboard-controlled
-		sequencer). SWITCH_STATE is true for CCS, false for KCS.
-	 
-		When the mode switch is flipped we are either switching
-			- from CCS into KCS (sequence could be in Play or Stop)
-			- from KCS into CCS
-		Either way, restart the clock counter and set the DFAM sequencer back to step 1.
+check_mode_switch -
+There are two modes: CCS (clock-controlled sequencer) or KCS (keyboard-controlled
+sequencer). SWITCH_STATE is true for CCS, false for KCS.
+
+When the mode switch is flipped we are either switching
+- from CCS into KCS (sequence could be in Play or Stop)
+- from KCS into CCS
+Either way, restart the clock counter and set the DFAM sequencer back to step 1.
 */
 void MidiController::check_mode_switch()
 {
 	uint8_t cur_switch = bit_is_set(MODE_SWITCH_PIN, MODE_SWITCH);
 	if (cur_switch == switch_state)
+	{
 		return;
+	}
 
 	switch_state = cur_switch;
 	clock_count = 0;
@@ -224,12 +280,16 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 	switch (cc_num)
 	{
 		case CC_TRIG_LENGTH:
+		{
 			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
 			break;
+		}
 			
 		case CC_ADV_WIDTH:
+		{
 			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
 			break;
+		}
 			
 		case CC_CLOCK_DIV:
 		{
@@ -237,30 +297,56 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			clock_div = DIVISIONS[div_idx];
 			break;
 		}
+		
+		case MIDI_NAMESPACE::PortamentoTime:
+		{
+			slide_length = ((uint16_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			break;
+		}
 			
 		default:
+		{
 			break;
+		}
 	}
 }
 
-void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
+void MidiController::start_slide(byte ch, byte midi_note, byte velocity)
 {
-	if (channel == MIDI_CH_VOCT_A)
+	// set the start and end note for the slide
+	slide_start_note_ch[ch] = slide_end_note_ch[ch];
+	slide_end_note_ch[ch] = midi_note - MIDI_NOTE_MIN;
+	if (slide_start_note_ch[ch] == UINT8_MAX)
 	{
-		output_dac(0, midi_to_data(pitch));
+		slide_start_note_ch[ch] = slide_end_note_ch[ch];
+	}
+			
+	// set the time bounds for the slide and start the slide
+	slide_step_max_ch[ch] = slide_length;
+	slide_step_ch[ch] = 0;
+	is_sliding_ch[ch] = true;
+			
+	// write the velocity and send the trigger
+	if (ch == 0)
+	{
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
 		trigger_A();
 	}
-	
-	if (channel == MIDI_CH_VOCT_B)
+	else
 	{
-		output_dac(1, midi_to_data(pitch));
 		if (CCS_MODE) // don't apply VelB when in KCS mode
 		{
 			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 		}
 		trigger_B();
-		
+	}
+}
+
+void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
+{
+	if (channel == MIDI_CH_VOCT_A || channel == MIDI_CH_VOCT_B)
+	{
+		start_slide(channel - 1, pitch, velocity);
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
@@ -370,6 +456,6 @@ uint16_t MidiController::midi_to_data(uint8_t midi_note)
 	}
 	else
 	{
-		return (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE; // add 0.5 ?
+		return midi_note * DAC_CAL_VALUE; // add 0.5 ?
 	}
 }

@@ -28,6 +28,7 @@ class SerialMidiTransport
 /***** FIELDS *****/
 public:
 	CircularBuffer midi_rx_buffer;
+	CircularBuffer midi_tx_buffer;
 	
 private:
 	uint8_t latest_serial_byte;

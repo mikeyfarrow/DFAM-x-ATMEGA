@@ -8,6 +8,7 @@
 #include "lib/midi_Defs.h"
 #include "lib/midi_Namespace.h"
 
+#include "GPIO.h"
 #include "SerialMidiTransport.h"
 
 SMT::SerialMidiTransport()
@@ -16,11 +17,20 @@ SMT::SerialMidiTransport()
 	//uint8_t midi_rx_buffer[BUFFER_MAX_SIZE];
 }
 
-void SMT::begin() { };  /* UART already initialized */			/* nothing to do */
-void SMT::end() { };											/* nothing to do */
-bool SMT::beginTransmission(MidiType status) { return true; };	/* nothing to do */
-void SMT::endTransmission() { };								/* nothing to do */
-void SMT::write(uint8_t byte) { };		         /* TODO: implement for MIDI Tx? */
+void SMT::begin() { };				/* nothing to do */
+void SMT::end() { };				/* nothing to do */
+void SMT::endTransmission() { };	/* nothing to do */
+	
+bool SMT::beginTransmission(MidiType status)
+{
+	return true;
+}
+
+	
+void SMT::write(uint8_t msg)
+{
+	midi_tx_buffer.put(msg);
+};
 
 
 uint8_t SMT::read()

@@ -18,6 +18,7 @@
 
 #define set_bit(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #define clear_bit(sfr, bit) (_SFR_BYTE(sfr) &= ~(_BV(bit)))
+#define toggle_bit(sfr, bit) (_SFR_BYTE(sfr) ^= _BV(bit))
 
 /************************************************************************/
 /*		LED outputs for debug											*/
@@ -125,6 +126,7 @@ void init_digital_outputs();
 void init_midi_UART();
 void init_DAC_SPI();
 void init_pwm_output();
-void init_timer_interrupt();
+void init_timer_interrupt_1s();
+void init_timer_interrupt_1ms();
 
 #endif /* _DFAM_GPIO_H_ */

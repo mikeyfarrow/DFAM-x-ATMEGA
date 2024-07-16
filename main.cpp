@@ -28,22 +28,60 @@ void handleStop();
 void handleClock();
 void handleContinue();
 
-void running_status(uint16_t count)
+int main()
 {
-	if (count % 3 == 0) { status1_green(); }
-	else if (count % 3 == 1) { status1_red(); }
-	else{ status1_off(); }
+	cli(); // disable interrupts globally
+	
+	mctl.midi.turnThruOff();
+	
+	init_led_outputs();		/* for debugging */
+	init_digital_outputs();	/* advance clock out, trigger out x2,  ...velocities? */
+	init_midi_UART();		/* MIDI on the UART Tx/Rx pins */
+	init_DAC_SPI();			/* for sending commands to the DAC */
+	
+	/* configure timers/counters and interrupts */
+	init_pwm_output();
+	init_timer_interrupt_1s();
+	init_timer_interrupt_1ms();
+	
+	DDRC &= ~_BV(DDC3); // set PC3 as input
+	DDRB &= ~_BV(DDB1); // set PB1 as input
+	DDRD |= _BV(DDD1); // set PD1 (Tx) as output
+	
+	register_midi_events();
+	
+	sei(); // enable interrupts globally
+	
+	uint16_t idx = 0;
+	while (1)
+	{
+		if (idx % 3 == 0) { status1_green(); }
+		else if (idx % 3 == 1) { status1_red(); }
+		else{ status1_off(); }
+		
+		mctl.check_for_MIDI();
+		idx++;
+	}
+	return 0;
 }
 
-/********************************************/
-/*         MIDI Rx INTERRUPT                */
-/********************************************/
+
+/**************************************************/
+/*  INTERRUPTS: TIMERS, MIDI Rx, MIDI Tx ready    */
+/**************************************************/
+
+//  MIDI Tx is ready (i.e. "Data Register Empty") - tell the MidiController
+ISR(USART_UDRE_vect) {
+	mctl.tx_ready();
+}
+
+// MIDI Rx message - there is a new byte in the data register
 ISR(USART_RX_vect) {
 	uint8_t latest_byte = UDR0;
-	
 	if (mctl.incoming_message(latest_byte))
 	{
 		// nothing to do...
+		
 	}
 	else
 	{
@@ -53,41 +91,15 @@ ISR(USART_RX_vect) {
 	}
 }
 
-/*****************************************************/
-/* TIMER INTERRUPT: Switch debounce + clear trigger  */
-/*****************************************************/
-ISR(TIMER1_COMPA_vect) {
+// Timer Interrupt: every 1 ms
+ISR(TIMER2_COMPA_vect) {
 	mctl.timer_tick();
 }
 
-
-
-int main()
-{
-	init_led_outputs();		/* for debugging */
-	init_digital_outputs();	/* advance clock out, trigger out x2,  ...velocities? */
-	init_midi_UART();		/* MIDI on the UART Tx/Rx pins */
-	init_DAC_SPI();			/* for sending commands to the DAC */
-	
-	/* configure timers/counters and interrupts */
-	init_pwm_output();
-	init_timer_interrupt();
-	
-	DDRC &= ~_BV(DDC3); // set PC3 as input
-	DDRB &= ~_BV(DDB1); // set PB1 as input
-	
-	register_midi_events();
-	
-	uint16_t idx = 0;
-	while (1)
-	{
-		running_status(idx);
-		mctl.check_for_MIDI();
-		idx++;
-	}
-	return 0;
+// Timer Interrupt: every 1 sec
+ISR(TIMER1_COMPA_vect) {
+	//mctl.midi.sendNoteOn(55, 127, 1);
 }
-
 
 /*
 	Unfortunately we since we cannot include <functional> we cannot call std::bind or

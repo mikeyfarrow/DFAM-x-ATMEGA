@@ -30,27 +30,56 @@ void init_pwm_output()
 
 /*******************************************/
 /* TIMER 1 - Interrupt every 1 millisecond */
-void init_timer_interrupt()
+void init_timer_interrupt_1s()
 {
-	cli(); // disable interrupts globally
     
-	TCCR1A = 0;		// set entire TCCR1A register to 0
-	TCCR1B = 0;		// same for TCCR1B
-	TCNT1  = 0;		// initialize counter value to 0
-	OCR1A = 15999;										// 1000 Hz i.e. 1 ms
-	TCCR1B |= (1 << WGM12);								// turn on CTC mode
-	TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);	// clock div. = 1
-	TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
-
-	// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
-	//			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
+	//TCCR1A = 0;		// set entire TCCR1A register to 0
+	//TCCR1B = 0;		// same for TCCR1B
+	//TCNT1  = 0;		// initialize counter value to 0
+	//OCR1A = 15999;										// 1000 Hz i.e. 1 ms
+	//TCCR1B |= (1 << WGM12);								// turn on CTC mode
+	//TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);	// clock div. = 1
+	//TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
+//
+	//// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
+	////			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
 	
-	sei(); // enable interrupts globally
+	TCCR1A = 0; // set entire TCCR1A register to 0
+	TCCR1B = 0; // same for TCCR1B
+	TCNT1  = 0; // initialize counter value to 0
+	// set compare match register for 1 Hz increments
+	OCR1A = 62499; // = 16000000 / (256 * 1) - 1 (must be <65536)
+	// turn on CTC mode
+	TCCR1B |= (1 << WGM12);
+	// Set CS12, CS11 and CS10 bits for 256 prescaler
+	TCCR1B |= (1 << CS12) | (0 << CS11) | (0 << CS10);
+	// enable timer compare interrupt
+	TIMSK1 |= (1 << OCIE1A);
+	
+}
+
+void init_timer_interrupt_1ms()
+{
+	TCCR2A = 0; // set entire TCCR2A register to 0
+	TCCR2B = 0; // same for TCCR2B
+	TCNT2  = 0; // initialize counter value to 0
+	// set compare match register for 1000 Hz increments
+	OCR2A = 249; // = 16000000 / (64 * 1000) - 1 (must be <256)
+	// turn on CTC mode
+	TCCR2B |= (1 << WGM21);
+	// Set CS22, CS21 and CS20 bits for 64 prescaler
+	TCCR2B |= (1 << CS22) | (0 << CS21) | (0 << CS20);
+	// enable timer compare interrupt
+	TIMSK2 |= (1 << OCIE2A);
 }
 
 /*	init_midi_UART - Initialize the USART port
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
 */
+
+#define RX_COMPLETE_INTERRUPT         (1<<RXCIE0)
+#define DATA_REGISTER_EMPTY_INTERRUPT (1<<UDRIE0)
+
 void init_midi_UART()
 {	
 	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
@@ -58,7 +87,8 @@ void init_midi_UART()
 	
 	UCSR0B |= (1 << TXEN0 ); // enable transmitter
 	UCSR0B |= (1 << RXEN0 ); // enable receiver
-	UCSR0B |= (1 << RXCIE0); // enable Rx interrupt
+	UCSR0B |= RX_COMPLETE_INTERRUPT; // enable Rx interrupt
+	UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 	
 	DDRD |= _BV(PORTD1);
@@ -68,7 +98,7 @@ void init_midi_UART()
 void init_DAC_SPI()
 {
 	// make the MOSI, SCK, and SS pins outputs
-	SPI_DDR |= ( 1 << SPI_MOSI ) | ( 1 << SPI_SCK ) | ( 1 << SPI_SS );
+	SPI_DDR |= (1 << SPI_MOSI) | ( 1 << SPI_SCK) | (1 << SPI_SS);
 
 	// TODO: no it is not, not used by DAC
 	// make sure the MISO pin is input
@@ -89,8 +119,6 @@ void init_digital_outputs()
 	
 	DDR_TRIG |= (1<<DD_TRIGB);
 	DDR_VEL |= (1<<DD_VELB);
-	
-	// TODO: pull downs? ups?
 }
 
 void init_led_outputs()
