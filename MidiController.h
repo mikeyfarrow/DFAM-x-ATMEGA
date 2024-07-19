@@ -22,9 +22,11 @@
 #include "lib/midi_Namespace.h"
 
 #include "SerialMidiTransport.h"
+#include "CvOutput.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
 #define MAX_SLIDE_LENGTH 500 // 500 ms
+
 
 class MidiController
 {
@@ -35,17 +37,9 @@ private:
 	
 	uint32_t millis_last;
 	
-	volatile uint16_t slide_length;
-	volatile uint8_t is_sliding_ch[2];
+	CvOutput cv_out_a;
+	CvOutput cv_out_b;
 	
-	volatile uint32_t slide_start_ms_ch[2];
-	volatile uint16_t slide_cur_length_ch[2];
-	
-	volatile uint8_t slide_start_note_ch[2];
-	volatile uint8_t slide_end_note_ch[2];
-	
-	float pitch_bend_amt; // -1 to 1
-	uint8_t pitch_bend_range; // in semitones
 	
 	volatile uint8_t adv_clock_ticks;
 	volatile uint32_t last_sw_read;
@@ -66,6 +60,7 @@ public:
 /***** METHODS *****/
 public:
 	MidiController();
+	
 	void init_event_handlers();
 	void update();
 	uint8_t incoming_message(uint8_t); 
@@ -82,27 +77,25 @@ public:
 	
 	void time_inc();
 	uint32_t millis();
-	
-private:
 	void trigger_A();
 	void trigger_B();
+	static void output_dac(uint8_t channel, uint16_t data);
+	
+private:
 	void advance_clock();
 	void advance_clock(uint8_t steps);
 	uint16_t calculate_ocr_value(uint16_t duration_ms);
 	
-	static void output_dac(uint8_t channel, uint16_t data);
-	uint16_t midi_to_data(uint8_t midi_note);
 	
 	void vibrato_depth_cc(uint8_t cc_val);
 	
 	// update triggers and sequence state
 	void check_mode_switch();
 	void check_sync_switch();
-	void check_slide(uint8_t ch);
-	void start_slide(byte ch, byte midi_note, byte velocity);
 	
 	// Helper methods
 	static uint8_t steps_between(int start, int end);
 	uint8_t midi_note_to_step(uint8_t note);
+	CvOutput* get_cv_out(uint8_t midi_ch);
 };
 #endif //__MIDICONTROLLER_H__

@@ -1,0 +1,20 @@
+MIDI SPEC NOTES
+---------------
+
+Some cool features that are implemented:
+
+- Portamento
+   - ctrls: portamento time
+
+- Vibrato
+   - ctrls: depth, rate, and delay
+
+   - technical considerations:   
+      - musical ranges for vibrato speed? and depth?
+      - how often does DAC need to update the pitch for it to sound smooth?
+   
+- Pitch bend
+   - RPN for depth? depth needs to be tuned from current setting... it is jumpy
+      - possible to "slide" up/down to the new pitch bend value?
+        --> don't think so, prob not how others implement this... hmmm...
+

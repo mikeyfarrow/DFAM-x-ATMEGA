@@ -14,10 +14,6 @@
 #include "MidiController.h"
 #include "lib/MIDI.h"
 
-#define MIDI_NOTE_MIN 12
-#define MIDI_NOTE_MAX 111
-#define DAC_CAL_VALUE 47.068966d
-
 #define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 #define MAX_ADV_LENGTH 1000 // millis
 #define MAX_TRIG_LENGTH 100 // millis
@@ -56,22 +52,15 @@ const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 */
 MidiController::MidiController():
 	transport(),
-	is_sliding_ch		{false,	false},
-	slide_start_ms_ch	{ UINT32_MAX, UINT32_MAX },
-	slide_cur_length_ch	{ UINT16_MAX, UINT16_MAX },
-	slide_start_note_ch { UINT8_MAX, UINT8_MAX },
-	slide_end_note_ch	{ UINT8_MAX, UINT8_MAX },
+	cv_out_a(*this, 0),
+	cv_out_b(*this, 1),
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	midi((SMT&) transport)
 {
 	millis_last = 0;
 	
-	slide_length = 100;
 	trigger_duration_ms = 1;
 	last_sw_read = 0;
-	
-	pitch_bend_amt = 0;
-	pitch_bend_range = 5;
 	
 	adv_clock_ticks = 0;
 	
@@ -83,6 +72,25 @@ MidiController::MidiController():
 	
 	time_counter = 0;
 }
+
+
+CvOutput* MidiController::get_cv_out(uint8_t midi_ch)
+{
+	if (midi_ch == MIDI_CH_VOCT_A)
+	{
+		return &cv_out_a;
+	}
+	else if (midi_ch == MIDI_CH_VOCT_B)
+	{
+		return &cv_out_b;
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+
 
 void  MidiController::time_inc()
 {
@@ -103,10 +111,8 @@ void MidiController::update()
 	midi.read();
 
 	// update V/oct outputs based on slide and/or vibrato progress
-	//cli();
-	check_slide(0);
-	check_slide(1);
-	//sei();
+	cv_out_a.check_slide();
+	cv_out_b.check_slide();
 	
    // read the hardware inputs (the two switches)
    if (millis() - last_sw_read >= SWITCH_DEBOUNCE_DUR)
@@ -315,7 +321,12 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 		
 		case MIDI_NAMESPACE::PortamentoTime:
 		{
-			slide_length = ((uint16_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			CvOutput* cv_out = get_cv_out(channel);
+			if (cv_out != nullptr)
+			{
+				uint16_t duration = ((uint16_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+				cv_out->new_slide_length(duration);
+			}
 			break;
 		}
 		
@@ -330,74 +341,13 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 	}
 }
 
-void MidiController::start_slide(byte ch, byte midi_note, byte velocity)
-{
-	// set the start and end note for the slide
-	slide_start_note_ch[ch] = slide_end_note_ch[ch];
-	slide_end_note_ch[ch] = midi_note;
-	if (slide_start_note_ch[ch] == UINT8_MAX) // if this is the first note, there is no slide
-	{
-		slide_start_note_ch[ch] = slide_end_note_ch[ch];
-	}
-			
-	// set the time bounds for the slide and start the slide
-	slide_cur_length_ch[ch] = slide_length;
-	slide_start_ms_ch[ch] = millis();
-	is_sliding_ch[ch] = slide_length > 0;
-	
-	if (!is_sliding_ch[ch])
-	{
-		output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
-	}
-	
-	// write the velocity and send the trigger
-	if (ch == 0)
-	{
-		VEL_A_DUTY = velocity * 0xFF / 0x7F; 
-		trigger_A();
-	}
-	else
-	{
-		if (CCS_MODE) // don't apply VelB when in KCS mode
-		{
-			VEL_B_DUTY = velocity * 0xFF / 0x7F;
-		}
-		trigger_B();
-	}
-}
-
-void MidiController::check_slide(uint8_t ch)
-{
-	if (is_sliding_ch[ch])
-	{
-		uint32_t elapsed = millis() - slide_start_ms_ch[ch];
-		if (elapsed >= slide_cur_length_ch[ch])
-		{
-			// the slide is complete
-			is_sliding_ch[ch] = false;
-			
-			output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
-		}
-		else
-		{
-			// the slide is ongoing
-			uint16_t start_data = midi_to_data(slide_start_note_ch[ch]);
-			uint16_t end_data = midi_to_data(slide_end_note_ch[ch]);
-			int16_t interval = end_data - start_data;
-			
-			int16_t inc = ((float) elapsed  * interval) / (float)slide_cur_length_ch[ch];
-
-			output_dac(ch, start_data + inc);
-		}
-	}
-}
-
 void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 {
-	if (channel == MIDI_CH_VOCT_A || channel == MIDI_CH_VOCT_B)
+    CvOutput* cv_out = get_cv_out(channel);
+    if (cv_out != nullptr)
 	{
-		uint8_t out_ch = channel == MIDI_CH_VOCT_A ? 0 : 1;
-		start_slide(out_ch, pitch - MIDI_NOTE_MIN, velocity);
+		uint8_t send_vel = channel == MIDI_CH_VOCT_A || CCS_MODE;
+		cv_out->start_slide(pitch, velocity, send_vel);
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
@@ -466,11 +416,11 @@ void MidiController::handleContinue()
 */
 void MidiController::handlePitchBend(byte midi_ch, int16_t amt)
 {
-	// get it into the range -1 to 1
-	pitch_bend_amt = (((float) amt + 8192) / 16383) * 2 - 1;
-	
-	uint8_t out_ch = midi_ch == MIDI_CH_VOCT_A ? 0 : 1;
-	output_dac(out_ch, midi_to_data(slide_end_note_ch[out_ch]));
+	CvOutput* cv_out = get_cv_out(midi_ch);
+	if (cv_out != nullptr)
+	{
+		cv_out->pitch_bend_event(amt);
+	}
 }
 
 
@@ -506,20 +456,3 @@ uint8_t MidiController::midi_note_to_step(uint8_t note) {
 	return false;
 }
 
-/*
-	midi_to_data - converts a MIDI note into the data bits used by the DAC
-		midi_note 0 -> C-1
-*/
-uint16_t MidiController::midi_to_data(uint8_t midi_note)
-{
-	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
-	{
-		// error?
-		return 0;
-	}
-	else
-	{
-		
-		return midi_note * DAC_CAL_VALUE + (pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE); // add 0.5 ?
-	}
-}
