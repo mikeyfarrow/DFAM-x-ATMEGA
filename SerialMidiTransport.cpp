@@ -5,10 +5,12 @@
 * Author: mikey
 */
 
+#include <avr/interrupt.h>
+
 #include "lib/midi_Defs.h"
 #include "lib/midi_Namespace.h"
 
-#include "GPIO.h"
+#include "./GPIO.h"
 #include "SerialMidiTransport.h"
 
 SMT::SerialMidiTransport()
@@ -29,13 +31,19 @@ bool SMT::beginTransmission(MidiType status)
 	
 void SMT::write(uint8_t msg)
 {
+	//cli();
 	midi_tx_buffer.put(msg);
+	//sei();
 };
 
 
 uint8_t SMT::read()
 {
-	if (midi_rx_buffer.get(&latest_serial_byte))
+	//cli();
+	uint8_t available = midi_rx_buffer.get(&latest_serial_byte);
+	//sei();
+	
+	if (available)
 	{
 		return latest_serial_byte;
 	}
@@ -48,6 +56,10 @@ uint8_t SMT::read()
 
 unsigned SMT::available()
 {
-	return midi_rx_buffer.ready();
+	//cli();
+	uint8_t result = midi_rx_buffer.ready();
+	//sei();
+	
+	return result;
 };
 

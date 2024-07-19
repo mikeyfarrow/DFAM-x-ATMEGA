@@ -11,10 +11,12 @@
 #include <avr/io.h>
 #include <avr/sfr_defs.h>
 
-#define CPU_SPEED 16000000UL
+#ifndef F_CPU
+#define F_CPU 16000000UL
+#endif
 
 #define USART_BAUD_RATE 31250 // MIDI Baud Rate
-#define BAUD_RATE_BYTES (((CPU_SPEED / (USART_BAUD_RATE * 16UL))) - 1)
+#define BAUD_RATE_BYTES (((F_CPU / (USART_BAUD_RATE * 16UL))) - 1)
 
 #define set_bit(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 #define clear_bit(sfr, bit) (_SFR_BYTE(sfr) &= ~(_BV(bit)))
@@ -112,6 +114,14 @@
 						  clear_bit(BILED2_PORT, BILED2_R);
 #define status2_off()   clear_bit(BILED2_PORT, BILED2_G); \
 						clear_bit(BILED2_PORT, BILED2_R);
+						
+// Macros to enable and disable Output Compare A Match Interrupt
+#define ENABLE_OCI1A()    (TIMSK1 |= (1 << OCIE1A))
+#define DISABLE_OCI1A()   (TIMSK1 &= ~(1 << OCIE1A))
+
+// Macros to enable and disable Output Compare B Match Interrupt
+#define ENABLE_OCI1B()    (TIMSK1 |= (1 << OCIE1B))
+#define DISABLE_OCI1B()   (TIMSK1 &= ~(1 << OCIE1B))
 
 /* LED helpers */
 void set_all_LEDs();
@@ -126,7 +136,7 @@ void init_digital_outputs();
 void init_midi_UART();
 void init_DAC_SPI();
 void init_pwm_output();
-void init_timer_interrupt_1s();
-void init_timer_interrupt_1ms();
+void init_milli_counter_timer();
+void init_timer1();
 
 #endif /* _DFAM_GPIO_H_ */

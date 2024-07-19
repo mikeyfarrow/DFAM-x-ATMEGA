@@ -6,13 +6,15 @@
 */
 #include <avr/io.h>
 #include <math.h>
+#include <avr/interrupt.h>
 #include <avr/cpufunc.h>
+#include <util/atomic.h>
 
 #include "GPIO.h"
 #include "MidiController.h"
 #include "lib/MIDI.h"
 
-#define MIDI_NOTE_MIN 24
+#define MIDI_NOTE_MIN 12
 #define MIDI_NOTE_MAX 111
 #define DAC_CAL_VALUE 47.068966d
 
@@ -55,19 +57,22 @@ const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 MidiController::MidiController():
 	transport(),
 	is_sliding_ch		{false,	false},
-	slide_step_ch		{ UINT16_MAX, UINT16_MAX },
-	slide_step_max_ch	{ UINT16_MAX, UINT16_MAX },
+	slide_start_ms_ch	{ UINT32_MAX, UINT32_MAX },
+	slide_cur_length_ch	{ UINT16_MAX, UINT16_MAX },
 	slide_start_note_ch { UINT8_MAX, UINT8_MAX },
 	slide_end_note_ch	{ UINT8_MAX, UINT8_MAX },
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	midi((SMT&) transport)
 {
-	slide_length = 50;
-	trigger_duration_ms = 10; // *ms/10
-	debounce_ticks = 0;
+	millis_last = 0;
 	
-	trig_A_ticks = 0;
-	trig_B_ticks = 0;
+	slide_length = 100;
+	trigger_duration_ms = 1;
+	last_sw_read = 0;
+	
+	pitch_bend_amt = 0;
+	pitch_bend_range = 5;
+	
 	adv_clock_ticks = 0;
 	
 	follow_midi_clock = false;
@@ -75,38 +80,43 @@ MidiController::MidiController():
 	cur_dfam_step = 0; // the number of the last DFAM step triggered
 	clock_div = 4;
 	switch_state = -1;
+	
+	time_counter = 0;
 }
 
-void MidiController::check_for_MIDI()
+void  MidiController::time_inc()
 {
+	time_counter++;
+}
+
+uint32_t MidiController::millis()
+{
+	cli(); // don't allow ISR to change 32bit _millis while we read it byte by byte
+	uint32_t tms = time_counter;
+	sei();
+	return tms;// / 10;
+}
+
+void MidiController::update()
+{
+	// check the MIDI Tx buffer and deal with any new messages.
 	midi.read();
-}
 
-void MidiController::check_slide(uint8_t ch)
-{
-	if (is_sliding_ch[ch])
-	{
-		if (slide_step_ch[ch] == slide_step_max_ch[ch])
-		{
-			// the slide is complete
-			is_sliding_ch[ch] = false;
-			
-			output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
-		}
-		else
-		{
-			// the slide is ongoing
-			uint16_t start_data = midi_to_data(slide_start_note_ch[ch]);
-			uint16_t end_data = midi_to_data(slide_end_note_ch[ch]);
-			int16_t interval = end_data - start_data;
-			
-			int16_t inc = ((float) slide_step_ch[ch]  * interval) / (float)slide_step_max_ch[ch];
-
-			output_dac(ch, start_data + inc);
-			slide_step_ch[ch]++;
-		}
+	// update V/oct outputs based on slide and/or vibrato progress
+	//cli();
+	check_slide(0);
+	check_slide(1);
+	//sei();
+	
+   // read the hardware inputs (the two switches)
+   if (millis() - last_sw_read >= SWITCH_DEBOUNCE_DUR)
+	{		
+		check_mode_switch();
+		check_sync_switch();
+		last_sw_read = millis();
 	}
 }
+
 
 /*
 	tx_ready - called to notify the MIDI controller that the USART data register
@@ -120,33 +130,6 @@ void MidiController::tx_ready()
 		UDR0 = midi_byte;
 	}
 }
-
-void MidiController::timer_tick()
-{	
-	trig_A_ticks++;
-	trig_B_ticks++;
-	debounce_ticks++;
-	
-	check_slide(0);
-	check_slide(1);
-	
-	if (trig_A_ticks >= trigger_duration_ms)
-	{
-		clear_bit(TRIG_PORT, TRIG_A_OUT);
-	}
-	
-	if (trig_B_ticks >= trigger_duration_ms)
-	{
-		clear_bit(TRIG_PORT, TRIG_B_OUT);
-	}
-	
-	if (debounce_ticks >= SWITCH_DEBOUNCE_DUR)
-	{		
-		debounce_ticks = 0;
-		check_mode_switch();
-		check_sync_switch();
-	}
-} 
 
 uint8_t MidiController::incoming_message(uint8_t msg)
 {
@@ -164,16 +147,33 @@ uint8_t MidiController::incoming_message(uint8_t msg)
 void MidiController::trigger_A()
 {
 	set_bit(TRIG_PORT, TRIG_A_OUT);
-	trig_A_ticks = 0;
+	
+	// Set the compare value for the specified duration in the future
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	{
+		OCR1A = TCNT1 + calculate_ocr_value(trigger_duration_ms);
+		ENABLE_OCI1A();
+	}
 }
 
 /*
-	trigger_A - sends a pulse on the trigger A output lasting 
+	trigger_A - sends a pulse on the trigger A output 
 */
 void MidiController::trigger_B()
 {
 	set_bit(TRIG_PORT, TRIG_B_OUT);
-	trig_B_ticks = 0;
+	
+	// Set the compare value for the specified duration in the future
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	{
+		OCR1B = TCNT1 + calculate_ocr_value(trigger_duration_ms);
+		ENABLE_OCI1B();
+	}
+}
+
+// Calculate OCR value for a given duration in milliseconds
+uint16_t MidiController::calculate_ocr_value(uint16_t ms) {
+	return (F_CPU / 64) * ms / 1000;
 }
 
 /*
@@ -183,7 +183,6 @@ void MidiController::advance_clock()
 {
 	set_bit(ADV_PORT, ADV_OUT);
 	
-	/* TODO: Do this instead with PWM? Timer interrupts? */
 	for (int i = 0; i < adv_clock_ticks; i++)
 	{
 		/* do nothing, wait a while */
@@ -275,6 +274,22 @@ void MidiController::check_sync_switch()
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
 
+#define VibratoRate MIDI_NAMESPACE::SoundController7
+#define VibratoDepth MIDI_NAMESPACE::SoundController8
+#define VibratoDelay MIDI_NAMESPACE::SoundController9
+
+void MidiController::vibrato_depth_cc(uint8_t cc_val)
+{
+	if (cc_val == 0)
+	{
+		// vibrato off, cancel timer
+	}
+	else
+	{
+		// vibrato on, enable 1000hz timer interrupts
+	}
+}
+
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
@@ -303,6 +318,10 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			slide_length = ((uint16_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
 			break;
 		}
+		
+		case VibratoDepth:
+			vibrato_depth_cc(cc_val);
+			break;
 			
 		default:
 		{
@@ -315,21 +334,26 @@ void MidiController::start_slide(byte ch, byte midi_note, byte velocity)
 {
 	// set the start and end note for the slide
 	slide_start_note_ch[ch] = slide_end_note_ch[ch];
-	slide_end_note_ch[ch] = midi_note - MIDI_NOTE_MIN;
-	if (slide_start_note_ch[ch] == UINT8_MAX)
+	slide_end_note_ch[ch] = midi_note;
+	if (slide_start_note_ch[ch] == UINT8_MAX) // if this is the first note, there is no slide
 	{
 		slide_start_note_ch[ch] = slide_end_note_ch[ch];
 	}
 			
 	// set the time bounds for the slide and start the slide
-	slide_step_max_ch[ch] = slide_length;
-	slide_step_ch[ch] = 0;
-	is_sliding_ch[ch] = true;
-			
+	slide_cur_length_ch[ch] = slide_length;
+	slide_start_ms_ch[ch] = millis();
+	is_sliding_ch[ch] = slide_length > 0;
+	
+	if (!is_sliding_ch[ch])
+	{
+		output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
+	}
+	
 	// write the velocity and send the trigger
 	if (ch == 0)
 	{
-		VEL_A_DUTY = velocity * 0xFF / 0x7F;
+		VEL_A_DUTY = velocity * 0xFF / 0x7F; 
 		trigger_A();
 	}
 	else
@@ -342,11 +366,38 @@ void MidiController::start_slide(byte ch, byte midi_note, byte velocity)
 	}
 }
 
+void MidiController::check_slide(uint8_t ch)
+{
+	if (is_sliding_ch[ch])
+	{
+		uint32_t elapsed = millis() - slide_start_ms_ch[ch];
+		if (elapsed >= slide_cur_length_ch[ch])
+		{
+			// the slide is complete
+			is_sliding_ch[ch] = false;
+			
+			output_dac(ch, midi_to_data(slide_end_note_ch[ch]));
+		}
+		else
+		{
+			// the slide is ongoing
+			uint16_t start_data = midi_to_data(slide_start_note_ch[ch]);
+			uint16_t end_data = midi_to_data(slide_end_note_ch[ch]);
+			int16_t interval = end_data - start_data;
+			
+			int16_t inc = ((float) elapsed  * interval) / (float)slide_cur_length_ch[ch];
+
+			output_dac(ch, start_data + inc);
+		}
+	}
+}
+
 void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
 {
 	if (channel == MIDI_CH_VOCT_A || channel == MIDI_CH_VOCT_B)
 	{
-		start_slide(channel - 1, pitch, velocity);
+		uint8_t out_ch = channel == MIDI_CH_VOCT_A ? 0 : 1;
+		start_slide(out_ch, pitch - MIDI_NOTE_MIN, velocity);
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
@@ -410,6 +461,18 @@ void MidiController::handleContinue()
 	follow_midi_clock = true;
 }
 
+/*
+	handlePitchBend - amt is in the range -8192 to 8191
+*/
+void MidiController::handlePitchBend(byte midi_ch, int16_t amt)
+{
+	// get it into the range -1 to 1
+	pitch_bend_amt = (((float) amt + 8192) / 16383) * 2 - 1;
+	
+	uint8_t out_ch = midi_ch == MIDI_CH_VOCT_A ? 0 : 1;
+	output_dac(out_ch, midi_to_data(slide_end_note_ch[out_ch]));
+}
+
 
 /************************************************************************/
 /*		HELPER METHODS                                                  */
@@ -456,6 +519,7 @@ uint16_t MidiController::midi_to_data(uint8_t midi_note)
 	}
 	else
 	{
-		return midi_note * DAC_CAL_VALUE; // add 0.5 ?
+		
+		return midi_note * DAC_CAL_VALUE + (pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE); // add 0.5 ?
 	}
 }

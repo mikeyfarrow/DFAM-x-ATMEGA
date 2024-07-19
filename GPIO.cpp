@@ -11,8 +11,7 @@
 #include "GPIO.h"
 
 
-uint8_t LED_BANK[3] = { LED1, LED2, LED3 };		
-
+uint8_t LED_BANK[3] = { LED1, LED2, LED3 };
 
 /***************************************************/
 /*	TIMER 0 - fast PWM with outputs on PD6 and PD3 */
@@ -30,47 +29,30 @@ void init_pwm_output()
 
 /*******************************************/
 /* TIMER 1 - Interrupt every 1 millisecond */
-void init_timer_interrupt_1s()
+void init_timer1()
 {
-    
-	//TCCR1A = 0;		// set entire TCCR1A register to 0
-	//TCCR1B = 0;		// same for TCCR1B
-	//TCNT1  = 0;		// initialize counter value to 0
-	//OCR1A = 15999;										// 1000 Hz i.e. 1 ms
-	//TCCR1B |= (1 << WGM12);								// turn on CTC mode
-	//TCCR1B |= (0 << CS12) | (0 << CS11) | (1 << CS10);	// clock div. = 1
-	//TIMSK1 |= (1 << OCIE1A);							// enable timer compare interrupt
-//
-	//// see also: https://avr-guide.github.io/assets/docs/Atmel-2542-Using-the-AVR-High-speed-PWM_ApplicationNote_AVR131.pdf
-	////			 http://www.8bit-era.cz/arduino-timer-interrupts-calculator.html
-	
-	TCCR1A = 0; // set entire TCCR1A register to 0
-	TCCR1B = 0; // same for TCCR1B
-	TCNT1  = 0; // initialize counter value to 0
-	// set compare match register for 1 Hz increments
-	OCR1A = 62499; // = 16000000 / (256 * 1) - 1 (must be <65536)
-	// turn on CTC mode
-	TCCR1B |= (1 << WGM12);
-	// Set CS12, CS11 and CS10 bits for 256 prescaler
-	TCCR1B |= (1 << CS12) | (0 << CS11) | (0 << CS10);
-	// enable timer compare interrupt
-	TIMSK1 |= (1 << OCIE1A);
-	
+   // Set normal mode
+   TCCR1A = 0; // WGM11 and WGM10 = 0
+   TCCR1B = (1 << CS11) | (1 << CS10);
 }
 
-void init_timer_interrupt_1ms()
+#define F_TIMER2 1000
+void init_milli_counter_timer()
 {
-	TCCR2A = 0; // set entire TCCR2A register to 0
-	TCCR2B = 0; // same for TCCR2B
-	TCNT2  = 0; // initialize counter value to 0
-	// set compare match register for 1000 Hz increments
-	OCR2A = 249; // = 16000000 / (64 * 1000) - 1 (must be <256)
-	// turn on CTC mode
-	TCCR2B |= (1 << WGM21);
-	// Set CS22, CS21 and CS20 bits for 64 prescaler
-	TCCR2B |= (1 << CS22) | (0 << CS21) | (0 << CS20);
-	// enable timer compare interrupt
-	TIMSK2 |= (1 << OCIE2A);
+	// Configure timer 0 as fast PWM stopping at OCR0A (CTC should work as well)
+	TCCR2A |= (1<<WGM00) | (1<<WGM01);
+
+	// Select highest prescaler where 256 steps take more than 1ms for given F_CPU:
+	// 1/F_CPU * 2^8 * Prescaler >= 1/1000 s => Prescaler >= F_CPU / 2^8 / 1000
+	//        fast PWM     Prescaler = 64 for F_CPU = 16000000
+	TCCR2B |= (1<<WGM02) | (1<<CS00) | (1<<CS01);
+
+	// Select ticks after 1ms has passed:
+	// 1/F_CPU * ticks * Prescaler = 1/1000s => ticks = F_CPU / Prescaler / 1000
+	OCR2A = F_CPU / 64 / F_TIMER2 - 1; // -1 because it starts at zero and step from limit to zero counts as well
+
+	// Enable interrupt routine ISR(TIMER0_COMPA_vect)
+	TIMSK2 |= (1<<OCIE2A);
 }
 
 /*	init_midi_UART - Initialize the USART port
@@ -88,7 +70,7 @@ void init_midi_UART()
 	UCSR0B |= (1 << TXEN0 ); // enable transmitter
 	UCSR0B |= (1 << RXEN0 ); // enable receiver
 	UCSR0B |= RX_COMPLETE_INTERRUPT; // enable Rx interrupt
-	UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
+	//UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 	
 	DDRD |= _BV(PORTD1);

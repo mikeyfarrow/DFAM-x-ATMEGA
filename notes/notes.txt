@@ -20,6 +20,19 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 
 
 ############################
+### MIDI:
+
+Recommended Practice (RP-021)
+Sound Controller Defaults
+
+Vibrato CC:
+	CC#76   Rate
+	CC#77   Depth
+	CC#78   Delay
+
+
+
+############################
 ### MODES:
 
 - KCS (keyboard controlling sequencer)

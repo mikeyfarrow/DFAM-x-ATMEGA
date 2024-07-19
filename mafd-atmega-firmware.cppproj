@@ -198,6 +198,12 @@
     <Compile Include="CircularBuffer.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="CvOutput.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="CvOutput.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="GPIO.cpp">
       <SubType>compile</SubType>
     </Compile>
