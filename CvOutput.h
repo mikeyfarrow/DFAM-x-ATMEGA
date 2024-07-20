@@ -53,7 +53,8 @@ public:
 	void vibrato_rate_cc(uint8_t);
 	void vibrato_delay_cc(uint8_t);
 	
-	double triangle_wave(double t, double period, double amplitude);
+	double triangle_wave(double t, double period, bool descend_first = false);
+	double sine_wave(double t, double period);
 };
 
 #endif

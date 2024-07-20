@@ -55,30 +55,44 @@ void CvOutput::update_dac_vibrato()
 	}
 	
 	elapsed -= vib_delay_ms;
-	//float coeff = (2*M_PI) / vib_period_ms;
-	//float mag = sin(coeff * elapsed); // between -1 and 1
-	//vibrato_cur_offset = (mag * vib_depth_cents) / 100;
 	
-	double mag = triangle_wave(elapsed, vib_period_ms, 1);
-	vibrato_cur_offset = mag * vib_depth_cents / 100;
+	double scale_factor = triangle_wave(elapsed, vib_period_ms);
+	vibrato_cur_offset = scale_factor * vib_depth_cents / 100;
 	
 	mctl.output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
-
-
-double CvOutput::triangle_wave(double t, double period, double amplitude)
+/*
+	sine_wave - sine wave, values between -1 and 1 used to create vibrato effect
+*/
+double CvOutput::sine_wave(double t, double period)
 {
-	// Normalize t to fit within one period
-	int full_periods = (int)(t / period);
-	double t_mod = t - full_periods * period;
-	if (t_mod < period / 2.0) 
+	const float coeff = (2*M_PI) / period;
+	return  sin(coeff * t); // between -1 and 1
+}
+
+/*
+	triangle_wave - triangle wave, values between -1 and 1 used to create vibrato effect
+*/
+double CvOutput::triangle_wave(double t, double period, bool descend_first) {
+	if (descend_first)
 	{
-		return (4 * amplitude / period) * t_mod;
-	} 
-	else 
+		t -= (vib_period_ms / 4.0);
+	}
+	else
 	{
-		return (4 * amplitude / period) * (period - t_mod);
+		t += (vib_period_ms / 4.0);
+	}
+	
+	double wrapped_time = t - period * floor(t / period);
+	double phase = wrapped_time / (period / 2.0);
+	int phase_int = (int) phase;
+	double fractional_phase = phase - phase_int;
+
+	if (phase_int % 2 == 0) {
+		return 2 * fractional_phase - 1; // ascending part of the triangular wave
+		} else {
+		return 1 - 2 * fractional_phase; // descending part of the triangular wave
 	}
 }
 
