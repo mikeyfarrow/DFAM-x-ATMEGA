@@ -284,18 +284,6 @@ void MidiController::check_sync_switch()
 #define VibratoDepth MIDI_NAMESPACE::SoundController8
 #define VibratoDelay MIDI_NAMESPACE::SoundController9
 
-void MidiController::vibrato_depth_cc(uint8_t cc_val)
-{
-	if (cc_val == 0)
-	{
-		// vibrato off, cancel timer
-	}
-	else
-	{
-		// vibrato on, enable 1000hz timer interrupts
-	}
-}
-
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
@@ -324,16 +312,42 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			CvOutput* cv_out = get_cv_out(channel);
 			if (cv_out != nullptr)
 			{
-				uint16_t duration = ((uint16_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+				uint16_t duration = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
 				cv_out->new_slide_length(duration);
 			}
 			break;
 		}
 		
 		case VibratoDepth:
-			vibrato_depth_cc(cc_val);
+		{
+			CvOutput* cv_out = get_cv_out(channel);
+			if (cv_out != nullptr)
+			{
+				cv_out->vibrato_depth_cc(cc_val);
+			}
 			break;
-			
+		}
+
+		case VibratoRate:
+		{
+			CvOutput* cv_out = get_cv_out(channel);
+			if (cv_out != nullptr)
+			{
+				cv_out->vibrato_rate_cc(cc_val);
+			}
+			break;
+		}
+
+		case VibratoDelay:
+		{
+			CvOutput* cv_out = get_cv_out(channel);
+			if (cv_out != nullptr)
+			{
+				cv_out->vibrato_delay_cc(cc_val);
+			}
+			break;
+		}
+
 		default:
 		{
 			break;

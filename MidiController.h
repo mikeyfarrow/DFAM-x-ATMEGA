@@ -25,7 +25,7 @@
 #include "CvOutput.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
-#define MAX_SLIDE_LENGTH 500 // 500 ms
+#define MAX_SLIDE_LENGTH 2000 // 500 ms
 
 
 class MidiController
