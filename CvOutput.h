@@ -21,6 +21,8 @@ private:
 public:
 	uint8_t dac_ch;
 	
+	uint8_t trigger_duration_ms;
+	
 	volatile uint16_t portamento_time_user;
 	volatile uint8_t is_sliding;
 	
@@ -48,13 +50,19 @@ public:
 	void pitch_bend_event(int16_t amt);
 	void new_slide_length(uint16_t dur);
 	void update_dac_vibrato();
+	void trigger_A();
+	void trigger_B();
+	static void output_dac(uint8_t channel, uint16_t data);
 	uint16_t midi_to_data(uint8_t midi_note);
 	void vibrato_depth_cc(uint8_t);
 	void vibrato_rate_cc(uint8_t);
 	void vibrato_delay_cc(uint8_t);
+	void trig_length_cc(uint8_t);
 	
+	uint16_t calculate_ocr_value(uint16_t duration_ms);
 	double triangle_wave(double t, double period, bool descend_first = false);
 	double sine_wave(double t, double period);
 };
+
 
 #endif

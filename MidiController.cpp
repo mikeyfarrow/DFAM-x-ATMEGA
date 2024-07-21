@@ -8,7 +8,6 @@
 #include <math.h>
 #include <avr/interrupt.h>
 #include <avr/cpufunc.h>
-#include <util/atomic.h>
 
 #include "GPIO.h"
 #include "MidiController.h"
@@ -16,24 +15,13 @@
 
 #define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 #define MAX_ADV_LENGTH 1000 // millis
-#define MAX_TRIG_LENGTH 100 // millis
 
-#define MCP4822_ABSEL 7
-#define MCP4822_IGN 6
-#define MCP4822_GAIN 5
-#define MCP4822_SHDN 4
-#define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
-
-#define MIDI_CH_VOCT_A 1	// channel for v/oct on the primary cv out
-#define MIDI_CH_VOCT_B 2	// channel for  v/oct on the secondary cv out (can be the same channel)
-#define MIDI_CH_KBRD_MODE 3 // MIDI channel for playing DFAM in "8-voice mono-synth" aka KCS mode
+#define MIDI_CH_VOCT_A 1	 // channel for v/oct on the primary cv out
+#define MIDI_CH_VOCT_B 2	 // channel for  v/oct on the secondary cv out (can be the same channel)
+#define MIDI_CH_KBRD_MODE 10 // MIDI channel for playing DFAM in "8-voice mono-synth" aka KCS mode
 
 #define KCS_MODE !switch_state
 #define CCS_MODE switch_state
-
-#define CC_TRIG_LENGTH MIDI_NAMESPACE::GeneralPurposeController1
-#define CC_ADV_WIDTH MIDI_NAMESPACE::GeneralPurposeController2
-#define CC_CLOCK_DIV MIDI_NAMESPACE::GeneralPurposeController3
 
 #define NUM_STEPS 8
 #define PPQN 24
@@ -59,7 +47,6 @@ MidiController::MidiController():
 {
 	millis_last = 0;
 	
-	trigger_duration_ms = 1;
 	last_sw_read = 0;
 	
 	adv_clock_ticks = 0;
@@ -148,41 +135,6 @@ uint8_t MidiController::incoming_message(uint8_t msg)
 /************************************************************************/
 
 /*
-	trigger_A - sends a pulse on the trigger A output 
-*/
-void MidiController::trigger_A()
-{
-	set_bit(TRIG_PORT, TRIG_A_OUT);
-	
-	// Set the compare value for the specified duration in the future
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	{
-		OCR1A = TCNT1 + calculate_ocr_value(trigger_duration_ms);
-		ENABLE_OCI1A();
-	}
-}
-
-/*
-	trigger_A - sends a pulse on the trigger A output 
-*/
-void MidiController::trigger_B()
-{
-	set_bit(TRIG_PORT, TRIG_B_OUT);
-	
-	// Set the compare value for the specified duration in the future
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	{
-		OCR1B = TCNT1 + calculate_ocr_value(trigger_duration_ms);
-		ENABLE_OCI1B();
-	}
-}
-
-// Calculate OCR value for a given duration in milliseconds
-uint16_t MidiController::calculate_ocr_value(uint16_t ms) {
-	return (F_CPU / 64) * ms / 1000;
-}
-
-/*
 	advance_clock - sends a single pulse on the ADV/CLOCK output
 */
 void MidiController::advance_clock()
@@ -209,21 +161,6 @@ void MidiController::advance_clock(uint8_t steps)
 	}
 }
 
-/*
-	output_dac - sends config bits and 12 bits of data to DAC
-*/
-void MidiController::output_dac(uint8_t channel, uint16_t data)
-{
-	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
-	
-	SPDR = (channel<<MCP4822_ABSEL) | (0<<MCP4822_IGN) | (0<<MCP4822_GAIN) | (1<<MCP4822_SHDN) | ((data>>8) & 0x0F);
-	spi_wait();
-	
-	SPDR = data & 0x00FF;
-	spi_wait();
-	
-	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
-}
 
 /*
 check_mode_switch -
@@ -280,27 +217,34 @@ void MidiController::check_sync_switch()
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
 
-#define VibratoRate MIDI_NAMESPACE::SoundController7
-#define VibratoDepth MIDI_NAMESPACE::SoundController8
-#define VibratoDelay MIDI_NAMESPACE::SoundController9
+#define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1
+#define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController2
+#define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController3
+#define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7
+#define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
+#define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
 	switch (cc_num)
 	{
-		case CC_TRIG_LENGTH:
+		case CC_TrigLength:
 		{
-			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
+			CvOutput* cv_out = get_cv_out(channel);
+			if (cv_out != nullptr)
+			{
+				cv_out->trig_length_cc(cc_val);
+			}
 			break;
 		}
 			
-		case CC_ADV_WIDTH:
+		case CC_AdvClockWidth:
 		{
 			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
 			break;
 		}
 			
-		case CC_CLOCK_DIV:
+		case CC_ClockDiv:
 		{
 			uint8_t div_idx = (int) cc_val * NUM_DIVISIONS / 127.0;
 			clock_div = DIVISIONS[div_idx];
@@ -318,7 +262,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			break;
 		}
 		
-		case VibratoDepth:
+		case CC_VibratoDepth:
 		{
 			CvOutput* cv_out = get_cv_out(channel);
 			if (cv_out != nullptr)
@@ -328,7 +272,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			break;
 		}
 
-		case VibratoRate:
+		case CC_VibratoRate:
 		{
 			CvOutput* cv_out = get_cv_out(channel);
 			if (cv_out != nullptr)
@@ -338,7 +282,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			break;
 		}
 
-		case VibratoDelay:
+		case CC_VibratoDelay:
 		{
 			CvOutput* cv_out = get_cv_out(channel);
 			if (cv_out != nullptr)

@@ -6,10 +6,19 @@
 */
 
 #include <math.h>
+#include <util/atomic.h>
 
 #include "CvOutput.h"
 #include "GPIO.h"
 #include "MidiController.h"
+
+#define MAX_TRIG_LENGTH 100 // millis
+
+#define MCP4822_ABSEL 7
+#define MCP4822_IGN 6
+#define MCP4822_GAIN 5
+#define MCP4822_SHDN 4
+#define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
 #define MIDI_NOTE_MIN 12
 #define MIDI_NOTE_MAX 111
@@ -22,6 +31,8 @@
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch)
 {
+	trigger_duration_ms = 1;
+	
 	portamento_time_user = 100;
 	is_sliding = false;
 	slide_start_ms = UINT32_MAX;
@@ -59,7 +70,7 @@ void CvOutput::update_dac_vibrato()
 	double scale_factor = triangle_wave(elapsed, vib_period_ms);
 	vibrato_cur_offset = scale_factor * vib_depth_cents / 100;
 	
-	mctl.output_dac(dac_ch, midi_to_data(slide_end_note));
+	output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
 /*
@@ -117,7 +128,7 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	
 	if (!is_sliding)
 	{
-		mctl.output_dac(dac_ch, midi_to_data(slide_end_note));
+		output_dac(dac_ch, midi_to_data(slide_end_note));
 	}
 	else
 	{
@@ -128,7 +139,7 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	if (dac_ch == 0)
 	{
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
-		mctl.trigger_A();
+		trigger_A();
 	}
 	else
 	{
@@ -136,8 +147,13 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 		{
 			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 		}
-		mctl.trigger_B();
+		trigger_B();
 	}
+}
+
+void CvOutput::trig_length_cc(uint8_t cc_val)
+{
+	vib_depth_cents = ((uint32_t)cc_val * MAX_TRIG_LENGTH / 127.0);
 }
 
 void CvOutput::vibrato_depth_cc(uint8_t cc_val)
@@ -166,7 +182,7 @@ void CvOutput::check_slide()
 			// the slide is complete
 			is_sliding = false;
 			
-			mctl.output_dac(dac_ch, midi_to_data(slide_end_note));
+			output_dac(dac_ch, midi_to_data(slide_end_note));
 		}
 		else
 		{
@@ -177,7 +193,7 @@ void CvOutput::check_slide()
 			
 			int16_t inc = ((float) elapsed  * interval) / (float) slide_cur_length;
 
-			mctl.output_dac(dac_ch, start_data + inc);
+			output_dac(dac_ch, start_data + inc);
 		}
 	}
 	else // check for vibrato
@@ -191,7 +207,7 @@ void CvOutput::pitch_bend_event(int16_t amt)
 	// get it into the range -1 to 1
 	pitch_bend_amt = (((float) amt + 8192) / 16383) * 2 - 1;
 
-	mctl.output_dac(dac_ch, midi_to_data(slide_end_note));
+	output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
 /*
@@ -200,6 +216,7 @@ void CvOutput::pitch_bend_event(int16_t amt)
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
+	// TODO if it is below range then use 0, if above range then set to max
 	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
 	{
 		// error?
@@ -214,4 +231,58 @@ uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 		
 		//return midi_note * DAC_CAL_VALUE + (pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE); // add 0.5 ?
 	}
+}
+
+
+
+/*
+	output_dac - sends config bits and 12 bits of data to DAC
+*/
+void CvOutput::output_dac(uint8_t channel, uint16_t data)
+{
+	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
+	
+	SPDR = (channel<<MCP4822_ABSEL) | (0<<MCP4822_IGN) | (0<<MCP4822_GAIN) | (1<<MCP4822_SHDN) | ((data>>8) & 0x0F);
+	spi_wait();
+	
+	SPDR = data & 0x00FF;
+	spi_wait();
+	
+	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
+}
+
+
+/*
+	trigger_A - sends a pulse on the trigger A output 
+*/
+void CvOutput::trigger_A()
+{
+	set_bit(TRIG_PORT, TRIG_A_OUT);
+	
+	// Set the compare value for the specified duration in the future
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	{
+		OCR1A = TCNT1 + calculate_ocr_value(trigger_duration_ms);
+		ENABLE_OCI1A();
+	}
+}
+
+/*
+	trigger_A - sends a pulse on the trigger A output 
+*/
+void CvOutput::trigger_B()
+{
+	set_bit(TRIG_PORT, TRIG_B_OUT);
+	
+	// Set the compare value for the specified duration in the future
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	{
+		OCR1B = TCNT1 + calculate_ocr_value(trigger_duration_ms);
+		ENABLE_OCI1B();
+	}
+}
+
+// Calculate OCR value for a given duration in milliseconds
+uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
+	return (F_CPU / 64) * ms / 1000;
 }

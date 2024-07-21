@@ -44,7 +44,6 @@ private:
 	volatile uint8_t adv_clock_ticks;
 	volatile uint32_t last_sw_read;
 	
-	uint8_t trigger_duration_ms;
 	uint8_t follow_midi_clock;
 	uint8_t clock_count;
 	uint8_t cur_dfam_step;
@@ -77,14 +76,10 @@ public:
 	
 	void time_inc();
 	uint32_t millis();
-	void trigger_A();
-	void trigger_B();
-	static void output_dac(uint8_t channel, uint16_t data);
 	
 private:
 	void advance_clock();
 	void advance_clock(uint8_t steps);
-	uint16_t calculate_ocr_value(uint16_t duration_ms);
 	
 	
 	void vibrato_depth_cc(uint8_t cc_val);
