@@ -40,6 +40,10 @@ private:
 	volatile uint8_t adv_clock_ticks;
 	volatile uint32_t last_sw_read;
 	
+	uint8_t midi_ch_A; // channel for v/oct on the primary cv out
+	uint8_t midi_ch_B; // channel for v/oct on the secondary cv out (can be same as A)
+	uint8_t midi_ch_KCS;
+	
 	uint8_t follow_midi_clock;
 	uint8_t clock_count;
 	uint8_t cur_dfam_step;

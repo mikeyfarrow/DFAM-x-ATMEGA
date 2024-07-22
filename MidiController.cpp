@@ -16,10 +16,6 @@
 #define SWITCH_DEBOUNCE_DUR 20  // count of Timer1 interrupts b
 #define MAX_ADV_LENGTH 1000 // millis
 
-#define MIDI_CH_VOCT_A 1	 // channel for v/oct on the primary cv out
-#define MIDI_CH_VOCT_B 2	 // channel for  v/oct on the secondary cv out (can be the same channel)
-#define MIDI_CH_KBRD_MODE 10 // MIDI channel for playing DFAM in "8-voice mono-synth" aka KCS mode
-
 #define KCS_MODE !switch_state
 #define CCS_MODE switch_state
 
@@ -45,10 +41,12 @@ MidiController::MidiController():
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	midi((SMT&) transport)
 {
+	midi_ch_A = 1;
+	midi_ch_B = 2;
+	midi_ch_KCS = 10;
+	
 	millis_last = 0;
-	
 	last_sw_read = 0;
-	
 	adv_clock_ticks = 0;
 	
 	follow_midi_clock = false;
@@ -63,11 +61,11 @@ MidiController::MidiController():
 
 CvOutput* MidiController::get_cv_out(uint8_t midi_ch)
 {
-	if (midi_ch == MIDI_CH_VOCT_A)
+	if (midi_ch == midi_ch_A)
 	{
 		return &cv_out_a;
 	}
-	else if (midi_ch == MIDI_CH_VOCT_B)
+	else if (midi_ch == midi_ch_B)
 	{
 		return &cv_out_b;
 	}
@@ -222,10 +220,10 @@ void MidiController::check_sync_switch()
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
-	if (channel == MIDI_CH_VOCT_A)
+	if (channel == midi_ch_A)
 		cv_out_a.control_change(cc_num, cc_val);
 	
-	if (channel == MIDI_CH_VOCT_B)
+	if (channel == midi_ch_B)
 		cv_out_b.control_change(cc_num, cc_val);
 
 	/* Considering these CCs as "Global" for now ... */
@@ -253,13 +251,13 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (channel == MIDI_CH_VOCT_A)
+	if (channel == midi_ch_A)
 		cv_out_a.start_slide(midi_note, velocity, true);
 	
-	if (channel == MIDI_CH_VOCT_B) // only send vel. B in CCS mode
+	if (channel == midi_ch_B) // only send vel. B in CCS mode
 		cv_out_b.start_slide(midi_note, velocity, CCS_MODE); 
 
-	if (channel == MIDI_CH_KBRD_MODE)
+	if (channel == midi_ch_KCS)
 	{
 		if (KCS_MODE) // We are in keyboard-controlled sequencer mode
 		{
@@ -325,13 +323,12 @@ void MidiController::handleContinue()
 */
 void MidiController::handlePitchBend(byte midi_ch, int16_t amt)
 {
-	if (midi_ch == MIDI_CH_VOCT_A)
+	if (midi_ch == midi_ch_A)
 		cv_out_a.pitch_bend(amt);
 	
-	if (midi_ch == MIDI_CH_VOCT_B) // only send vel. B in CCS mode
+	if (midi_ch == midi_ch_B) // only send vel. B in CCS mode
 		cv_out_b.pitch_bend(amt);
 }
-
 
 /************************************************************************/
 /*		HELPER METHODS                                                  */

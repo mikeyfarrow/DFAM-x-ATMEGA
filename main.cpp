@@ -61,8 +61,7 @@ int main()
 	while (1)
 	{
 		if (idx % 2 == 0) { status1_green(); }
-		else /*if (idx % 3 == 1)*/ { status1_red(); }
-		//else { status1_off(); }
+		else { status1_red(); }
 		
 		mctl.update();
 
