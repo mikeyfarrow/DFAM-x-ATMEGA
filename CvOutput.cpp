@@ -24,6 +24,8 @@
 #define MIDI_NOTE_MAX 111
 #define DAC_CAL_VALUE 47.068966d
 
+#define PITCH_BEND_MAX 12 // semitones
+
 #define VIB_DELAY_MAX 2000 // ms
 #define VIB_DEPTH_MAX 2000  // cents
 #define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
@@ -52,11 +54,6 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, not
 	last_note_on_ms = UINT32_MAX;
 }
 
-
-void CvOutput::new_slide_length(uint16_t dur)
-{
-	portamento_time_user = dur;
-}
 
 void CvOutput::update_dac_vibrato()
 {
@@ -152,27 +149,6 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	}
 }
 
-void CvOutput::trig_length_cc(uint8_t cc_val)
-{
-	vib_depth_cents = ((uint32_t)cc_val * MAX_TRIG_LENGTH / 127.0);
-}
-
-void CvOutput::vibrato_depth_cc(uint8_t cc_val)
-{
-	vib_depth_cents = ((uint32_t)cc_val * VIB_DEPTH_MAX / 127.0);
-}
-
-void CvOutput::vibrato_rate_cc(uint8_t cc_val)
-{
-	float freq = cc_val * VIB_FREQ_MAX / 127.0 + VIB_FREQ_MIN;
-	vib_period_ms = 1000 / freq;
-}
-
-void CvOutput::vibrato_delay_cc(uint8_t cc_val)
-{
-	vib_delay_ms = ((uint32_t)cc_val * VIB_DELAY_MAX) / 127.0;
-}
-
 void CvOutput::check_slide()
 {
 	if (is_sliding)
@@ -203,7 +179,11 @@ void CvOutput::check_slide()
 	}		
 }
 
-void CvOutput::pitch_bend_event(int16_t amt)
+
+/*
+	pitch_bend_event - amt is in the range -8192 to 8191
+*/
+void CvOutput::pitch_bend(int16_t amt)
 {
 	// get it into the range -1 to 1
 	pitch_bend_amt = (((float) amt + 8192) / 16383) * 2 - 1;
@@ -218,9 +198,9 @@ void CvOutput::pitch_bend_event(int16_t amt)
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
 	if (midi_note < MIDI_NOTE_MIN)
-	midi_note = MIDI_NOTE_MIN;
+	   midi_note = MIDI_NOTE_MIN;
 	if (midi_note > MIDI_NOTE_MAX)
-	midi_note = MIDI_NOTE_MAX;
+	   midi_note = MIDI_NOTE_MAX;
 	
 	uint16_t base_note = (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE;
 	int16_t pb_offset = pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE;
@@ -283,4 +263,49 @@ void CvOutput::trigger_B()
 // Calculate OCR value for a given duration in milliseconds
 uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 	return (F_CPU / 64) * ms / 1000;
+}
+
+#define CC_PortamentoTime MIDI_NAMESPACE::PortamentoTime
+#define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1
+#define CC_PitchBendRange MIDI_NAMESPACE::GeneralPurposeController2
+#define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7
+#define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
+#define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
+
+void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
+{
+	switch (cc_num)
+	{
+		case CC_PortamentoTime:
+			portamento_time_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			break;
+		
+		case CC_TrigLength:
+			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
+			break;
+		
+		case CC_VibratoRate:
+			vib_period_ms = 1000 / (cc_val * VIB_FREQ_MAX / 127.0 + VIB_FREQ_MIN);
+			break;
+			
+		case CC_VibratoDepth:
+			vib_depth_cents = ((uint32_t)cc_val * MAX_TRIG_LENGTH / 127.0);
+			break;
+			
+		case CC_VibratoDelay:
+			vib_delay_ms = ((uint32_t)cc_val * VIB_DELAY_MAX) / 127.0;
+			break;
+			
+		case CC_PitchBendRange:
+			pitch_bend_range = ((uint32_t)cc_val * PITCH_BEND_MAX) / 127.0;
+		
+		case MIDI_NAMESPACE::RPNMSB: break;
+		case MIDI_NAMESPACE::RPNLSB: break;
+		case MIDI_NAMESPACE::DataEntryMSB: break;
+		case MIDI_NAMESPACE::DataEntryLSB: break;
+		case MIDI_NAMESPACE::DataIncrement: break;
+		case MIDI_NAMESPACE::DataDecrement: break;
+			
+		default: break;
+	}
 }

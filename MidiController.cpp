@@ -217,27 +217,20 @@ void MidiController::check_sync_switch()
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
 
-#define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1
 #define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController2
 #define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController3
-#define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7
-#define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
-#define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 {
+	if (channel == MIDI_CH_VOCT_A)
+		cv_out_a.control_change(cc_num, cc_val);
+	
+	if (channel == MIDI_CH_VOCT_B)
+		cv_out_b.control_change(cc_num, cc_val);
+
+	/* Considering these CCs as "Global" for now ... */
 	switch (cc_num)
 	{
-		case CC_TrigLength:
-		{
-			CvOutput* cv_out = get_cv_out(channel);
-			if (cv_out != nullptr)
-			{
-				cv_out->trig_length_cc(cc_val);
-			}
-			break;
-		}
-			
 		case CC_AdvClockWidth:
 		{
 			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
@@ -251,47 +244,6 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			break;
 		}
 		
-		case MIDI_NAMESPACE::PortamentoTime:
-		{
-			CvOutput* cv_out = get_cv_out(channel);
-			if (cv_out != nullptr)
-			{
-				uint16_t duration = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
-				cv_out->new_slide_length(duration);
-			}
-			break;
-		}
-		
-		case CC_VibratoDepth:
-		{
-			CvOutput* cv_out = get_cv_out(channel);
-			if (cv_out != nullptr)
-			{
-				cv_out->vibrato_depth_cc(cc_val);
-			}
-			break;
-		}
-
-		case CC_VibratoRate:
-		{
-			CvOutput* cv_out = get_cv_out(channel);
-			if (cv_out != nullptr)
-			{
-				cv_out->vibrato_rate_cc(cc_val);
-			}
-			break;
-		}
-
-		case CC_VibratoDelay:
-		{
-			CvOutput* cv_out = get_cv_out(channel);
-			if (cv_out != nullptr)
-			{
-				cv_out->vibrato_delay_cc(cc_val);
-			}
-			break;
-		}
-		
 		default:
 		{
 			break;
@@ -301,16 +253,15 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-    CvOutput* cv_out = get_cv_out(channel);
-    if (cv_out != nullptr)
-	{
-		uint8_t send_vel = channel == MIDI_CH_VOCT_A || CCS_MODE;
-		cv_out->start_slide(midi_note, velocity, send_vel);
-	}
+	if (channel == MIDI_CH_VOCT_A)
+		cv_out_a.start_slide(midi_note, velocity, true);
 	
+	if (channel == MIDI_CH_VOCT_B) // only send vel. B in CCS mode
+		cv_out_b.start_slide(midi_note, velocity, CCS_MODE); 
+
 	if (channel == MIDI_CH_KBRD_MODE)
 	{
-		if (!switch_state) // We are in keyboard-controlled sequencer mode
+		if (KCS_MODE) // We are in keyboard-controlled sequencer mode
 		{
 			uint8_t dfam_step = midi_note_to_step(midi_note);
 			if (dfam_step) {
@@ -374,11 +325,11 @@ void MidiController::handleContinue()
 */
 void MidiController::handlePitchBend(byte midi_ch, int16_t amt)
 {
-	CvOutput* cv_out = get_cv_out(midi_ch);
-	if (cv_out != nullptr)
-	{
-		cv_out->pitch_bend_event(amt);
-	}
+	if (midi_ch == MIDI_CH_VOCT_A)
+		cv_out_a.pitch_bend(amt);
+	
+	if (midi_ch == MIDI_CH_VOCT_B) // only send vel. B in CCS mode
+		cv_out_b.pitch_bend(amt);
 }
 
 

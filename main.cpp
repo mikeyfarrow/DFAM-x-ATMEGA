@@ -57,11 +57,12 @@ int main()
 	sei(); // enable interrupts globally
 	
 	uint16_t idx = 0;
+	status2_green();
 	while (1)
 	{
-		if (idx % 3 == 0) { status1_green(); }
-		else if (idx % 3 == 1) { status1_red(); }
-		else { status1_off(); }
+		if (idx % 2 == 0) { status1_green(); }
+		else /*if (idx % 3 == 1)*/ { status1_red(); }
+		//else { status1_off(); }
 		
 		mctl.update();
 
@@ -121,19 +122,19 @@ void register_midi_events()
 	lambdas that capture 'this' and bind it to the callback function, we have the
 	following ugliness:
 */
-void handleCC(byte ch, byte cc_num, byte cc_val)  { mctl.handleCC(ch, cc_num, cc_val); }
+void handleCC(byte ch, byte cc_num, byte cc_val)   { mctl.handleCC(ch, cc_num, cc_val); }
+
+
+void handleNoteOff(byte ch, byte pitch, byte vel)  { /*mctl.handleNoteOff(ch, pitch, vel); */ }
+
 void handleNoteOn(byte ch, byte pitch, byte vel)  { mctl.handleNoteOn(ch, pitch, vel); }
-void handleNoteOff(byte ch, byte pitch, byte vel)
-{
-	CvOutput* cv_out = mctl.get_cv_out(ch);
-	if (cv_out != nullptr)
-	{
-		cv_out->note_off(pitch, vel);
-	}
-}
-	//mctl.handleNoteOff(ch, pitch, vel); }
+
 void handleStart()								  { mctl.handleStart(); }
+
 void handleStop()								  { mctl.handleStop(); }
+
 void handleClock()								  { mctl.handleClock(); }
+
 void handleContinue()							  { mctl.handleContinue(); }
+
 void handlePitchBend(byte ch, int amt)			  { mctl.handlePitchBend(ch, amt); }

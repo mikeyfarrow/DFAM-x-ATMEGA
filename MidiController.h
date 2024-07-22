@@ -37,8 +37,6 @@ private:
 	
 	uint32_t millis_last;
 	
-	
-	
 	volatile uint8_t adv_clock_ticks;
 	volatile uint32_t last_sw_read;
 	
@@ -72,7 +70,7 @@ public:
 	void handleStop();
 	void handleClock();
 	void handleContinue();
-	void handlePitchBend(byte ch, int amt);
+	void handlePitchBend(uint8_t ch, int amt);
 	
 	void time_inc();
 	uint32_t millis();

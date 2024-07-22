@@ -50,8 +50,7 @@ public:
 	
 	void start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel);
 	void check_slide();
-	void pitch_bend_event(int16_t amt);
-	void new_slide_length(uint16_t dur);
+	void pitch_bend(int16_t amt);
 	void update_dac_vibrato();
 	
 	void note_off(uint8_t pitch, uint8_t vel);
@@ -59,14 +58,12 @@ public:
 	void trigger_B();
 	static void output_dac(uint8_t channel, uint16_t data);
 	uint16_t midi_to_data(uint8_t midi_note);
-	void vibrato_depth_cc(uint8_t);
-	void vibrato_rate_cc(uint8_t);
-	void vibrato_delay_cc(uint8_t);
-	void trig_length_cc(uint8_t);
 	
 	uint16_t calculate_ocr_value(uint16_t duration_ms);
 	double triangle_wave(double t, double period, bool descend_first = false);
 	double sine_wave(double t, double period);
+	
+	void control_change(uint8_t cc_num, uint8_t cc_val);
 };
 
 
