@@ -58,25 +58,6 @@ MidiController::MidiController():
 	time_counter = 0;
 }
 
-
-CvOutput* MidiController::get_cv_out(uint8_t midi_ch)
-{
-	if (midi_ch == midi_ch_A)
-	{
-		return &cv_out_a;
-	}
-	else if (midi_ch == midi_ch_B)
-	{
-		return &cv_out_b;
-	}
-	else
-	{
-		return nullptr;
-	}
-}
-
-
-
 void  MidiController::time_inc()
 {
 	time_counter++;

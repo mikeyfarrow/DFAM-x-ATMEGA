@@ -78,7 +78,6 @@ public:
 	
 	void time_inc();
 	uint32_t millis();
-	CvOutput* get_cv_out(uint8_t midi_ch);
 	
 private:
 	void advance_clock();
