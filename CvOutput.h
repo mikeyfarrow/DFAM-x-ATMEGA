@@ -10,6 +10,7 @@
 #define __CVOUTPUT_H__
 
 #include <avr/io.h>
+//#include "NoteCollection.h"
 
 class MidiController; 
 
@@ -20,6 +21,8 @@ private:
 
 public:
 	uint8_t dac_ch;
+	
+	//NoteCollection notes;
 	
 	uint8_t trigger_duration_ms;
 	
@@ -50,6 +53,8 @@ public:
 	void pitch_bend_event(int16_t amt);
 	void new_slide_length(uint16_t dur);
 	void update_dac_vibrato();
+	
+	void note_off(uint8_t pitch, uint8_t vel);
 	void trigger_A();
 	void trigger_B();
 	static void output_dac(uint8_t channel, uint16_t data);

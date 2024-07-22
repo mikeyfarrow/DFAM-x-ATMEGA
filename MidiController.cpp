@@ -291,7 +291,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 			}
 			break;
 		}
-
+		
 		default:
 		{
 			break;
@@ -299,20 +299,20 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 	}
 }
 
-void MidiController::handleNoteOn(byte channel, byte pitch, byte velocity)
+void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
     CvOutput* cv_out = get_cv_out(channel);
     if (cv_out != nullptr)
 	{
 		uint8_t send_vel = channel == MIDI_CH_VOCT_A || CCS_MODE;
-		cv_out->start_slide(pitch, velocity, send_vel);
+		cv_out->start_slide(midi_note, velocity, send_vel);
 	}
 	
 	if (channel == MIDI_CH_KBRD_MODE)
 	{
 		if (!switch_state) // We are in keyboard-controlled sequencer mode
 		{
-			uint8_t dfam_step = midi_note_to_step(pitch);
+			uint8_t dfam_step = midi_note_to_step(midi_note);
 			if (dfam_step) {
 				VEL_B_DUTY = velocity << 1;
 				int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;

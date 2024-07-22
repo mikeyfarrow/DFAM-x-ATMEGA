@@ -243,6 +243,12 @@
     <Compile Include="MidiController.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="NoteCollection.cpp">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="NoteCollection.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="SerialMidiTransport.cpp">
       <SubType>compile</SubType>
     </Compile>

@@ -37,8 +37,6 @@ private:
 	
 	uint32_t millis_last;
 	
-	CvOutput cv_out_a;
-	CvOutput cv_out_b;
 	
 	
 	volatile uint8_t adv_clock_ticks;
@@ -54,6 +52,8 @@ private:
 	volatile uint32_t time_counter;
 
 public:
+	CvOutput cv_out_a;
+	CvOutput cv_out_b;
 	MidiInterface midi;
 
 /***** METHODS *****/
@@ -67,7 +67,7 @@ public:
 	
 	// Event handlers
 	void handleCC(byte channel, byte cc_num, byte cc_val);
-	void handleNoteOn(byte channel, byte pitch, byte velocity);
+	void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity);
 	void handleStart();
 	void handleStop();
 	void handleClock();
@@ -76,6 +76,7 @@ public:
 	
 	void time_inc();
 	uint32_t millis();
+	CvOutput* get_cv_out(uint8_t midi_ch);
 	
 private:
 	void advance_clock();
@@ -91,6 +92,5 @@ private:
 	// Helper methods
 	static uint8_t steps_between(int start, int end);
 	uint8_t midi_note_to_step(uint8_t note);
-	CvOutput* get_cv_out(uint8_t midi_ch);
 };
 #endif //__MIDICONTROLLER_H__

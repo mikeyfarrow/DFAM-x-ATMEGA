@@ -29,6 +29,7 @@ void handleStart();
 void handleStop();
 void handleClock();
 void handleContinue();
+void handleNoteOff(byte ch, byte pitch, byte vel);
 void handlePitchBend(byte ch, int amt);
 
 int main()
@@ -109,6 +110,7 @@ void register_midi_events()
 	mctl.midi.setHandleClock(handleClock);
 	mctl.midi.setHandleContinue(handleContinue);
 	mctl.midi.setHandlePitchBend(handlePitchBend);
+	mctl.midi.setHandleNoteOff(handleNoteOff);
 }
 
 /*
@@ -119,10 +121,19 @@ void register_midi_events()
 	lambdas that capture 'this' and bind it to the callback function, we have the
 	following ugliness:
 */
-void handleCC(byte ch, byte cc_num, byte cc_val) { mctl.handleCC(ch, cc_num, cc_val); }
-void handleNoteOn(byte ch, byte pitch, byte vel) { mctl.handleNoteOn(ch, pitch, vel); }
-void handleStart()								 { mctl.handleStart(); }
-void handleStop()								 { mctl.handleStop(); }
-void handleClock()								 { mctl.handleClock(); }
-void handleContinue()							 { mctl.handleContinue(); }
-void handlePitchBend(byte ch, int amt)			 { mctl.handlePitchBend(ch, amt); }
+void handleCC(byte ch, byte cc_num, byte cc_val)  { mctl.handleCC(ch, cc_num, cc_val); }
+void handleNoteOn(byte ch, byte pitch, byte vel)  { mctl.handleNoteOn(ch, pitch, vel); }
+void handleNoteOff(byte ch, byte pitch, byte vel)
+{
+	CvOutput* cv_out = mctl.get_cv_out(ch);
+	if (cv_out != nullptr)
+	{
+		cv_out->note_off(pitch, vel);
+	}
+}
+	//mctl.handleNoteOff(ch, pitch, vel); }
+void handleStart()								  { mctl.handleStart(); }
+void handleStop()								  { mctl.handleStop(); }
+void handleClock()								  { mctl.handleClock(); }
+void handleContinue()							  { mctl.handleContinue(); }
+void handlePitchBend(byte ch, int amt)			  { mctl.handlePitchBend(ch, amt); }

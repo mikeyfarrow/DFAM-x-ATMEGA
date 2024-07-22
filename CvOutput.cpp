@@ -20,7 +20,7 @@
 #define MCP4822_SHDN 4
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
-#define MIDI_NOTE_MIN 12
+#define MIDI_NOTE_MIN 24
 #define MIDI_NOTE_MAX 111
 #define DAC_CAL_VALUE 47.068966d
 
@@ -29,11 +29,11 @@
 #define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
 #define VIB_FREQ_MAX 10 // Hz --> 100 ms period
 
-CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch)
+CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, notes()
 {
 	trigger_duration_ms = 1;
 	
-	portamento_time_user = 100;
+	portamento_time_user = 0;//100;
 	is_sliding = false;
 	slide_start_ms = UINT32_MAX;
 	slide_cur_length = UINT16_MAX;
@@ -41,9 +41,9 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch)
 	slide_start_note = UINT8_MAX;
 	slide_end_note = UINT8_MAX;
 	
-	vib_period_ms = 200;
-	vib_depth_cents = 25; // magnitude up and down
-	vib_delay_ms = 200;
+	vib_period_ms = 0;//200;
+	vib_depth_cents = 0;//25; // magnitude up and down
+	vib_delay_ms = 0;//200;
 	vibrato_cur_offset = 0;
 	
 	pitch_bend_amt = 0;
@@ -51,6 +51,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch)
 	
 	last_note_on_ms = UINT32_MAX;
 }
+
 
 void CvOutput::new_slide_length(uint16_t dur)
 {
@@ -216,24 +217,17 @@ void CvOutput::pitch_bend_event(int16_t amt)
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
-	// TODO if it is below range then use 0, if above range then set to max
-	if (midi_note < MIDI_NOTE_MIN || midi_note > MIDI_NOTE_MAX)
-	{
-		// error?
-		return 0;
-	}
-	else
-	{
-		uint16_t base_note = (midi_note - 24) * DAC_CAL_VALUE;
-		int16_t pb_offset = pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE;
-		int16_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
-		return base_note + pb_offset + vib_offset;
-		
-		//return midi_note * DAC_CAL_VALUE + (pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE); // add 0.5 ?
-	}
+	if (midi_note < MIDI_NOTE_MIN)
+	midi_note = MIDI_NOTE_MIN;
+	if (midi_note > MIDI_NOTE_MAX)
+	midi_note = MIDI_NOTE_MAX;
+	
+	uint16_t base_note = (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE;
+	int16_t pb_offset = pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE;
+	int16_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
+	
+	return base_note + pb_offset + vib_offset;
 }
-
-
 
 /*
 	output_dac - sends config bits and 12 bits of data to DAC
@@ -251,6 +245,10 @@ void CvOutput::output_dac(uint8_t channel, uint16_t data)
 	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
 }
 
+void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
+{
+	//notes.remove_note(midi_note);
+}
 
 /*
 	trigger_A - sends a pulse on the trigger A output 
