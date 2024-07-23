@@ -27,7 +27,7 @@
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
 
-#define BPM_BUFFER_SIZE 48
+#define BPM_BUFFER_SIZE 12
 
 class MidiController
 {

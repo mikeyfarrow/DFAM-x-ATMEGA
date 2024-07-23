@@ -32,6 +32,16 @@
 #define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
 #define VIB_FREQ_MAX 10 // Hz --> 100 ms period
 
+float tempo_sync_divisions[8] = {
+	4.0, // whole
+	2.0, // half
+	1.0, // quarter
+	0.75, // dotted quarter
+	0.5, // eighth
+	0.375, // dotted eighth
+	0.25, // sixteenth
+	0.125, // 32nd
+};
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, notes()
 {
@@ -48,6 +58,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, not
 	slide_start_note = UINT8_MAX;
 	slide_end_note = UINT8_MAX;
 	
+	vib_tempo_div = 1.0;
 	vib_period_ms = 200;//200;
 	vib_depth_cents = 0;//25; // magnitude up and down
 	vib_delay_ms = 0;//200;
@@ -61,7 +72,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, not
 }
 
 
-void CvOutput::update_dac_vibrato()
+void CvOutput::update_vibrato_offset()
 {
 	uint32_t elapsed = mctl.millis() - last_note_on_ms;
 	if (elapsed < vib_delay_ms || vib_depth_cents == 0)
@@ -71,10 +82,13 @@ void CvOutput::update_dac_vibrato()
 	
 	elapsed -= vib_delay_ms;
 	
-	double scale_factor = triangle_wave(elapsed, vib_period_ms);
+	uint16_t period_ms = vib_tempo_sync
+		? vib_tempo_div * round(mctl.avg_midi_clock_period()) * 24
+		: vib_period_ms;
+		
+	//double scale_factor = sine_wave(elapsed, period_ms);
+	double scale_factor = triangle_wave(elapsed, period_ms);
 	vibrato_cur_offset = scale_factor * vib_depth_cents / 100;
-	
-	//output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
 /*
@@ -108,9 +122,6 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 {
 	last_note_on_ms = mctl.millis();
 	vibrato_cur_offset = 0;
-   
-   // TODO: tempo-sync vibrato
-	//vib_period_ms = (1.0/(mctl.bpm / 60.0))*1000 / 2;
 	
 	// set the start and end note for the slide
 	slide_start_note = slide_end_note;
@@ -153,7 +164,7 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 
 void CvOutput::slide_progress()
 {
-	update_dac_vibrato();
+	update_vibrato_offset();
 	if (is_sliding)
 	{
 		uint32_t elapsed = mctl.millis() - slide_start_ms;
@@ -290,22 +301,6 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 #define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 #define CC_VibratoSync    MIDI_NAMESPACE::SoundController10 // 79. Value: on or off
 
-uint16_t tempo_sync_vib_period(uint8_t cc_val)
-{
-	uint8_t index = cc_val / 16;
-
-	uint8_t tempo_sync_divisions[8] = {
-		0, // For cc_val 0-15
-		1, // For cc_val 16-31
-		2, // For cc_val 32-47
-		3, // For cc_val 48-63
-		4, // For cc_val 64-79
-		5, // For cc_val 80-95
-		6, // For cc_val 96-111
-		7  // For cc_val 112-127
-	};
-}
-
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 {
 	uint16_t time;
@@ -331,6 +326,7 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			break;
 		
 		case CC_VibratoRate:
+			vib_tempo_div = tempo_sync_divisions[cc_val / 16];
 			vib_period_ms = 1000 / (cc_val * VIB_FREQ_MAX / 127.0 + VIB_FREQ_MIN);
 			break;
 			

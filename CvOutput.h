@@ -37,6 +37,7 @@ public:
 	volatile uint8_t slide_start_note;
 	volatile uint8_t slide_end_note;
 	
+	float vib_tempo_div;
 	uint16_t vib_period_ms;
 	uint16_t vib_depth_cents;
 	uint16_t vib_delay_ms;
@@ -54,7 +55,7 @@ public:
 	void note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_vel);
 	void slide_progress();
 	void pitch_bend(int16_t amt);
-	void update_dac_vibrato();
+	void update_vibrato_offset();
 	
 	void note_off(uint8_t pitch, uint8_t vel);
 	void trigger_A();
