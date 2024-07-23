@@ -22,6 +22,10 @@
 #define clear_bit(sfr, bit) (_SFR_BYTE(sfr) &= ~(_BV(bit)))
 #define toggle_bit(sfr, bit) (_SFR_BYTE(sfr) ^= _BV(bit))
 
+
+#define RX_COMPLETE_INTERRUPT         (1<<RXCIE0)
+#define DATA_REGISTER_EMPTY_INTERRUPT (1<<UDRIE0)
+
 /************************************************************************/
 /*		LED outputs for debug											*/
 /************************************************************************/

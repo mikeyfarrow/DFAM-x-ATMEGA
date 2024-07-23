@@ -41,6 +41,7 @@ MidiController::MidiController():
 	cv_out_a(*this, 0),
 	cv_out_b(*this, 1),
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
+	clock_period_buffer(),
 	midi((SMT&) transport)
 {
 	last_clock = 0;
@@ -92,9 +93,9 @@ void MidiController::update()
 	cv_out_a.slide_progress();
 	cv_out_b.slide_progress();
 	
-   // read the hardware inputs (the two switches)
-   if (millis() - last_sw_read >= SWITCH_DEBOUNCE_DUR)
-	{		
+	// read the hardware inputs (the two switches)
+	if (millis() - last_sw_read >= SWITCH_DEBOUNCE_DUR)
+	{
 		check_mode_switch();
 		check_sync_switch();
 		last_sw_read = millis();
@@ -285,6 +286,23 @@ void MidiController::handleStop()
 	follow_midi_clock = false;
 }
 
+float MidiController::avg_bpm()
+{
+	float avg_period = avg_midi_clock_period();
+	float freq = 1000.0 / avg_period;
+	return SECS_PER_MIN * freq / PPQN;
+}
+
+float MidiController::avg_midi_clock_period()
+{
+	float sum = 0;
+	for (int i = 0; i < BPM_BUFFER_SIZE; i++)
+	{
+		sum += clock_period_buffer.buffer[i];
+	}
+	return sum  / BPM_BUFFER_SIZE;
+}
+
 /*
 	handleClock - 
 */
@@ -292,12 +310,8 @@ void MidiController::handleClock()
 {
 	uint32_t now = millis() / 2;
 	uint32_t period_ms = now - last_clock;
-	float hz = 1000.0 / period_ms;
-	bpm = SECS_PER_MIN * hz * 1.0 / PPQN; // TODO: add to a buffer and average the whole buffer
-
-
 	last_clock = now;
-	
+	clock_period_buffer.put(period_ms);
 	
 	if (follow_midi_clock && switch_state)
 	{

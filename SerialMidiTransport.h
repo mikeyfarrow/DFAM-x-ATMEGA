@@ -17,7 +17,7 @@
 #include "lib/midi_Defs.h"
 #include "lib/MIDI.h"
 
-#define BUFFER_MAX_SIZE 100
+#define SIZE 100
 
 #define SMT MIDI_NAMESPACE::SerialMidiTransport
 
@@ -27,8 +27,8 @@ class SerialMidiTransport
 
 /***** FIELDS *****/
 public:
-	CircularBuffer midi_rx_buffer;
-	CircularBuffer midi_tx_buffer;
+	CircularBuffer<uint8_t, 100> midi_rx_buffer;
+	CircularBuffer<uint8_t, 100> midi_tx_buffer;
 	
 private:
 	uint8_t latest_serial_byte;

@@ -10,6 +10,8 @@
 #define F_CPU 16000000UL
 #endif
 
+//#define ENABLE_MIDI_OUTPUT 1
+
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <avr/sfr_defs.h>
@@ -65,6 +67,11 @@ int main()
 	init_midi_UART();
 	init_DAC_SPI();
 	
+#ifdef ENABLE_MIDI_OUTPUT
+	UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
+#endif
+	
+	
 	/* configure timers/counters and interrupts */
 	init_pwm_output();
 	init_milli_counter_timer();
@@ -111,10 +118,12 @@ int main()
 /*  INTERRUPTS: TIMERS, MIDI Rx, MIDI Tx ready    */
 /**************************************************/
 
-////  MIDI Tx is ready (i.e. "Data Register Empty") - tell the MidiController
-//ISR(USART_UDRE_vect) {
-	//mctl.tx_ready();
-//}
+#ifdef ENABLE_MIDI_OUTPUT
+//  MIDI Tx is ready (i.e. "Data Register Empty") - tell the MidiController
+ISR(USART_UDRE_vect) {
+	mctl.tx_ready();
+}
+#endif
 
 // MIDI Rx message - there is a new byte in the data register
 ISR(USART_RX_vect) {

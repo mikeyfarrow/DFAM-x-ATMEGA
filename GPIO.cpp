@@ -59,8 +59,6 @@ void init_milli_counter_timer()
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
 */
 
-#define RX_COMPLETE_INTERRUPT         (1<<RXCIE0)
-#define DATA_REGISTER_EMPTY_INTERRUPT (1<<UDRIE0)
 
 void init_midi_UART()
 {	
@@ -70,7 +68,7 @@ void init_midi_UART()
 	UCSR0B |= (1 << TXEN0 ); // enable transmitter
 	UCSR0B |= (1 << RXEN0 ); // enable receiver
 	UCSR0B |= RX_COMPLETE_INTERRUPT; // enable Rx interrupt
-	//UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
+	
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 	
 	DDRD |= _BV(PORTD1);

@@ -51,6 +51,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, not
 	vib_period_ms = 200;//200;
 	vib_depth_cents = 0;//25; // magnitude up and down
 	vib_delay_ms = 0;//200;
+	vib_tempo_sync = false;
 	vibrato_cur_offset = 0;
 	
 	pitch_bend_amt = 0;
@@ -287,7 +288,23 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 #define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7 // 76
 #define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
 #define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
+#define CC_VibratoSync    MIDI_NAMESPACE::SoundController10 // 79. Value: on or off
 
+uint16_t tempo_sync_vib_period(uint8_t cc_val)
+{
+	uint8_t index = cc_val / 16;
+
+	uint8_t tempo_sync_divisions[8] = {
+		0, // For cc_val 0-15
+		1, // For cc_val 16-31
+		2, // For cc_val 32-47
+		3, // For cc_val 48-63
+		4, // For cc_val 64-79
+		5, // For cc_val 80-95
+		6, // For cc_val 96-111
+		7  // For cc_val 112-127
+	};
+}
 
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 {
@@ -323,6 +340,10 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			
 		case CC_VibratoDelay:
 			vib_delay_ms = ((uint32_t)cc_val * VIB_DELAY_MAX) / 127.0;
+			break;
+			
+		case CC_VibratoSync:
+			vib_tempo_sync = cc_val > 63; // more than half => ON
 			break;
 			
 		case CC_PitchBendRange:

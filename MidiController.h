@@ -22,10 +22,12 @@
 #include "lib/midi_Namespace.h"
 
 #include "SerialMidiTransport.h"
+#include "CircularBuffer.h"
 #include "CvOutput.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
 
+#define BPM_BUFFER_SIZE 48
 
 class MidiController
 {
@@ -52,6 +54,7 @@ private:
 	volatile uint8_t switch_state;
 	
 	volatile uint32_t time_counter;
+	CircularBuffer<float, BPM_BUFFER_SIZE> clock_period_buffer;
 
 public:
 	float bpm;
@@ -62,7 +65,8 @@ public:
 /***** METHODS *****/
 public:
 	MidiController();
-	
+	float avg_bpm();
+	float avg_midi_clock_period();
 	void init_event_handlers();
 	void update();
 	uint8_t incoming_message(uint8_t); 

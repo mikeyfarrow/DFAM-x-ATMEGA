@@ -1,30 +1,63 @@
-/* 
-* CircularBuffer.h
-*
-* Created: 7/10/2024 1:21:30 PM
-* Author: mikey
-*/
+#ifndef CIRCULAR_BUFFER_H
+#define CIRCULAR_BUFFER_H
 
+#include <stdint.h> // Use standard integer types
 
-#ifndef __CIRCULARBUFFER_H__
-#define __CIRCULARBUFFER_H__
+#define OVERWRITE_MODE 1
 
-#include <avr/io.h>
-
-#define BUFFER_MAX_SIZE 100
-
+template <typename T, uint8_t SIZE>
 class CircularBuffer
 {
-	private:
-	uint8_t buffer[BUFFER_MAX_SIZE];
-	uint8_t write_idx;
-	uint8_t read_idx;
-	
-	public:
-	CircularBuffer();
-	uint8_t put(uint8_t item);
-	uint8_t get(uint8_t* val_ptr);
-	uint8_t ready();
+public:
+	T buffer[SIZE];
+    uint8_t write_idx;
+    uint8_t read_idx;
+
+public:
+    CircularBuffer();
+
+    bool put(T item);
+    bool get(T* val_ptr);
+    uint8_t ready() const;
 };
 
-#endif //__CIRCULARBUFFER_H__
+template <typename T, uint8_t SIZE>
+CircularBuffer<T, SIZE>::CircularBuffer() : write_idx(0), read_idx(0) { }
+
+template <typename T, uint8_t SIZE>
+bool CircularBuffer<T, SIZE>::put(T item)
+{
+#ifndef OVERWRITE_MODE
+	if ((write_idx + 1) % SIZE == read_idx)
+	{
+		// buffer is full, avoid overflow
+		return 0;
+	}
+#endif
+	
+	buffer[write_idx] = item;
+	write_idx = (write_idx + 1) % SIZE;
+	return 1;
+}
+
+template <typename T, uint8_t SIZE>
+bool CircularBuffer<T, SIZE>::get(T* val_ptr)
+{
+	if (read_idx == write_idx)
+	{
+		return 0; // buffer is empty
+	}
+	
+	*val_ptr = buffer[read_idx];
+	read_idx = (read_idx + 1) % SIZE;
+	return 1;
+}
+
+template <typename T, uint8_t SIZE>
+uint8_t CircularBuffer<T, SIZE>::ready() const
+{
+	return write_idx - read_idx;
+}
+
+
+#endif // CIRCULAR_BUFFER_H

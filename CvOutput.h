@@ -40,6 +40,7 @@ public:
 	uint16_t vib_period_ms;
 	uint16_t vib_depth_cents;
 	uint16_t vib_delay_ms;
+	uint8_t vib_tempo_sync; 
 	float vibrato_cur_offset; // semitones
 	
 	float pitch_bend_amt; // -1 to 1

@@ -192,9 +192,6 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CircularBuffer.cpp">
-      <SubType>compile</SubType>
-    </Compile>
     <Compile Include="CircularBuffer.h">
       <SubType>compile</SubType>
     </Compile>
