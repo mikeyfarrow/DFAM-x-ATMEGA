@@ -26,7 +26,9 @@ public:
 	
 	uint8_t trigger_duration_ms;
 	
-	volatile uint16_t portamento_time_user;
+	volatile uint16_t portamento_time_asc_user;
+	volatile uint16_t portamento_time_desc_user;
+	
 	volatile uint8_t is_sliding;
 	
 	volatile uint32_t slide_start_ms;
@@ -48,8 +50,8 @@ public:
 public:
 	CvOutput(MidiController& mc, uint8_t dac_channel);
 	
-	void start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel);
-	void check_slide();
+	void note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_vel);
+	void slide_progress();
 	void pitch_bend(int16_t amt);
 	void update_dac_vibrato();
 	

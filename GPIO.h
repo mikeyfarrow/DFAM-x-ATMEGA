@@ -56,7 +56,7 @@
 #define DAC_CS_PORT PORTB
 #define DAC_CS		PB2
 #define SPI_DDR		DDRB
-#define SPI_MISO	PORTB4
+//#define SPI_MISO	PORTB4
 #define SPI_MOSI	PORTB3
 #define SPI_SCK		PORTB5
 #define SPI_SS		PORTB2

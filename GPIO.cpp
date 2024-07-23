@@ -84,7 +84,7 @@ void init_DAC_SPI()
 
 	// TODO: no it is not, not used by DAC
 	// make sure the MISO pin is input
-	SPI_DDR &= ~( 1 << SPI_MISO );
+	//SPI_DDR &= ~( 1 << SPI_MISO );
 
 	// set up the SPI module: SPI enabled, MSB first, master mode,
 	//  clock polarity and phase = 0, F_osc/16

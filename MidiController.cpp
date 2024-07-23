@@ -58,7 +58,14 @@ MidiController::MidiController():
 	time_counter = 0;
 }
 
-void  MidiController::time_inc()
+void MidiController::update_midi_channels(uint8_t* ch)
+{
+	midi_ch_A = ch[0];
+	midi_ch_B = ch[1];
+	midi_ch_KCS = ch[2];
+}
+
+void MidiController::time_inc()
 {
 	time_counter++;
 }
@@ -77,8 +84,8 @@ void MidiController::update()
 	midi.read();
 
 	// update V/oct outputs based on slide and/or vibrato progress
-	cv_out_a.check_slide();
-	cv_out_b.check_slide();
+	cv_out_a.slide_progress();
+	cv_out_b.slide_progress();
 	
    // read the hardware inputs (the two switches)
    if (millis() - last_sw_read >= SWITCH_DEBOUNCE_DUR)
@@ -233,10 +240,10 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
 	if (channel == midi_ch_A)
-		cv_out_a.start_slide(midi_note, velocity, true);
+		cv_out_a.note_on(midi_note, velocity, true);
 	
 	if (channel == midi_ch_B) // only send vel. B in CCS mode
-		cv_out_b.start_slide(midi_note, velocity, CCS_MODE); 
+		cv_out_b.note_on(midi_note, velocity, CCS_MODE); 
 
 	if (channel == midi_ch_KCS)
 	{

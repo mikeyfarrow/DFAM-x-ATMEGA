@@ -27,17 +27,21 @@
 #define PITCH_BEND_MAX 12 // semitones
 
 #define VIB_DELAY_MAX 2000 // ms
-#define VIB_DEPTH_MAX 2000  // cents
+#define VIB_DEPTH_MAX 8000  // cents
 #define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
 #define VIB_FREQ_MAX 10 // Hz --> 100 ms period
+
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, notes()
 {
 	trigger_duration_ms = 1;
 	
-	portamento_time_user = 0;//100;
+	portamento_time_asc_user = 0;//100;
+	portamento_time_desc_user = 0;//100;
+	
 	is_sliding = false;
 	slide_start_ms = UINT32_MAX;
+	
 	slide_cur_length = UINT16_MAX;
 	
 	slide_start_note = UINT8_MAX;
@@ -105,7 +109,7 @@ double CvOutput::triangle_wave(double t, double period, bool descend_first) {
 	}
 }
 
-void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_velocity)
+void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocity)
 {
 	last_note_on_ms = mctl.millis();
 	vibrato_cur_offset = 0;
@@ -120,9 +124,9 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	}
 	
 	// set the time bounds for the slide and start the slide
-	slide_cur_length = portamento_time_user;
+	slide_cur_length = slide_start_note > slide_end_note ? portamento_time_desc_user : portamento_time_asc_user;
 	slide_start_ms = mctl.millis();
-	is_sliding = portamento_time_user > 0;
+	is_sliding = slide_cur_length > 0 && slide_start_note != slide_end_note;
 	
 	if (!is_sliding)
 	{
@@ -130,7 +134,7 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	}
 	else
 	{
-		check_slide();
+		slide_progress();
 	}
 	
 	// write the velocity and send the trigger
@@ -149,7 +153,7 @@ void CvOutput::start_slide(uint8_t midi_note, uint8_t velocity, uint8_t send_vel
 	}
 }
 
-void CvOutput::check_slide()
+void CvOutput::slide_progress()
 {
 	if (is_sliding)
 	{
@@ -167,7 +171,6 @@ void CvOutput::check_slide()
 			uint16_t start_data = midi_to_data(slide_start_note);
 			uint16_t end_data = midi_to_data(slide_end_note);
 			int16_t interval = end_data - start_data;
-			
 			int16_t inc = ((float) elapsed  * interval) / (float) slide_cur_length;
 
 			output_dac(dac_ch, start_data + inc);
@@ -191,22 +194,33 @@ void CvOutput::pitch_bend(int16_t amt)
 	output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
+
+int32_t in_range(int32_t val, int32_t min, int32_t max)
+{
+	if (val > max) val = max;
+	if (val < min) val = min;
+	return val;
+}
+
+#define DAC_MIN 0x00
+#define DAC_MAX 0x0FFF
+
 /*
 	midi_to_data - converts a MIDI note into the data bits used by the DAC
 		midi_note 0 -> C-1
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
-	if (midi_note < MIDI_NOTE_MIN)
-	   midi_note = MIDI_NOTE_MIN;
-	if (midi_note > MIDI_NOTE_MAX)
-	   midi_note = MIDI_NOTE_MAX;
+	midi_note = (uint8_t) in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
 	
-	uint16_t base_note = (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE;
-	int16_t pb_offset = pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE;
-	int16_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
+	int32_t base_note = (midi_note - MIDI_NOTE_MIN) * DAC_CAL_VALUE;
+	int32_t pb_offset = pitch_bend_amt * pitch_bend_range * DAC_CAL_VALUE;
+	int32_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
 	
-	return base_note + pb_offset + vib_offset;
+	int32_t dac_data = base_note + pb_offset + vib_offset;
+	dac_data = in_range(dac_data, DAC_MIN, DAC_MAX);
+	
+	return dac_data;
 }
 
 /*
@@ -265,19 +279,34 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 	return (F_CPU / 64) * ms / 1000;
 }
 
-#define CC_PortamentoTime MIDI_NAMESPACE::PortamentoTime
-#define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1
-#define CC_PitchBendRange MIDI_NAMESPACE::GeneralPurposeController2
-#define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7
+#define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1 // 16
+#define CC_PitchBendRange MIDI_NAMESPACE::GeneralPurposeController2 // 17
+
+#define CC_PortamentoTime     MIDI_NAMESPACE::PortamentoTime // cc# 5
+#define CC_PortamentoTimeDesc MIDI_NAMESPACE::GeneralPurposeController3 // cc# 18
+#define CC_PortamentoTimeAsc  MIDI_NAMESPACE::GeneralPurposeController4 // cc# 19
+
+#define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7 // 76
 #define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
 #define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 {
+	uint16_t time;
 	switch (cc_num)
 	{
 		case CC_PortamentoTime:
-			portamento_time_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			time = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			portamento_time_desc_user = time;
+			portamento_time_asc_user = time;
+			break;
+			
+		case CC_PortamentoTimeDesc:
+			portamento_time_desc_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			break;
+		
+		case CC_PortamentoTimeAsc:
+			portamento_time_asc_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
 			break;
 		
 		case CC_TrigLength:

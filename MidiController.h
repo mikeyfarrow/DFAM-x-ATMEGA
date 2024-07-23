@@ -79,6 +79,8 @@ public:
 	void time_inc();
 	uint32_t millis();
 	
+	void update_midi_channels(uint8_t* channels);
+	
 private:
 	void advance_clock();
 	void advance_clock(uint8_t steps);
