@@ -19,6 +19,8 @@
 #define KCS_MODE !switch_state
 #define CCS_MODE switch_state
 
+#define SECS_PER_MIN 60.0
+
 #define NUM_STEPS 8
 #define PPQN 24
 #define MIDI_ROOT_NOTE 48  // an octave below middle C
@@ -41,6 +43,8 @@ MidiController::MidiController():
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	midi((SMT&) transport)
 {
+	last_clock = 0;
+	
 	midi_ch_A = 1;
 	midi_ch_B = 2;
 	midi_ch_KCS = 10;
@@ -64,6 +68,7 @@ void MidiController::update_midi_channels(uint8_t* ch)
 	midi_ch_B = ch[1];
 	midi_ch_KCS = ch[2];
 }
+
 
 void MidiController::time_inc()
 {
@@ -285,6 +290,15 @@ void MidiController::handleStop()
 */
 void MidiController::handleClock()
 {
+	uint32_t now = millis() / 2;
+	uint32_t period_ms = now - last_clock;
+	float hz = 1000.0 / period_ms;
+	bpm = SECS_PER_MIN * hz * 1.0 / PPQN; // TODO: add to a buffer and average the whole buffer
+
+
+	last_clock = now;
+	
+	
 	if (follow_midi_clock && switch_state)
 	{
 		// only count clock pulses while sequence is playing and CCS mode is selected

@@ -18,7 +18,7 @@ class CvOutput
 {
 private:
 	MidiController& mctl;  // Reference to the MidiController
-
+	
 public:
 	uint8_t dac_ch;
 	
@@ -62,7 +62,7 @@ public:
 	uint16_t midi_to_data(uint8_t midi_note);
 	
 	uint16_t calculate_ocr_value(uint16_t duration_ms);
-	double triangle_wave(double t, double period, bool descend_first = false);
+	double triangle_wave(double t, double period, bool desc_first = false);
 	double sine_wave(double t, double period);
 	
 	void control_change(uint8_t cc_num, uint8_t cc_val);

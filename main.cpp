@@ -95,7 +95,9 @@ int main()
 		{
 			if (idx % 2 == 0) { status1_green(); }
 			else { status1_red(); }
-			mctl.update();	
+			
+			mctl.update();
+			
 		}
 		
 		
@@ -169,7 +171,10 @@ void register_midi_events()
 	lambdas that capture 'this' and bind it to the callback function, we have the
 	following ugliness:
 */
-void handleCC(byte ch, byte cc_num, byte cc_val)   { mctl.handleCC(ch, cc_num, cc_val); }
+void handleCC(byte ch, byte cc_num, byte cc_val)   
+{
+	mctl.handleCC(ch, cc_num, cc_val); 
+}
 
 void handleNoteOff(byte ch, byte pitch, byte vel)  { /*mctl.handleNoteOff(ch, pitch, vel); */ }
 

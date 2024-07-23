@@ -25,7 +25,6 @@
 #include "CvOutput.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
-#define MAX_SLIDE_LENGTH 2000 // 500 ms
 
 
 class MidiController
@@ -46,6 +45,7 @@ private:
 	
 	uint8_t follow_midi_clock;
 	uint8_t clock_count;
+	uint32_t last_clock;
 	uint8_t cur_dfam_step;
 	uint8_t clock_div;
 	uint8_t keyboard_step_table[8];
@@ -54,6 +54,7 @@ private:
 	volatile uint32_t time_counter;
 
 public:
+	float bpm;
 	CvOutput cv_out_a;
 	CvOutput cv_out_b;
 	MidiInterface midi;

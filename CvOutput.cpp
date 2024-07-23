@@ -12,7 +12,6 @@
 #include "GPIO.h"
 #include "MidiController.h"
 
-#define MAX_TRIG_LENGTH 100 // millis
 
 #define MCP4822_ABSEL 7
 #define MCP4822_IGN 6
@@ -24,10 +23,12 @@
 #define MIDI_NOTE_MAX 111
 #define DAC_CAL_VALUE 47.068966d
 
+#define MAX_SLIDE_LENGTH 2000 // 500 ms?
+#define MAX_TRIG_LENGTH 100 // millis?
 #define PITCH_BEND_MAX 12 // semitones
 
 #define VIB_DELAY_MAX 2000 // ms
-#define VIB_DEPTH_MAX 8000  // cents
+#define VIB_DEPTH_MAX 800  // cents
 #define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
 #define VIB_FREQ_MAX 10 // Hz --> 100 ms period
 
@@ -47,7 +48,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, not
 	slide_start_note = UINT8_MAX;
 	slide_end_note = UINT8_MAX;
 	
-	vib_period_ms = 0;//200;
+	vib_period_ms = 200;//200;
 	vib_depth_cents = 0;//25; // magnitude up and down
 	vib_delay_ms = 0;//200;
 	vibrato_cur_offset = 0;
@@ -72,7 +73,7 @@ void CvOutput::update_dac_vibrato()
 	double scale_factor = triangle_wave(elapsed, vib_period_ms);
 	vibrato_cur_offset = scale_factor * vib_depth_cents / 100;
 	
-	output_dac(dac_ch, midi_to_data(slide_end_note));
+	//output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
 /*
@@ -88,15 +89,8 @@ double CvOutput::sine_wave(double t, double period)
 	triangle_wave - triangle wave, values between -1 and 1 used to create vibrato effect
 */
 double CvOutput::triangle_wave(double t, double period, bool descend_first) {
-	if (descend_first)
-	{
-		t -= (vib_period_ms / 4.0);
-	}
-	else
-	{
-		t += (vib_period_ms / 4.0);
-	}
-	
+	t += (descend_first ? -1 : 1) * (vib_period_ms / 4.0);
+
 	double wrapped_time = t - period * floor(t / period);
 	double phase = wrapped_time / (period / 2.0);
 	int phase_int = (int) phase;
@@ -104,7 +98,7 @@ double CvOutput::triangle_wave(double t, double period, bool descend_first) {
 
 	if (phase_int % 2 == 0) {
 		return 2 * fractional_phase - 1; // ascending part of the triangular wave
-		} else {
+	} else {
 		return 1 - 2 * fractional_phase; // descending part of the triangular wave
 	}
 }
@@ -113,6 +107,9 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 {
 	last_note_on_ms = mctl.millis();
 	vibrato_cur_offset = 0;
+   
+   // TODO: tempo-sync vibrato
+	//vib_period_ms = (1.0/(mctl.bpm / 60.0))*1000 / 2;
 	
 	// set the start and end note for the slide
 	slide_start_note = slide_end_note;
@@ -155,6 +152,7 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 
 void CvOutput::slide_progress()
 {
+	update_dac_vibrato();
 	if (is_sliding)
 	{
 		uint32_t elapsed = mctl.millis() - slide_start_ms;
@@ -178,7 +176,7 @@ void CvOutput::slide_progress()
 	}
 	else // check for vibrato
 	{
-		update_dac_vibrato();
+		output_dac(dac_ch, midi_to_data(slide_end_note));
 	}		
 }
 
@@ -290,13 +288,14 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 #define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
 #define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 
+
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 {
 	uint16_t time;
 	switch (cc_num)
 	{
 		case CC_PortamentoTime:
-			time = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			time = ((uint32_t)cc_val * MAX_SLIDE_LENGTH) / ((float) UINT8_MAX);
 			portamento_time_desc_user = time;
 			portamento_time_asc_user = time;
 			break;
@@ -311,6 +310,7 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 		
 		case CC_TrigLength:
 			trigger_duration_ms = (cc_val * MAX_TRIG_LENGTH / 127.0);
+			if (trigger_duration_ms < 1) trigger_duration_ms = 1;
 			break;
 		
 		case CC_VibratoRate:
@@ -318,7 +318,7 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			break;
 			
 		case CC_VibratoDepth:
-			vib_depth_cents = ((uint32_t)cc_val * MAX_TRIG_LENGTH / 127.0);
+			vib_depth_cents = ((uint32_t)cc_val * VIB_DEPTH_MAX) / 127.0;
 			break;
 			
 		case CC_VibratoDelay:
