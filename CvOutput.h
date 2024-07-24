@@ -10,9 +10,11 @@
 #define __CVOUTPUT_H__
 
 #include <avr/io.h>
-//#include "NoteCollection.h"
+#include "CircularBuffer.h"
 
-class MidiController; 
+#define LATEST_NOTES_SIZE 20 
+
+class MidiController;
 
 class CvOutput
 {
@@ -22,7 +24,8 @@ private:
 public:
 	uint8_t dac_ch;
 	
-	//NoteCollection notes;
+	CircularBuffer<int16_t, LATEST_NOTES_SIZE> latest_notes;
+	uint8_t notes_held[100];
 	
 	uint8_t trigger_duration_ms;
 	
@@ -52,7 +55,7 @@ public:
 public:
 	CvOutput(MidiController& mc, uint8_t dac_channel);
 	
-	void note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_vel);
+	void note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_vel = true, uint8_t add_to_latest = true);
 	void slide_progress();
 	void pitch_bend(int16_t amt);
 	void update_vibrato_offset();
@@ -68,6 +71,10 @@ public:
 	double sine_wave(double t, double period);
 	
 	void control_change(uint8_t cc_num, uint8_t cc_val);
+   
+	int16_t highest();
+	int16_t lowest();
+	int16_t latest();
 };
 
 

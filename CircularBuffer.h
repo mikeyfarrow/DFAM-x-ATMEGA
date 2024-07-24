@@ -14,7 +14,7 @@ public:
     uint8_t read_idx;
 
 public:
-    CircularBuffer();
+	CircularBuffer();
 
     bool put(T item);
     bool get(T* val_ptr);

@@ -75,6 +75,7 @@ public:
 	// Event handlers
 	void handleCC(byte channel, byte cc_num, byte cc_val);
 	void handleNoteOn(uint8_t channel, uint8_t pitch, uint8_t velocity);
+	void handleNoteOff(uint8_t channel, uint8_t pitch, uint8_t velocity);
 	void handleStart();
 	void handleStop();
 	void handleClock();

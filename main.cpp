@@ -185,7 +185,10 @@ void handleCC(byte ch, byte cc_num, byte cc_val)
 	mctl.handleCC(ch, cc_num, cc_val); 
 }
 
-void handleNoteOff(byte ch, byte pitch, byte vel)  { /*mctl.handleNoteOff(ch, pitch, vel); */ }
+void handleNoteOff(byte ch, byte pitch, byte vel) 
+{
+	mctl.handleNoteOff(ch, pitch, vel);
+}
 
 void channel_select_progress_led()
 {

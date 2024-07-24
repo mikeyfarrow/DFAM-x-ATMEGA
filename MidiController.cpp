@@ -38,10 +38,10 @@ const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 */
 MidiController::MidiController():
 	transport(),
-	cv_out_a(*this, 0),
-	cv_out_b(*this, 1),
 	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	clock_period_buffer(),
+	cv_out_a(*this, 0),
+	cv_out_b(*this, 1),
 	midi((SMT&) transport)
 {
 	last_clock = 0;
@@ -70,6 +70,22 @@ void MidiController::update_midi_channels(uint8_t* ch)
 	midi_ch_KCS = ch[2];
 }
 
+float MidiController::avg_bpm()
+{
+	float avg_period = avg_midi_clock_period();
+	float freq = 1000.0 / avg_period;
+	return SECS_PER_MIN * freq / PPQN;
+}
+
+float MidiController::avg_midi_clock_period()
+{
+	float sum = 0;
+	for (int i = 0; i < BPM_BUFFER_SIZE; i++)
+	{
+		sum += clock_period_buffer.buffer[i];
+	}
+	return sum  / BPM_BUFFER_SIZE;
+}
 
 void MidiController::time_inc()
 {
@@ -101,7 +117,6 @@ void MidiController::update()
 		last_sw_read = millis();
 	}
 }
-
 
 /*
 	tx_ready - called to notify the MIDI controller that the USART data register
@@ -153,7 +168,6 @@ void MidiController::advance_clock(uint8_t steps)
 	}
 }
 
-
 /*
 check_mode_switch -
 There are two modes: CCS (clock-controlled sequencer) or KCS (keyboard-controlled
@@ -203,8 +217,6 @@ void MidiController::check_sync_switch()
 	}
 }
 
-
-
 /************************************************************************/
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
@@ -246,10 +258,10 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
 	if (channel == midi_ch_A)
-		cv_out_a.note_on(midi_note, velocity, true);
+	   cv_out_a.note_on(midi_note, velocity, true, true);
 	
 	if (channel == midi_ch_B) // only send vel. B in CCS mode
-		cv_out_b.note_on(midi_note, velocity, CCS_MODE); 
+	   cv_out_b.note_on(midi_note, velocity, CCS_MODE, true);
 
 	if (channel == midi_ch_KCS)
 	{
@@ -262,8 +274,18 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 				advance_clock(steps_left);
 				cur_dfam_step = dfam_step;
 			}
-		}		
+		}
 	}
+}
+
+void MidiController::handleNoteOff(uint8_t channel, uint8_t midi_note, uint8_t velocity)
+{
+	if (channel == midi_ch_A)
+		cv_out_a.note_off(midi_note, velocity);
+	
+	if (channel == midi_ch_B) // only send vel. B in CCS mode
+		cv_out_b.note_off(midi_note, velocity);
+
 }
 
 /*
@@ -284,23 +306,6 @@ void MidiController::handleStart()
 void MidiController::handleStop()
 {
 	follow_midi_clock = false;
-}
-
-float MidiController::avg_bpm()
-{
-	float avg_period = avg_midi_clock_period();
-	float freq = 1000.0 / avg_period;
-	return SECS_PER_MIN * freq / PPQN;
-}
-
-float MidiController::avg_midi_clock_period()
-{
-	float sum = 0;
-	for (int i = 0; i < BPM_BUFFER_SIZE; i++)
-	{
-		sum += clock_period_buffer.buffer[i];
-	}
-	return sum  / BPM_BUFFER_SIZE;
 }
 
 /*

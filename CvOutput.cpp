@@ -43,7 +43,8 @@ float tempo_sync_divisions[8] = {
 	0.125, // 32nd
 };
 
-CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch) //, notes()
+
+CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch), notes_held {}, latest_notes()
 {
 	trigger_duration_ms = 1;
 	
@@ -118,9 +119,15 @@ double CvOutput::triangle_wave(double t, double period, bool descend_first) {
 	}
 }
 
-void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocity)
+void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocity, uint8_t add_to_latest)
 {
 	last_note_on_ms = mctl.millis();
+	if (add_to_latest)
+	{
+		latest_notes.put(midi_note);
+		notes_held[midi_note] = velocity;
+	}
+	
 	vibrato_cur_offset = 0;
 	
 	// set the start and end note for the slide
@@ -251,7 +258,14 @@ void CvOutput::output_dac(uint8_t channel, uint16_t data)
 
 void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 {
-	//notes.remove_note(midi_note);
+	toggle_bit(LED_BANK_PORT, LED2);
+	notes_held[midi_note] = 0;
+	
+	int16_t note = latest();
+	if (note > -1)
+	{
+		note_on(note, notes_held[note], false, false);
+	}
 }
 
 /*
@@ -354,4 +368,39 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			
 		default: break;
 	}
+}
+
+
+int16_t CvOutput::highest()
+{
+	for (int i = 99; i >= 0; i--)
+		if (notes_held[i])
+			return i;
+			
+	return -1;
+}
+
+int16_t CvOutput::lowest()
+{
+	for (int i = 0; i < 100; i++)
+		if (notes_held[i])
+			return i;
+			
+	return -1;
+}
+
+int16_t CvOutput::latest()
+{
+	uint8_t idx_latest = latest_notes.write_idx - 1;
+	for (uint8_t i = 0; i < LATEST_NOTES_SIZE; i++)
+	{
+		int8_t r = idx_latest - i % LATEST_NOTES_SIZE;
+		int8_t note = latest_notes.buffer[r < 0 ? r + LATEST_NOTES_SIZE : r];
+
+		if (notes_held[note]) {
+			return note;
+		}
+	}
+	
+	return -1;
 }
