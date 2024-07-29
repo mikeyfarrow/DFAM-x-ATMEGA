@@ -1,0 +1,28 @@
+Notes on polyphony and midi modes...
+
+Mono Mode:
+   - CvOutput_A receives every NoteOn/Off (and all other midi messages) on its assigned channel(s)
+   - same for CvOutput_B
+   - CCs ("channel messages") are handled separately for each CvOutput
+   - When a NoteOff is received:
+      If there are any held notes, then "retrigger" behavior is applied:
+       - No retrigger
+       - Retrigger the highest held note
+       - Retrigger the lowest held note
+       - Retrigger the latest held note
+
+
+Poly Mode:
+  - The MidiController receives every NoteOn/Off
+        --> on what channel(s)? 
+    - A "voice allocation policy" decides which CvOutput it should forward the message to, e.g.
+      - assign to least-recently used CvOutput (i.e. alternate)
+      - assign to B if B is unused, otherwise assign it to A
+        --> this is like... the first note held will always be assigned to Cv_B
+                            all subsequent notes that are held down will go to Cv_A
+      - ... more policies...
+    - CC "channel messages" are still handled separately for each CvOutput
+      - Cv_A and Cv_B receive CCs on their respective assigned midi channels
+        --> this works as long as A and B are not forced to listen on same channel
+
+      - retrigger behavior still applies 
