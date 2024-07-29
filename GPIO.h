@@ -45,12 +45,22 @@
 
 
 /************************************************************************/
-/*     INPUTS: mode switch & sync button                                */
+/*     INPUTS: mode switch & sync button & learn btn                    */
 /************************************************************************/
+#define DDR_MODE_SW		DDRC
+#define DD_MODE_SW		DDC3
 #define MODE_SWITCH_PIN PINC
 #define MODE_SWITCH		PINC3
+
+#define DDR_SYNC_BTN	DDRB
+#define DD_SYNC_BTN		DDB1
 #define SYNC_BTN_PIN	PINB
 #define SYNC_BTN		PINB1
+
+#define DDR_LEARN_SW    DDRB
+#define DD_LEARN_SW		DDB4
+#define LEARN_SW_PIN	PINB
+#define LEARN_SW		PINB4
 
 
 
@@ -102,6 +112,13 @@
 #define VEL_A_DUTY	OCR0A
 #define VEL_B_DUTY	OCR0B
 
+// // midi sync out
+// #define DDR_SYNC_OUT	DDRC
+// #define DD_SYNC_OUT		DDC0
+// #define SYNC_OUT_PORT	PORTC
+// #define SYNC_OUT		PORTC0
+
+
 #define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3)
 #define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))
 
@@ -137,6 +154,7 @@ void bank_off(uint8_t i);
 /* hardware initialization */
 void init_led_outputs();
 void init_digital_outputs();
+void init_digital_inputs();
 void init_midi_UART();
 void init_DAC_SPI();
 void init_pwm_output();

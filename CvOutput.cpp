@@ -19,9 +19,6 @@
 #define MCP4822_SHDN 4
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
-#define MIDI_NOTE_MIN 24
-#define MIDI_NOTE_MAX 111
-#define DAC_CAL_VALUE 47.068966d
 
 #define MAX_SLIDE_LENGTH 2000 // 500 ms?
 #define MAX_TRIG_LENGTH 100 // millis?
@@ -43,9 +40,11 @@ float tempo_sync_divisions[8] = {
 	0.125, // 32nd
 };
 
+RetrigMode retrig_modes[4] = { Off, Highest, Lowest, Latest };
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch), notes_held {}, latest_notes()
 {
+	retrig_mode = Off;
 	trigger_duration_ms = 1;
 	
 	portamento_time_asc_user = 0;//100;
@@ -140,7 +139,9 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 	}
 	
 	// set the time bounds for the slide and start the slide
-	slide_cur_length = slide_start_note > slide_end_note ? portamento_time_desc_user : portamento_time_asc_user;
+	slide_cur_length = slide_start_note > slide_end_note
+							? portamento_time_desc_user
+							: portamento_time_asc_user;
 	slide_start_ms = mctl.millis();
 	is_sliding = slide_cur_length > 0 && slide_start_note != slide_end_note;
 	
@@ -157,7 +158,8 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 	if (dac_ch == 0)
 	{
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
-		trigger_A();
+		if (mctl.midi_mode != Poly)
+			trigger_A();
 	}
 	else
 	{
@@ -258,10 +260,20 @@ void CvOutput::output_dac(uint8_t channel, uint16_t data)
 
 void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 {
-	toggle_bit(LED_BANK_PORT, LED2);
 	notes_held[midi_note] = 0;
 	
-	int16_t note = latest();
+	if (retrig_mode == Off)
+		return;
+	
+	int16_t note;
+	switch (retrig_mode)
+	{
+		case Highest:	note = highest(); break;
+		case Lowest:	note = lowest(); break;
+		case Latest:	note = latest(); break;
+		default:		note = latest(); break;
+	}
+	
 	if (note > -1)
 	{
 		note_on(note, notes_held[note], false, false);
@@ -310,11 +322,23 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 #define CC_PortamentoTimeDesc MIDI_NAMESPACE::GeneralPurposeController3 // cc# 18
 #define CC_PortamentoTimeAsc  MIDI_NAMESPACE::GeneralPurposeController4 // cc# 19
 
+#define CC_RetrigMode  MIDI_NAMESPACE::GeneralPurposeController5 // cc# 80
+
 #define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7 // 76
 #define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
 #define CC_VibratoDelay   MIDI_NAMESPACE::SoundController9
 #define CC_VibratoSync    MIDI_NAMESPACE::SoundController10 // 79. Value: on or off
 
+/*
+    AllSoundOff                 = 120,
+    ResetAllControllers         = 121,
+    LocalControl                = 122,
+    AllNotesOff                 = 123,
+    OmniModeOff                 = 124,
+    OmniModeOn                  = 125,
+    MonoModeOn                  = 126,
+    PolyModeOn                  = 127
+*/
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 {
 	uint16_t time;
@@ -358,6 +382,10 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			
 		case CC_PitchBendRange:
 			pitch_bend_range = ((uint32_t)cc_val * PITCH_BEND_MAX) / 127.0;
+		
+		case CC_RetrigMode:
+			retrig_mode = retrig_modes[cc_val/32];
+			break;
 		
 		case MIDI_NAMESPACE::RPNMSB: break;
 		case MIDI_NAMESPACE::RPNLSB: break;

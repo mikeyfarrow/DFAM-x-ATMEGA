@@ -1,2 +1,26 @@
 - move KCS to channel 10
 -
+
+
+
+void MidiController::output_entire_midi_range(uint8_t dac_ch, uint32_t interval)
+{
+	while (millis() - last_dac_output < 5000)
+	{
+		_NOP();
+		_NOP();
+		_NOP();
+		CvOutput::output_dac(dac_ch, 0);
+	}
+	for (int i = MIDI_NOTE_MIN; i <= MIDI_NOTE_MAX; i++)
+	{
+		uint16_t note_data = (i - MIDI_NOTE_MIN) * DAC_CAL_VALUE;
+		CvOutput::output_dac(dac_ch, note_data);
+		while (millis() - last_dac_output < interval)
+		{
+			_NOP();
+		}
+		last_dac_output = millis();
+		toggle_bit(LED_BANK_PORT, LED2);
+	}
+}

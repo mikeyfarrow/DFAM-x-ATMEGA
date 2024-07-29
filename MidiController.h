@@ -29,6 +29,11 @@ typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiI
 
 #define BPM_BUFFER_SIZE 12
 
+enum MidiMode
+{
+	Poly, Mono
+};
+
 class MidiController
 {
 	
@@ -57,6 +62,7 @@ private:
 	CircularBuffer<float, BPM_BUFFER_SIZE> clock_period_buffer;
 
 public:
+	MidiMode midi_mode;
 	float bpm;
 	CvOutput cv_out_a;
 	CvOutput cv_out_b;
@@ -69,7 +75,7 @@ public:
 	float avg_midi_clock_period();
 	void init_event_handlers();
 	void update();
-	uint8_t incoming_message(uint8_t); 
+	uint8_t incoming_message(uint8_t);
 	void tx_ready();
 	
 	// Event handlers

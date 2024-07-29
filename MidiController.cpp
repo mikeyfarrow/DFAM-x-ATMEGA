@@ -5,6 +5,7 @@
 * Author: mikey
 */
 #include <avr/io.h>
+#include <util/atomic.h>
 #include <math.h>
 #include <avr/interrupt.h>
 #include <avr/cpufunc.h>
@@ -44,11 +45,15 @@ MidiController::MidiController():
 	cv_out_b(*this, 1),
 	midi((SMT&) transport)
 {
+	midi_mode = Mono;
 	last_clock = 0;
 	
 	midi_ch_A = 1;
 	midi_ch_B = 2;
 	midi_ch_KCS = 10;
+	
+	cv_out_a.retrig_mode = Lowest;
+	cv_out_b.retrig_mode = Highest;
 	
 	millis_last = 0;
 	last_sw_read = 0;
@@ -94,10 +99,12 @@ void MidiController::time_inc()
 
 uint32_t MidiController::millis()
 {
-	cli(); // don't allow ISR to change 32bit _millis while we read it byte by byte
-	uint32_t tms = time_counter;
-	sei();
-	return tms;// / 10;
+	uint32_t tms;
+	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
+	{
+		tms = time_counter;
+	}
+	return tms;
 }
 
 void MidiController::update()
@@ -118,12 +125,12 @@ void MidiController::update()
 	}
 }
 
+void MidiController::tx_ready()
+{
 /*
 	tx_ready - called to notify the MIDI controller that the USART data register
 		is empty and so is ready for a MIDI Tx
 */
-void MidiController::tx_ready()
-{
 	uint8_t midi_byte;
 	if (transport.midi_tx_buffer.get(&midi_byte))
 	{
@@ -135,7 +142,6 @@ uint8_t MidiController::incoming_message(uint8_t msg)
 {
 	return transport.midi_rx_buffer.put(msg);
 }
-
 
 /************************************************************************/
 /*		HARDWARE OUTPUT                                                 */
@@ -224,7 +230,7 @@ void MidiController::check_sync_switch()
 #define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController2
 #define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController3
 
-void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
+void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 {
 	if (channel == midi_ch_A)
 		cv_out_a.control_change(cc_num, cc_val);
@@ -232,60 +238,85 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val )
 	if (channel == midi_ch_B)
 		cv_out_b.control_change(cc_num, cc_val);
 
-	/* Considering these CCs as "Global" for now ... */
+	/* considering these CCs as "Global" for now ... */
 	switch (cc_num)
 	{
 		case CC_AdvClockWidth:
-		{
 			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
 			break;
-		}
 			
 		case CC_ClockDiv:
-		{
-			uint8_t div_idx = (int) cc_val * NUM_DIVISIONS / 127.0;
-			clock_div = DIVISIONS[div_idx];
+			clock_div = DIVISIONS[(uint8_t) (cc_val * NUM_DIVISIONS / 127.0)];
 			break;
-		}
+		
+		case MIDI_NAMESPACE::OmniModeOff:
+			break;
+		
+		case MIDI_NAMESPACE::OmniModeOn:
+			break;
+		
+		case MIDI_NAMESPACE::MonoModeOn:
+			midi_mode = Mono;
+			break;
+		
+		case MIDI_NAMESPACE::PolyModeOn:
+			midi_mode = Poly;
+			break;
+		
+		case MIDI_NAMESPACE::AllNotesOff:
+			break;
+
+		case MIDI_NAMESPACE::ResetAllControllers:
+			break;
 		
 		default:
-		{
 			break;
-		}
 	}
 }
 
+
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (channel == midi_ch_A)
-	   cv_out_a.note_on(midi_note, velocity, true, true);
-	
-	if (channel == midi_ch_B) // only send vel. B in CCS mode
-	   cv_out_b.note_on(midi_note, velocity, CCS_MODE, true);
-
-	if (channel == midi_ch_KCS)
+	if (midi_mode == Poly)
 	{
-		if (KCS_MODE) // We are in keyboard-controlled sequencer mode
+		if (cv_out_a.latest() == -1)
 		{
-			uint8_t dfam_step = midi_note_to_step(midi_note);
-			if (dfam_step) {
-				VEL_B_DUTY = velocity << 1;
-				int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
-				advance_clock(steps_left);
-				cur_dfam_step = dfam_step;
-			}
+			cv_out_a.note_on(midi_note, velocity, true, true);
+		}
+		else
+		{
+			cv_out_b.note_on(midi_note, velocity, true, true);
+		}
+		cv_out_a.trigger_A();
+	}
+	else /* midi_mode == Mono */
+	{
+		if (channel == midi_ch_A)
+			cv_out_a.note_on(midi_note, velocity, true, true);
+		
+		if (channel == midi_ch_B) // only send vel. B in CCS mode
+			cv_out_b.note_on(midi_note, velocity, CCS_MODE, true);
+	}
+
+	if (channel == midi_ch_KCS && KCS_MODE)
+	{
+		uint8_t dfam_step = midi_note_to_step(midi_note);
+		if (dfam_step) {
+			VEL_B_DUTY = velocity << 1;
+			int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
+			advance_clock(steps_left);
+			cur_dfam_step = dfam_step;
 		}
 	}
 }
 
 void MidiController::handleNoteOff(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (channel == midi_ch_A)
+	if (channel == midi_ch_A || midi_mode == Poly)
 		cv_out_a.note_off(midi_note, velocity);
 	
-	if (channel == midi_ch_B) // only send vel. B in CCS mode
+	if (channel == midi_ch_B || midi_mode == Poly)
 		cv_out_b.note_off(midi_note, velocity);
-
 }
 
 /*

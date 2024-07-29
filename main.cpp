@@ -64,11 +64,13 @@ int main()
 	/* hardware/IO initialization */
 	init_led_outputs();
 	init_digital_outputs();
+	init_digital_inputs();
 	init_midi_UART();
 	init_DAC_SPI();
 	
 #ifdef ENABLE_MIDI_OUTPUT
 	UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
+	DDRD |= _BV(DDD1); // set PD1 (Tx) as output
 #endif
 	
 	
@@ -76,11 +78,7 @@ int main()
 	init_pwm_output();
 	init_milli_counter_timer();
 	init_timer1();
-	
-	DDRB &= ~_BV(DDB4); // PB4 is input
-	DDRC &= ~_BV(DDC3); // set PC3 as input
-	DDRB &= ~_BV(DDB1); // set PB1 as input
-	DDRD |= _BV(DDD1); // set PD1 (Tx) as output
+
 	
 	/* pin change interrupt for "channel select" mode switch */
 	PCMSK0 |= (1<<PCINT4);
@@ -150,7 +148,7 @@ ISR(PCINT0_vect){
 	if (mctl.millis() - last_momentary_press > MOMENTARY_SW_DEBOUNCE_MS)
 	{
 		last_momentary_press = mctl.millis();
-		if (bit_is_set(PINB, PINB3) && !channel_select_mode)
+		if (bit_is_set(LEARN_SW_PIN, LEARN_SW) && !channel_select_mode)
 		{
 			channel_select_mode = true;
 			channel_count = 0;

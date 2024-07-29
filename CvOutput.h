@@ -14,7 +14,19 @@
 
 #define LATEST_NOTES_SIZE 20 
 
+#define MIDI_NOTE_MIN 24
+#define MIDI_NOTE_MAX 111
+#define DAC_CAL_VALUE 47.068966d
+
 class MidiController;
+
+enum RetrigMode
+{
+	Off,
+	Highest,
+	Lowest,
+	Latest
+};
 
 class CvOutput
 {
@@ -23,6 +35,8 @@ private:
 	
 public:
 	uint8_t dac_ch;
+	
+	RetrigMode retrig_mode;
 	
 	CircularBuffer<int16_t, LATEST_NOTES_SIZE> latest_notes;
 	uint8_t notes_held[100];
