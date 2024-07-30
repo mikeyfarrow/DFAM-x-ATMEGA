@@ -239,8 +239,8 @@ void MidiController::check_sync_switch()
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
 
-#define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController2
-#define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController3
+#define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController7
+#define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController8
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 {
@@ -288,7 +288,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (midi_mode == Poly)
+	if (midi_mode == Poly && channel == midi_ch_A)
 	{
 		if (cv_out_a.latest() == -1) 
 		{	// No note is held on Cv_A: we will assign it its first note.
@@ -305,7 +305,8 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 		// trigger A on every note on, regardless of voice allocation
 		cv_out_a.trigger_A();
 	}
-	else /* midi_mode == Mono */
+	
+	if (midi_mode == Mono)
 	{
 		if (channel == midi_ch_A)
 			cv_out_a.note_on(midi_note, velocity, true, true);

@@ -41,6 +41,7 @@ float tempo_sync_divisions[8] = {
 };
 
 RetrigMode retrig_modes[4] = { Off, Highest, Lowest, Latest };
+TriggerMode trig_modes[3] = { Trig, Gate, None };
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch), notes_held {}, latest_notes()
 {
@@ -337,11 +338,13 @@ uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 #define CC_TrigLength	  MIDI_NAMESPACE::GeneralPurposeController1 // 16
 #define CC_PitchBendRange MIDI_NAMESPACE::GeneralPurposeController2 // 17
 
+#define CC_PortamentoOnOff     MIDI_NAMESPACE::Portamento // cc# 65
 #define CC_PortamentoTime     MIDI_NAMESPACE::PortamentoTime // cc# 5
 #define CC_PortamentoTimeDesc MIDI_NAMESPACE::GeneralPurposeController3 // cc# 18
 #define CC_PortamentoTimeAsc  MIDI_NAMESPACE::GeneralPurposeController4 // cc# 19
 
 #define CC_RetrigMode  MIDI_NAMESPACE::GeneralPurposeController5 // cc# 80
+#define CC_TrigMode  MIDI_NAMESPACE::GeneralPurposeController6
 
 #define CC_VibratoRate	  MIDI_NAMESPACE::SoundController7 // 76
 #define CC_VibratoDepth	  MIDI_NAMESPACE::SoundController8
@@ -363,6 +366,15 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 	uint16_t time;
 	switch (cc_num)
 	{
+		case MIDI_NAMESPACE::Legato:
+			trig_mode = cc_val > 63 ? Gate : Trig;
+			break;
+			
+		case CC_PortamentoOnOff:
+			portamento_time_desc_user = 0;
+			portamento_time_asc_user = 0;
+			break;
+			
 		case CC_PortamentoTime:
 			time = ((uint32_t)cc_val * MAX_SLIDE_LENGTH) / ((float) UINT8_MAX);
 			portamento_time_desc_user = time;
@@ -404,6 +416,11 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 		
 		case CC_RetrigMode:
 			retrig_mode = retrig_modes[cc_val/32];
+			break;
+			
+		case CC_TrigMode:
+			toggle_bit(LED_BANK_PORT, LED2);
+			trig_mode = trig_modes[(int)(cc_val/42.66)];
 			break;
 		
 		case MIDI_NAMESPACE::RPNMSB: break;
