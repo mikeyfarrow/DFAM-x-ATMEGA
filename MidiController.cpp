@@ -45,15 +45,27 @@ MidiController::MidiController():
 	cv_out_b(*this, 1),
 	midi((SMT&) transport)
 {
-	midi_mode = Mono;
+	midi_mode = Poly;
 	last_clock = 0;
 	
 	midi_ch_A = 1;
 	midi_ch_B = 2;
 	midi_ch_KCS = 10;
 	
-	cv_out_a.retrig_mode = Lowest;
+	cv_out_a.retrig_mode = Off;
 	cv_out_b.retrig_mode = Highest;
+	cv_out_b.trig_mode = Gate;
+	cv_out_b.trigger_duration_ms = 10;
+	
+	cv_out_a.trig_mode = Trig;
+	cv_out_a.trigger_duration_ms = 50;
+	cv_out_a.portamento_time_asc_user = 300;
+	cv_out_a.portamento_time_desc_user = 300;
+	
+	cv_out_b.vib_delay_ms = 400;
+	cv_out_b.vib_period_ms = 200;
+	cv_out_b.vib_depth_cents = 25;
+	cv_out_b.portamento_time_desc_user = 100;
 	
 	millis_last = 0;
 	last_sw_read = 0;
@@ -274,19 +286,23 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 	}
 }
 
-
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
 	if (midi_mode == Poly)
 	{
-		if (cv_out_a.latest() == -1)
-		{
+		if (cv_out_a.latest() == -1) 
+		{	// No note is held on Cv_A: we will assign it its first note.
+			// It will not be assigned a new note until this one is released.
 			cv_out_a.note_on(midi_note, velocity, true, true);
 		}
 		else
-		{
+		{   // Assign all other notes to Cv_B - this means B is the only
+			// one to have voices "stolen". It also means B is the only one
+			// to that will ever have a chance to to do any re-trigger behavior.
 			cv_out_b.note_on(midi_note, velocity, true, true);
 		}
+		
+		// trigger A on every note on, regardless of voice allocation
 		cv_out_a.trigger_A();
 	}
 	else /* midi_mode == Mono */
@@ -312,11 +328,27 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 
 void MidiController::handleNoteOff(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (channel == midi_ch_A || midi_mode == Poly)
-		cv_out_a.note_off(midi_note, velocity);
+	if (midi_mode == Mono)
+	{
+		if (channel == midi_ch_A)
+			cv_out_a.note_off(midi_note, velocity);
 	
-	if (channel == midi_ch_B || midi_mode == Poly)
-		cv_out_b.note_off(midi_note, velocity);
+		if (channel == midi_ch_B)
+			cv_out_b.note_off(midi_note, velocity);
+	}
+	else /* midi_mode == Poly */
+	{
+		if (cv_out_a.notes_held[midi_note])
+		{
+			cv_out_a.note_off(midi_note, velocity);
+		}
+		else
+		{
+			cv_out_b.note_off(midi_note, velocity);
+			if (cv_out_b.latest() == -1)
+				clear_bit(TRIG_PORT, TRIG_B_OUT);
+		}
+	}
 }
 
 /*

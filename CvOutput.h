@@ -20,6 +20,13 @@
 
 class MidiController;
 
+enum TriggerMode
+{
+	None,
+	Trig,
+	Gate
+};
+
 enum RetrigMode
 {
 	Off,
@@ -36,6 +43,7 @@ private:
 public:
 	uint8_t dac_ch;
 	
+	TriggerMode trig_mode;
 	RetrigMode retrig_mode;
 	
 	CircularBuffer<int16_t, LATEST_NOTES_SIZE> latest_notes;
@@ -68,7 +76,6 @@ public:
 
 public:
 	CvOutput(MidiController& mc, uint8_t dac_channel);
-	
 	void note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_vel = true, uint8_t add_to_latest = true);
 	void slide_progress();
 	void pitch_bend(int16_t amt);

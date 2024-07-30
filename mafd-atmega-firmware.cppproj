@@ -252,10 +252,16 @@
     <Folder Include="notes" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="notes\MIDI spec notes.txt">
+      <SubType>compile</SubType>
+    </None>
     <None Include="notes\notes.txt">
       <SubType>compile</SubType>
     </None>
     <None Include="notes\organize-code-refactor.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="notes\polyphony-and-midi-modes.txt">
       <SubType>compile</SubType>
     </None>
   </ItemGroup>

@@ -1,53 +1,35 @@
 NOTES, TODO, and IMPLEMENTATION DETAILS
 =======================================
 
-# DAC4822
-
-- Bypass capacitors:
-   - V+ to ground -> 10μF tant, 0.1μF ceramic
-   - Output (both) -> 1μF ? The tested range for stability is .001μF through 4.7 μF
-
-- Resources:
-   - https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ProductDocuments/DataSheets/20002249B.pdf
-      - See page 28 and page 30
-	  
-    DAC8562 - 2x 16-bit - $10 
-	DAC8564 - 4x 16-bit - $15
-	MAX5134 - 4x 16-bit - $17
-
-	DAC8554 - 4x 16-bit - $10.73 mouser
-	AD5667 - dual 16-bit $7.77
-
-
-############################
-### MIDI:
-
-Recommended Practice (RP-021)
-Sound Controller Defaults
-
-Vibrato CC:
-	CC#76   Rate
-	CC#77   Depth
-	CC#78   Delay
+- How does Yarns's calibration and DAC out work?
+- 
 
 
 
 ############################
-### MODES:
+### Modes:
 
+Advance/Clock Out:
 - KCS (keyboard controlling sequencer)
 - CCS (clock controlling sequencer)
 
+MIDI-CV converters:
+- Mono
+- Poly
+
+Meta-modes:
+- MIDI Learn: receive channels
+- MIDI Learn: DFAM note mapping
 
 
 ############################
-### TESTING SCENARIOS
+### EEPROM / Saving State:
 
-- Full range tuning calibration test (with Dixie II+)
-- Verify that trigger outs A and B are perfectly synchronized
-- Test out the sensitivity of Velocity outputs (and make it tunable?)
-
-
+Settings that should be saved to EEPROM:
+	- Midi mode (mono/poly)
+	- Midi channels
+	- Trigger lengths A and B
+	- Cv calibration data A and B
 
 ############################
 ### TO INVESTIGATE: 
@@ -62,22 +44,9 @@ Vibrato CC:
 		-> RPN (Registered Parameter Numbers)
 
 ############################
-### COOL FEATURES
-
-- MIDI spread mode for Rings
-- Monophonic note order policies
-
-
-############################
 ### SETTINGS/CONFIG
 
 - Midi channels: one for outA, one for outB, one for keyboard mode
 - Velocity sensitivity?
 - MIDI root note?
 - Note mapping for KCS mode
-
-* KCS Mode Options:
-	- Backwards
-	- Random
-	- Skip n
-	- Step probability 

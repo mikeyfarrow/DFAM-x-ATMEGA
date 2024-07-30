@@ -44,6 +44,7 @@ RetrigMode retrig_modes[4] = { Off, Highest, Lowest, Latest };
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch): mctl(mc), dac_ch(ch), notes_held {}, latest_notes()
 {
+	trig_mode = Trig;
 	retrig_mode = Off;
 	trigger_duration_ms = 1;
 	
@@ -158,8 +159,14 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 	if (dac_ch == 0)
 	{
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
-		if (mctl.midi_mode != Poly)
+		if (trig_mode == Trig)
+		{   // the MidiController handles triggers in Poly mode
 			trigger_A();
+		}
+		else if (trig_mode == Gate)
+		{
+			set_bit(TRIG_PORT, TRIG_A_OUT);
+		}
 	}
 	else
 	{
@@ -167,7 +174,15 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 		{
 			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 		}
-		trigger_B();
+
+		if (trig_mode == Trig)
+		{   // the MidiController handles triggers in Poly mode
+			trigger_B();
+		}
+		else if (trig_mode == Gate)
+		{
+			set_bit(TRIG_PORT, TRIG_B_OUT);
+		}
 	}
 }
 
@@ -262,9 +277,6 @@ void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 {
 	notes_held[midi_note] = 0;
 	
-	if (retrig_mode == Off)
-		return;
-	
 	int16_t note;
 	switch (retrig_mode)
 	{
@@ -274,7 +286,12 @@ void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 		default:		note = latest(); break;
 	}
 	
-	if (note > -1)
+	if (note == -1 && trig_mode == Gate)
+	{
+		clear_bit(TRIG_PORT, dac_ch ? TRIG_B_OUT : TRIG_A_OUT);
+	}
+	
+	if (note > -1 && retrig_mode != Off)
 	{
 		note_on(note, notes_held[note], false, false);
 	}
@@ -285,6 +302,7 @@ void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 */
 void CvOutput::trigger_A()
 {
+	TIFR1 |= (1 << OCF1A);
 	set_bit(TRIG_PORT, TRIG_A_OUT);
 	
 	// Set the compare value for the specified duration in the future
@@ -300,6 +318,7 @@ void CvOutput::trigger_A()
 */
 void CvOutput::trigger_B()
 {
+	TIFR1 |= (1 << OCF1B);
 	set_bit(TRIG_PORT, TRIG_B_OUT);
 	
 	// Set the compare value for the specified duration in the future

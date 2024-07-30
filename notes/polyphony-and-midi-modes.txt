@@ -10,13 +10,13 @@ Mono Mode:
        - Retrigger the highest held note
        - Retrigger the lowest held note
        - Retrigger the latest held note
-
+	
 
 Poly Mode:
   - The MidiController receives every NoteOn/Off
-        --> on what channel(s)? 
+        --> on what channel(s)? On whatever channel CvOut_A is receiving on
     - A "voice allocation policy" decides which CvOutput it should forward the message to, e.g.
-      - assign to least-recently used CvOutput (i.e. alternate)
+      - assign to least-recently used CvOutput (i.e. alternate between both)
       - assign to B if B is unused, otherwise assign it to A
         --> this is like... the first note held will always be assigned to Cv_B
                             all subsequent notes that are held down will go to Cv_A
@@ -25,4 +25,7 @@ Poly Mode:
       - Cv_A and Cv_B receive CCs on their respective assigned midi channels
         --> this works as long as A and B are not forced to listen on same channel
 
-      - retrigger behavior still applies 
+      - retrigger behavior still applies
+
+	  - Trigger outputs:
+		- 
