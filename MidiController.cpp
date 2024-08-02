@@ -39,42 +39,38 @@ const uint8_t DIVISIONS[NUM_DIVISIONS] = {1, 2, 3, 4, 6, 8, 12};
 */
 MidiController::MidiController():
 	transport(),
-	keyboard_step_table {48, 50, 52, 53, 55, 57, 59, 60},
 	clock_period_buffer(),
 	cv_out_a(*this, 0),
 	cv_out_b(*this, 1),
 	midi((SMT&) transport)
 {
-	midi_mode = Poly;
 	last_clock = 0;
 	
-	midi_ch_A = 1;
-	midi_ch_B = 2;
-	midi_ch_KCS = 10;
 	
-	cv_out_a.retrig_mode = Off;
-	cv_out_b.retrig_mode = Highest;
-	cv_out_b.trig_mode = Gate;
-	cv_out_b.trigger_duration_ms = 10;
+	/*  A settings  */
+	cv_out_a.settings.retrig_mode = RetrigMode::Off;
+	cv_out_a.settings.trigger_duration_ms = 10;
+	cv_out_a.settings.portamento_on = false;
+	cv_out_a.settings.portamento_time_asc_user = 100;
+	cv_out_a.settings.portamento_time_desc_user = 100;
 	
-	cv_out_a.trig_mode = Trig;
-	cv_out_a.trigger_duration_ms = 50;
-	cv_out_a.portamento_time_asc_user = 300;
-	cv_out_a.portamento_time_desc_user = 300;
+	/*  B settings  */
+	cv_out_b.settings.retrig_mode = RetrigMode::Highest;
+	cv_out_b.settings.trigger_duration_ms = 10;
 	
-	cv_out_b.vib_delay_ms = 400;
-	cv_out_b.vib_period_ms = 200;
-	cv_out_b.vib_depth_cents = 25;
-	cv_out_b.portamento_time_desc_user = 100;
+	cv_out_b.settings.vib_delay_ms = 400;
+	cv_out_b.settings.vib_period_ms = 200;
+	cv_out_b.settings.vib_depth_cents = 25;
+	
+	cv_out_b.settings.portamento_time_asc_user = 0;
+	cv_out_b.settings.portamento_time_desc_user = 100;
 	
 	millis_last = 0;
 	last_sw_read = 0;
-	adv_clock_ticks = 0;
 	
 	follow_midi_clock = false;
 	clock_count = 0;
 	cur_dfam_step = 0; // the number of the last DFAM step triggered
-	clock_div = 4;
 	switch_state = -1;
 	
 	time_counter = 0;
@@ -82,9 +78,9 @@ MidiController::MidiController():
 
 void MidiController::update_midi_channels(uint8_t* ch)
 {
-	midi_ch_A = ch[0];
-	midi_ch_B = ch[1];
-	midi_ch_KCS = ch[2];
+	settings.midi_ch_A = ch[0];
+	settings.midi_ch_B = ch[1];
+	settings.midi_ch_KCS = ch[2];
 }
 
 float MidiController::avg_bpm()
@@ -166,7 +162,7 @@ void MidiController::advance_clock()
 {
 	set_bit(ADV_PORT, ADV_OUT);
 	
-	for (int i = 0; i < adv_clock_ticks; i++)
+	for (int i = 0; i < settings.adv_clock_ticks; i++)
 	{
 		/* do nothing, wait a while */
 		_NOP();
@@ -244,21 +240,21 @@ void MidiController::check_sync_switch()
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 {
-	if (channel == midi_ch_A)
+	if (channel == settings.midi_ch_A)
 		cv_out_a.control_change(cc_num, cc_val);
 	
-	if (channel == midi_ch_B)
+	if (channel == settings.midi_ch_B)
 		cv_out_b.control_change(cc_num, cc_val);
 
 	/* considering these CCs as "Global" for now ... */
 	switch (cc_num)
 	{
 		case CC_AdvClockWidth:
-			adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
+			settings.adv_clock_ticks = (cc_val * MAX_ADV_LENGTH / 127.0);
 			break;
 			
 		case CC_ClockDiv:
-			clock_div = DIVISIONS[(uint8_t) (cc_val * NUM_DIVISIONS / 127.0)];
+			settings.clock_div = DIVISIONS[(uint8_t) (cc_val * NUM_DIVISIONS / 127.0)];
 			break;
 		
 		case MIDI_NAMESPACE::OmniModeOff:
@@ -268,14 +264,16 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 			break;
 		
 		case MIDI_NAMESPACE::MonoModeOn:
-			midi_mode = Mono;
+			settings.midi_mode = Mono;
 			break;
 		
 		case MIDI_NAMESPACE::PolyModeOn:
-			midi_mode = Poly;
+			settings.midi_mode = Poly;
 			break;
 		
 		case MIDI_NAMESPACE::AllNotesOff:
+			cv_out_a.all_notes_off();
+			cv_out_b.all_notes_off();
 			break;
 
 		case MIDI_NAMESPACE::ResetAllControllers:
@@ -288,7 +286,7 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 
 void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (midi_mode == Poly && channel == midi_ch_A)
+	if (settings.midi_mode == Poly && channel == settings.midi_ch_A)
 	{
 		if (cv_out_a.latest() == -1) 
 		{	// No note is held on Cv_A: we will assign it its first note.
@@ -306,16 +304,16 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 		cv_out_a.trigger_A();
 	}
 	
-	if (midi_mode == Mono)
+	if (settings.midi_mode == Mono)
 	{
-		if (channel == midi_ch_A)
+		if (channel == settings.midi_ch_A)
 			cv_out_a.note_on(midi_note, velocity, true, true);
 		
-		if (channel == midi_ch_B) // only send vel. B in CCS mode
+		if (channel == settings.midi_ch_B) // only send vel. B in CCS mode
 			cv_out_b.note_on(midi_note, velocity, CCS_MODE, true);
 	}
 
-	if (channel == midi_ch_KCS && KCS_MODE)
+	if (channel == settings.midi_ch_KCS && KCS_MODE)
 	{
 		uint8_t dfam_step = midi_note_to_step(midi_note);
 		if (dfam_step) {
@@ -329,12 +327,12 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 
 void MidiController::handleNoteOff(uint8_t channel, uint8_t midi_note, uint8_t velocity)
 {
-	if (midi_mode == Mono)
+	if (settings.midi_mode == Mono)
 	{
-		if (channel == midi_ch_A)
+		if (channel == settings.midi_ch_A)
 			cv_out_a.note_off(midi_note, velocity);
 	
-		if (channel == midi_ch_B)
+		if (channel == settings.midi_ch_B)
 			cv_out_b.note_off(midi_note, velocity);
 	}
 	else /* midi_mode == Poly */
@@ -342,6 +340,8 @@ void MidiController::handleNoteOff(uint8_t channel, uint8_t midi_note, uint8_t v
 		if (cv_out_a.notes_held[midi_note])
 		{
 			cv_out_a.note_off(midi_note, velocity);
+			if (cv_out_a.latest() == -1)
+				clear_bit(TRIG_PORT, TRIG_A_OUT);
 		}
 		else
 		{
@@ -385,7 +385,7 @@ void MidiController::handleClock()
 	if (follow_midi_clock && switch_state)
 	{
 		// only count clock pulses while sequence is playing and CCS mode is selected
-		clock_count = clock_count % (PPQN / clock_div) + 1;
+		clock_count = clock_count % (PPQN / settings.clock_div) + 1;
 
 		if (clock_count == 1) // we have a new step
 		{
@@ -408,10 +408,10 @@ void MidiController::handleContinue()
 */
 void MidiController::handlePitchBend(byte midi_ch, int16_t amt)
 {
-	if (midi_ch == midi_ch_A)
+	if (midi_ch == settings.midi_ch_A)
 		cv_out_a.pitch_bend(amt);
 	
-	if (midi_ch == midi_ch_B) // only send vel. B in CCS mode
+	if (midi_ch == settings.midi_ch_B) // only send vel. B in CCS mode
 		cv_out_b.pitch_bend(amt);
 }
 
@@ -441,7 +441,7 @@ uint8_t MidiController::steps_between(int start, int end)
 */
 uint8_t MidiController::midi_note_to_step(uint8_t note) {
 	for (int i = 0; i < NUM_STEPS; i++) {
-		if (note == keyboard_step_table[i])
+		if (note == settings.keyboard_step_table[i])
 			return i + 1;
 	}
 	return false;

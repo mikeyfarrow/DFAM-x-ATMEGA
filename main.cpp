@@ -19,41 +19,26 @@
 
 #include "GPIO.h"
 #include "MidiController.h"
+#include "EEPromManager.h"
 
 #define MOMENTARY_SW_DEBOUNCE_MS 500
 #define MIDDLE_C 60
 #define NUM_CHANNELS 16
 
+enum UiMode { MidiRx, LearnChannel, LearnKeyboard };
+
 /** Instantiate the controller **/
 MidiController mctl;
 
-/*
-
-CHANNEL SELECT MODE - when enabled, the program waits for three note on events from ANY channel
-	the note values correspond to midi channels:
-		- C4 (i.e. middle C, note number 60) is MIDI channel 1
-		- +1 semitone is +1 channel
-		- D#5 is ch 16 (midi note number 75
-		- if you play a note outside of this range, the default basic channel is used
-*/
-
 uint32_t last_momentary_press = 0;
-bool channel_select_mode = false;
+
+UiMode mode = MidiRx;
 uint8_t default_channels[3] = {1, 2, 10};
 uint8_t channels[3] = {0, 0, 0}; // 0->CV A, 1->CV B, 2->KCS
 uint8_t channel_count = 0;
 
-
 // Event handlers
 void register_midi_events();
-void handleCC(byte channel, byte cc_num, byte cc_val);
-void handleNoteOn(byte channel, byte pitch, byte velocity);
-void handleStart();
-void handleStop();
-void handleClock();
-void handleContinue();
-void handleNoteOff(byte ch, byte pitch, byte vel);
-void handlePitchBend(byte ch, int amt);
 
 int main()
 {
@@ -73,7 +58,6 @@ int main()
 	DDRD |= _BV(DDD1); // set PD1 (Tx) as output
 #endif
 	
-	
 	/* configure timers/counters and interrupts */
 	init_pwm_output();
 	init_milli_counter_timer();
@@ -88,11 +72,17 @@ int main()
 	
 	sei(); // enable interrupts globally
 	
-	uint16_t idx = 0;
 	status2_off();
+	
+	if (!load_config(mctl))
+		save_config(mctl);
+	
+	status2_off();
+	
+	uint16_t idx = 0;
 	while (1)
 	{
-		if (channel_select_mode)
+		if (mode == LearnChannel)
 		{
 			mctl.midi.read();
 		}
@@ -101,14 +91,52 @@ int main()
 			if (idx % 2 == 0) { status1_green(); }
 			else { status1_red(); }
 			
-			mctl.update();
-			
+			mctl.update();	
 		}
-		
-		
 		idx++;
 	}
 	return 0;
+}
+
+
+/**************************************************/
+/*			Channel Select Mode					  */
+/**************************************************/
+
+void channel_select_progress_led()
+{
+	if (channel_count == 1)
+	{
+		status2_green();
+	}
+	else if (channel_count == 2)
+	{
+		status1_green();
+	}
+}
+
+void channel_select_note(uint8_t midi_note)
+{
+	uint8_t ch = midi_note - MIDDLE_C + 1;
+	if (ch < 0 || ch >= NUM_CHANNELS)
+	{
+		ch = default_channels[channel_count];
+	}
+	channels[channel_count] = ch;
+	
+	channel_count++;
+	channel_select_progress_led();
+
+	if (channel_count == 3)
+	{
+		// we are leaving channel select mode
+		status1_off();
+		status2_off();
+		mctl.update_midi_channels(channels);
+		
+		save_config(mctl); /* save channels (and all other config) to EEPROM */
+		mode = MidiRx;
+	}
 }
 
 
@@ -148,9 +176,9 @@ ISR(PCINT0_vect){
 	if (mctl.millis() - last_momentary_press > MOMENTARY_SW_DEBOUNCE_MS)
 	{
 		last_momentary_press = mctl.millis();
-		if (bit_is_set(LEARN_SW_PIN, LEARN_SW) && !channel_select_mode)
+		if (bit_is_set(LEARN_SW_PIN, LEARN_SW) && mode != LearnChannel)
 		{
-			channel_select_mode = true;
+			mode = LearnChannel;
 			channel_count = 0;
 			status1_red();
 			status2_red();
@@ -158,6 +186,35 @@ ISR(PCINT0_vect){
 	}
 }
 
+void handleCC(byte ch, byte cc_num, byte cc_val)   
+{
+	mctl.handleCC(ch, cc_num, cc_val); 
+}
+
+void handleNoteOff(byte ch, byte pitch, byte vel) 
+{
+	mctl.handleNoteOff(ch, pitch, vel);
+}
+
+void handleNoteOn(byte ch, byte pitch, byte vel) 
+{
+	toggle_bit(LED_BANK_PORT, LED2);
+	if (mode == MidiRx)
+	{
+		channel_select_note(pitch);
+	}
+	else
+	{
+		mctl.handleNoteOn(ch, pitch, vel);
+	}
+}
+
+void handleStart()						{ mctl.handleStart(); }
+void handleStop()						{ mctl.handleStop(); }
+void handleClock()						{ mctl.handleClock(); }
+void handleContinue()					{ mctl.handleContinue(); }
+void handlePitchBend(byte ch, int amt)	{ mctl.handlePitchBend(ch, amt); }
+	
 void register_midi_events()
 {
 	mctl.midi.setHandleControlChange(handleCC);
@@ -169,88 +226,3 @@ void register_midi_events()
 	mctl.midi.setHandlePitchBend(handlePitchBend);
 	mctl.midi.setHandleNoteOff(handleNoteOff);
 }
-
-/*
-	Unfortunately we since we cannot include <functional> we cannot call std::bind or
-	anything else to allow us to pass instance methods as callbacks... boo hoo.
-	
-	Instead of attaching the event handlers inside the MidiController using elegant
-	lambdas that capture 'this' and bind it to the callback function, we have the
-	following ugliness:
-*/
-void handleCC(byte ch, byte cc_num, byte cc_val)   
-{
-	mctl.handleCC(ch, cc_num, cc_val); 
-}
-
-void handleNoteOff(byte ch, byte pitch, byte vel) 
-{
-	mctl.handleNoteOff(ch, pitch, vel);
-}
-
-void channel_select_progress_led()
-{
-	if (channel_count == 1)
-	{
-		status2_green();
-	}
-	else if (channel_count == 2)
-	{
-		status1_green();
-	}
-}
-
-void store_channel_selections()
-{
-	// write to EEPROM
-	// ... TODO...
-	//     will also need to read the EEPROM on boot?
-	
-	
-	// update the MIDI controller
-	mctl.update_midi_channels(channels);
-}
-
-void channel_select_note(uint8_t midi_note)
-{
-	uint8_t ch = midi_note - MIDDLE_C + 1;
-	if (ch < 0 || ch >= NUM_CHANNELS)
-	{
-		ch = default_channels[channel_count];
-	}
-	channels[channel_count] = ch;
-	
-	channel_count++;
-	channel_select_progress_led();
-
-	if (channel_count == 3)
-	{
-		// we are leaving channel select mode
-		status1_off();
-		status2_off();
-		store_channel_selections();
-		channel_select_mode = false;
-	}
-}
-
-void handleNoteOn(byte ch, byte pitch, byte vel) 
-{
-	if (channel_select_mode)
-	{
-		channel_select_note(pitch);
-	}
-	else
-	{
-		mctl.handleNoteOn(ch, pitch, vel);
-	}
-}
-
-void handleStart()								  { mctl.handleStart(); }
-
-void handleStop()								  { mctl.handleStop(); }
-
-void handleClock()								  { mctl.handleClock(); }
-
-void handleContinue()							  { mctl.handleContinue(); }
-
-void handlePitchBend(byte ch, int amt)			  { mctl.handlePitchBend(ch, amt); }

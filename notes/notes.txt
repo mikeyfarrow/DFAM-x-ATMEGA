@@ -2,9 +2,13 @@ NOTES, TODO, and IMPLEMENTATION DETAILS
 =======================================
 
 - How does Yarns's calibration and DAC out work?
-- 
 
-
+CHANNEL SELECT MODE - when enabled, the program waits for three note on events from ANY channel
+	the note values correspond to midi channels:
+		- C4 (i.e. middle C, note number 60) is MIDI channel 1
+		- +1 semitone is +1 channel
+		- D#5 is ch 16 (midi note number 75
+		- if you play a note outside of this range, the default basic channel is used
 
 ############################
 ### Modes:

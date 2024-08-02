@@ -24,14 +24,80 @@
 #include "SerialMidiTransport.h"
 #include "CircularBuffer.h"
 #include "CvOutput.h"
+#include "Serializable.h"
 
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
 
 #define BPM_BUFFER_SIZE 12
 
-enum MidiMode
+enum MidiMode { Mono, Poly };
+
+class MctlSettings : public Serializable
 {
-	Poly, Mono
+public:
+    MidiMode midi_mode; /* mono or poly */
+
+    uint8_t midi_ch_A; // channel for v/oct on the primary cv out
+    uint8_t midi_ch_B; // channel for v/oct on the secondary cv out (can be same as A)
+    uint8_t midi_ch_KCS; // channel for keyboard control
+    uint8_t clock_div; /* run the sequence faster/slower relative to midi beat clock */
+
+    uint8_t adv_clock_ticks; /* number of ticks per advance clock pulse */
+
+    uint8_t keyboard_step_table[8]; /* val => midi_note number,
+                                       idx => DFAM sequence step to trigger */
+
+    MctlSettings()
+        : keyboard_step_table{48, 50, 52, 53, 55, 57, 59, 60}
+    {
+        midi_mode = Mono;
+        midi_ch_A = 23;
+        midi_ch_B = 34;
+        midi_ch_KCS = 100;
+        adv_clock_ticks = 0;
+        clock_div = 4;
+    }
+
+    void serialize(uint8_t* buffer) const override
+    {
+        size_t offset = 0;
+
+        buffer[offset++] = (MidiMode) midi_mode;
+        buffer[offset++] = midi_ch_A;
+        buffer[offset++] = midi_ch_B;
+        buffer[offset++] = midi_ch_KCS;
+        buffer[offset++] = clock_div;
+        buffer[offset++] = adv_clock_ticks;
+
+        memcpy(buffer + offset, keyboard_step_table, sizeof(keyboard_step_table));
+        offset += sizeof(keyboard_step_table);
+    }
+
+    void deserialize(const uint8_t* buffer) override
+    {
+        size_t offset = 0;
+
+        midi_mode = static_cast<MidiMode>(buffer[offset++]);
+        midi_ch_A = buffer[offset++];
+        midi_ch_B = buffer[offset++];
+        midi_ch_KCS = buffer[offset++];
+        clock_div = buffer[offset++];
+        adv_clock_ticks = buffer[offset++];
+
+        memcpy(keyboard_step_table, buffer + offset, sizeof(keyboard_step_table));
+        offset += sizeof(keyboard_step_table);
+    }
+
+    size_t size_bytes() const override
+    {
+        return sizeof(midi_mode) +
+               sizeof(midi_ch_A) +
+               sizeof(midi_ch_B) +
+               sizeof(midi_ch_KCS) +
+               sizeof(clock_div) +
+               sizeof(adv_clock_ticks) +
+               sizeof(keyboard_step_table);
+    }
 };
 
 class MidiController
@@ -42,27 +108,18 @@ private:
 	MIDI_NAMESPACE::SerialMidiTransport transport;
 	
 	uint32_t millis_last;
-	
-	volatile uint8_t adv_clock_ticks;
-	volatile uint32_t last_sw_read;
-	
-	uint8_t midi_ch_A; // channel for v/oct on the primary cv out
-	uint8_t midi_ch_B; // channel for v/oct on the secondary cv out (can be same as A)
-	uint8_t midi_ch_KCS;
-	
 	uint8_t follow_midi_clock;
 	uint8_t clock_count;
 	uint32_t last_clock;
 	uint8_t cur_dfam_step;
-	uint8_t clock_div;
-	uint8_t keyboard_step_table[8];
-	volatile uint8_t switch_state;
 	
+	volatile uint32_t last_sw_read;
+	volatile uint8_t switch_state;
 	volatile uint32_t time_counter;
 	CircularBuffer<float, BPM_BUFFER_SIZE> clock_period_buffer;
 
 public:
-	MidiMode midi_mode;
+	MctlSettings settings;
 	float bpm;
 	CvOutput cv_out_a;
 	CvOutput cv_out_b;
