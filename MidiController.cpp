@@ -58,9 +58,9 @@ MidiController::MidiController():
 	cv_out_b.settings.retrig_mode = RetrigMode::Highest;
 	cv_out_b.settings.trigger_duration_ms = 10;
 	
-	cv_out_b.settings.vib_delay_ms = 400;
-	cv_out_b.settings.vib_period_ms = 200;
-	cv_out_b.settings.vib_depth_cents = 25;
+	cv_out_b.settings.vib_delay_ms = 0;
+	cv_out_b.settings.vib_period_ms = 400;
+	cv_out_b.settings.vib_depth_cents = 50;
 	
 	cv_out_b.settings.portamento_time_asc_user = 0;
 	cv_out_b.settings.portamento_time_desc_user = 100;

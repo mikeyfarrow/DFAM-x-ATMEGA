@@ -51,9 +51,9 @@ public:
         : keyboard_step_table{48, 50, 52, 53, 55, 57, 59, 60}
     {
         midi_mode = Mono;
-        midi_ch_A = 23;
-        midi_ch_B = 34;
-        midi_ch_KCS = 100;
+        midi_ch_A = 1;
+        midi_ch_B = 2;
+        midi_ch_KCS = 10;
         adv_clock_ticks = 0;
         clock_div = 4;
     }

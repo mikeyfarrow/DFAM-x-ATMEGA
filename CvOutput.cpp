@@ -6,6 +6,7 @@
 */
 
 #include <math.h>
+#include <stdlib.h>
 #include <util/atomic.h>
 
 #include "CvOutput.h"
@@ -22,7 +23,7 @@
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
 #define MAX_SLIDE_LENGTH 2000 // 500 ms?
-#define MAX_TRIG_LENGTH 100 // millis?
+#define MAX_TRIG_LENGTH 50 // millis?
 #define PITCH_BEND_MAX 12 // semitones
 
 #define VIB_DELAY_MAX 2000 // ms
@@ -57,6 +58,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch):
 	slide_end_note = UINT8_MAX;
 	
 	vibrato_cur_offset = 0;
+	vib_lfo = HalfWave;
 	
 	pitch_bend_amt = 0;
 	
@@ -95,18 +97,29 @@ double CvOutput::sine_wave(double t, double period)
 /*
 	triangle_wave - triangle wave, values between -1 and 1 used to create vibrato effect
 */
-double CvOutput::triangle_wave(double t, double period, bool descend_first) {
+double CvOutput::triangle_wave(double t, double period, bool descend_first)
+{
 	t += (descend_first ? -1 : 1) * (settings.vib_period_ms / 4.0);
 
 	double wrapped_time = t - period * floor(t / period);
 	double phase = wrapped_time / (period / 2.0);
-	int phase_int = (int) phase;
+	int phase_int = (int)phase;
 	double fractional_phase = phase - phase_int;
 
-	if (phase_int % 2 == 0) {
-		return 2 * fractional_phase - 1; // ascending part of the triangular wave
-	} else {
-		return 1 - 2 * fractional_phase; // descending part of the triangular wave
+	double wave_value;
+	if (phase_int % 2 == 0)
+	{
+		wave_value = 2 * fractional_phase - 1; // ascending part of the triangular wave
+	}
+	else
+	{
+		wave_value = 1 - 2 * fractional_phase; // descending part of the triangular wave
+	}
+
+	switch (vib_lfo) {
+		case Rectified: return fabs(wave_value);
+		case HalfWave:	return wave_value < 0 ? 0 : wave_value;
+		default:		return wave_value;
 	}
 }
 

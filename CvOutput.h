@@ -27,6 +27,7 @@ class MidiController;
 enum class TriggerMode { None, Trig, Gate };
 enum class RetrigMode  { Off, Highest, Lowest, Latest };
 enum class VibratoMode { Off, Free, TempoSync };
+enum VibratoLFO { Bipolar, HalfWave, Rectified };
 
 class CvSettings : public Serializable
 {
@@ -166,6 +167,7 @@ private:
 public:
 	CvSettings settings;
 	
+	VibratoLFO vib_lfo;
 	uint8_t dac_ch;
 	
 	uint8_t notes_held[100];

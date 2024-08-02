@@ -100,10 +100,15 @@ int main()
 
 
 /**************************************************/
-/*			Channel Select Mode					  */
+/*			Learn CHANNEL Mode					  */
 /**************************************************/
 
-void channel_select_progress_led()
+void learn_channel_begin()
+{
+	
+}
+
+void learn_channel_progress()
 {
 	if (channel_count == 1)
 	{
@@ -115,7 +120,7 @@ void channel_select_progress_led()
 	}
 }
 
-void channel_select_note(uint8_t midi_note)
+void learn_channel_note_on(uint8_t midi_note)
 {
 	uint8_t ch = midi_note - MIDDLE_C + 1;
 	if (ch < 0 || ch >= NUM_CHANNELS)
@@ -125,7 +130,7 @@ void channel_select_note(uint8_t midi_note)
 	channels[channel_count] = ch;
 	
 	channel_count++;
-	channel_select_progress_led();
+	learn_channel_progress();
 
 	if (channel_count == 3)
 	{
@@ -137,6 +142,21 @@ void channel_select_note(uint8_t midi_note)
 		save_config(mctl); /* save channels (and all other config) to EEPROM */
 		mode = MidiRx;
 	}
+}
+
+
+/**************************************************/
+/*			Learn KEYBOARD Mode					  */
+/**************************************************/
+
+void learn_keyboard_begin()
+{
+	
+}
+
+void learn_keyboard_note_on()
+{
+	
 }
 
 
@@ -199,9 +219,9 @@ void handleNoteOff(byte ch, byte pitch, byte vel)
 void handleNoteOn(byte ch, byte pitch, byte vel) 
 {
 	toggle_bit(LED_BANK_PORT, LED2);
-	if (mode == MidiRx)
+	if (mode == LearnChannel)
 	{
-		channel_select_note(pitch);
+		learn_channel_note_on(pitch);
 	}
 	else
 	{
