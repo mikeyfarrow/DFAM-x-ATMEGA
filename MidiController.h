@@ -29,34 +29,26 @@
 typedef MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMidiTransport> MidiInterface;
 
 #define BPM_BUFFER_SIZE 12
-
+#define DFAM_STEPS 8
 enum MidiMode { Mono, Poly };
 
 class MctlSettings : public Serializable
 {
 public:
-    MidiMode midi_mode; /* mono or poly */
+    MidiMode midi_mode = Mono; /* mono or poly */
 
-    uint8_t midi_ch_A; // channel for v/oct on the primary cv out
-    uint8_t midi_ch_B; // channel for v/oct on the secondary cv out (can be same as A)
-    uint8_t midi_ch_KCS; // channel for keyboard control
-    uint8_t clock_div; /* run the sequence faster/slower relative to midi beat clock */
+    uint8_t midi_ch_A = 1; // channel for v/oct on the primary cv out
+    uint8_t midi_ch_B = 2; // channel for v/oct on the secondary cv out (can be same as A)
+    uint8_t midi_ch_KCS = 10; // channel for keyboard control
+    uint8_t clock_div = 4; /* run the sequence faster/slower relative to midi beat clock */
 
-    uint8_t adv_clock_ticks; /* number of ticks per advance clock pulse */
+    uint8_t adv_clock_ticks = 0; /* number of ticks per advance clock pulse */
 
-    uint8_t keyboard_step_table[8]; /* val => midi_note number,
-                                       idx => DFAM sequence step to trigger */
+    uint8_t keyboard_step_table[DFAM_STEPS]; /* val => midi_note number,
+												idx => DFAM sequence step to trigger */
 
-    MctlSettings()
-        : keyboard_step_table{48, 50, 52, 53, 55, 57, 59, 60}
-    {
-        midi_mode = Mono;
-        midi_ch_A = 1;
-        midi_ch_B = 2;
-        midi_ch_KCS = 10;
-        adv_clock_ticks = 0;
-        clock_div = 4;
-    }
+    MctlSettings() : keyboard_step_table{48, 50, 52, 53, 55, 57, 59, 60}
+    { }
 
     void serialize(uint8_t* buffer) const override
     {
@@ -120,7 +112,6 @@ private:
 
 public:
 	MctlSettings settings;
-	float bpm;
 	CvOutput cv_out_a;
 	CvOutput cv_out_b;
 	MidiInterface midi;
@@ -128,7 +119,6 @@ public:
 /***** METHODS *****/
 public:
 	MidiController();
-	float avg_bpm();
 	float avg_midi_clock_period();
 	void init_event_handlers();
 	void update();
@@ -149,11 +139,12 @@ public:
 	uint32_t millis();
 	
 	void update_midi_channels(uint8_t* channels);
+	void update_keyboard_prefs(uint8_t* channels);
+	void advance_to_beginning();
+	void advance_clock();
 	
 private:
-	void advance_clock();
 	void advance_clock(uint8_t steps);
-	
 	
 	void vibrato_depth_cc(uint8_t cc_val);
 	

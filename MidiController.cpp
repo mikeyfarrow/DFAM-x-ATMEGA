@@ -46,24 +46,25 @@ MidiController::MidiController():
 {
 	last_clock = 0;
 	
-	
 	/*  A settings  */
-	cv_out_a.settings.retrig_mode = RetrigMode::Off;
+	cv_out_a.settings.retrig_mode = RetrigOff;
 	cv_out_a.settings.trigger_duration_ms = 10;
 	cv_out_a.settings.portamento_on = false;
 	cv_out_a.settings.portamento_time_asc_user = 100;
 	cv_out_a.settings.portamento_time_desc_user = 100;
 	
 	/*  B settings  */
-	cv_out_b.settings.retrig_mode = RetrigMode::Highest;
+	cv_out_b.settings.retrig_mode = Highest;
 	cv_out_b.settings.trigger_duration_ms = 10;
 	
 	cv_out_b.settings.vib_delay_ms = 0;
 	cv_out_b.settings.vib_period_ms = 400;
-	cv_out_b.settings.vib_depth_cents = 50;
+	cv_out_b.settings.vib_depth_cents = 0;
 	
-	cv_out_b.settings.portamento_time_asc_user = 0;
-	cv_out_b.settings.portamento_time_desc_user = 100;
+	cv_out_b.settings.vib_mode = Free;
+	cv_out_b.settings.portamento_on = true;
+	cv_out_b.settings.portamento_time_asc_user = 2000;
+	cv_out_b.settings.portamento_time_desc_user = 2000;
 	
 	millis_last = 0;
 	last_sw_read = 0;
@@ -83,13 +84,6 @@ void MidiController::update_midi_channels(uint8_t* ch)
 	settings.midi_ch_KCS = ch[2];
 }
 
-float MidiController::avg_bpm()
-{
-	float avg_period = avg_midi_clock_period();
-	float freq = 1000.0 / avg_period;
-	return SECS_PER_MIN * freq / PPQN;
-}
-
 float MidiController::avg_midi_clock_period()
 {
 	float sum = 0;
@@ -98,6 +92,14 @@ float MidiController::avg_midi_clock_period()
 		sum += clock_period_buffer.buffer[i];
 	}
 	return sum  / BPM_BUFFER_SIZE;
+}
+
+void MidiController::update_keyboard_prefs(uint8_t* key_prefs)
+{
+	for (int i = 0; i < DFAM_STEPS; i++)
+	{
+		settings.keyboard_step_table[i] = key_prefs[i];
+	}
 }
 
 void MidiController::time_inc()
@@ -217,6 +219,15 @@ void MidiController::check_mode_switch()
 		follow_midi_clock = false;
 		cur_dfam_step = 1;
 	}
+}
+
+void MidiController::advance_to_beginning()
+{
+	int steps_left = steps_between(cur_dfam_step, 1) + 1;
+	advance_clock(steps_left);
+	clear_bit(LED_BANK_PORT, LED1);
+	follow_midi_clock = false;
+	cur_dfam_step = 1;
 }
 
 /*

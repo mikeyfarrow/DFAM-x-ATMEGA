@@ -42,7 +42,15 @@
 #define BILED2_R		PORTD2
 #define BILED2_G		PORTD3
 
-
+#define L1t (toggle_bit(LED_BANK_PORT, LED1))
+#define L2t (toggle_bit(LED_BANK_PORT, LED2))
+#define L3t (toggle_bit(LED_BANK_PORT, LED3))
+#define L1on (set_bit(LED_BANK_PORT, LED1))
+#define L2on (set_bit(LED_BANK_PORT, LED2))
+#define L3on (set_bit(LED_BANK_PORT, LED3))
+#define L1off (clear_bit(LED_BANK_PORT, LED1))
+#define L2off (clear_bit(LED_BANK_PORT, LED2))
+#define L3off (clear_bit(LED_BANK_PORT, LED3))
 
 /************************************************************************/
 /*     INPUTS: mode switch & sync button & learn btn                    */
@@ -112,13 +120,6 @@
 #define VEL_A_DUTY	OCR0A
 #define VEL_B_DUTY	OCR0B
 
-// // midi sync out
-// #define DDR_SYNC_OUT	DDRC
-// #define DD_SYNC_OUT		DDC0
-// #define SYNC_OUT_PORT	PORTC
-// #define SYNC_OUT		PORTC0
-
-
 #define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3)
 #define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))
 
@@ -150,15 +151,6 @@ void clear_all_LEDs();
 void bank(uint8_t i);
 void bank_off(uint8_t i);
 
-
-/* hardware initialization */
-void init_led_outputs();
-void init_digital_outputs();
-void init_digital_inputs();
-void init_midi_UART();
-void init_DAC_SPI();
-void init_pwm_output();
-void init_milli_counter_timer();
-void init_timer1();
+void hardware_init();
 
 #endif /* _DFAM_GPIO_H_ */

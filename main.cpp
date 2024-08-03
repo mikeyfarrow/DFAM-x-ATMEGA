@@ -6,9 +6,7 @@
  * ATMEGA's GPIO and the SPI communication with the DAC.
  */
 
-#ifndef F_CPU
 #define F_CPU 16000000UL
-#endif
 
 //#define ENABLE_MIDI_OUTPUT 1
 
@@ -27,71 +25,133 @@
 
 enum UiMode { MidiRx, LearnChannel, LearnKeyboard };
 
+
+#define DEBOUNCE_DELAY 50
+#define LONG_PRESS_DURATION 1000
+
+uint32_t last_debounce_time = 0;
+uint32_t button_press_time = 0;
+bool button_state = false;
+bool last_button_state = false;
+bool long_press_fired = false;
+
+
+
 /** Instantiate the controller **/
 MidiController mctl;
 
-uint32_t last_momentary_press = 0;
 
 UiMode mode = MidiRx;
-uint8_t default_channels[3] = {1, 2, 10};
-uint8_t channels[3] = {0, 0, 0}; // 0->CV A, 1->CV B, 2->KCS
+
+const uint8_t default_channels[3] = {1, 2, 10};
+uint8_t channel_prefs[3] {}; // CV A, CV B, KCS
 uint8_t channel_count = 0;
+
+uint8_t keyboard_prefs[8] {};
+uint8_t key_pref_count = 0;
 
 // Event handlers
 void register_midi_events();
+void unregister_midi_events();
+void learn_channel_note_on(uint8_t midi_note);
+void learn_channel_progress();
+
+void learn_sw_single_click()
+{
+	if (mode == LearnChannel)
+	{
+		/* exit without saving */
+		channel_count = 0;
+		register_midi_events();
+		mode = MidiRx;
+	}
+	else {
+		/* 
+			ENTERING "learn channel" mode - MIDI events will be intercepted
+			until we receive three Note On messages or until we get another
+			single click (exit without saving) 
+		*/
+		unregister_midi_events();
+		mode = LearnChannel;
+		channel_count = 0;
+		status1_red();
+		status2_red();
+	}
+}
+
+void learn_sw_long_press()
+{
+	mode = LearnKeyboard;
+	unregister_midi_events();
+	mctl.advance_to_beginning();
+}
+
+void check_learn_switch()
+{
+	uint32_t now = mctl.millis();
+	bool button_pressed = !bit_is_set(LEARN_SW_PIN, LEARN_SW);
+
+	if (button_pressed != last_button_state)
+	{
+		last_debounce_time = now;
+	}
+
+	if (now - last_debounce_time > DEBOUNCE_DELAY)
+	{
+		if (button_pressed != button_state)
+		{
+			button_state = button_pressed;
+			if (button_state)
+			{ 
+				button_press_time = now;
+				long_press_fired = false;
+			}
+			else // Button released
+			{  
+				if (!long_press_fired)
+				{
+					learn_sw_single_click();
+				}
+			}
+		}
+	}
+
+	if (button_state && !long_press_fired && (now - button_press_time >= LONG_PRESS_DURATION))
+	{
+		learn_sw_long_press();
+		long_press_fired = true;
+	}
+
+	last_button_state = button_pressed;
+}
 
 int main()
 {
 	cli(); // disable interrupts globally
 	
 	mctl.midi.turnThruOff();
-	
-	/* hardware/IO initialization */
-	init_led_outputs();
-	init_digital_outputs();
-	init_digital_inputs();
-	init_midi_UART();
-	init_DAC_SPI();
-	
-#ifdef ENABLE_MIDI_OUTPUT
-	UCSR0B |= DATA_REGISTER_EMPTY_INTERRUPT;
-	DDRD |= _BV(DDD1); // set PD1 (Tx) as output
-#endif
-	
-	/* configure timers/counters and interrupts */
-	init_pwm_output();
-	init_milli_counter_timer();
-	init_timer1();
-
-	
-	/* pin change interrupt for "channel select" mode switch */
-	PCMSK0 |= (1<<PCINT4);
-	PCICR |= (1<<PCIE0);
-		
+	hardware_init();
 	register_midi_events();
-	
-	sei(); // enable interrupts globally
-	
-	status2_off();
 	
 	if (!load_config(mctl))
 		save_config(mctl);
 	
-	status2_off();
+	sei(); // enable interrupts globally
 	
 	uint16_t idx = 0;
 	while (1)
 	{
-		if (mode == LearnChannel)
-		{
-			mctl.midi.read();
-		}
-		else
+		check_learn_switch();
+		if (mode == MidiRx)
 		{
 			if (idx % 2 == 0) { status1_green(); }
 			else { status1_red(); }
 			
 			mctl.update();	
+		}
+		else
+		{
+			mctl.midi.read();
 		}
 		idx++;
 	}
@@ -102,12 +162,6 @@ int main()
 /**************************************************/
 /*			Learn CHANNEL Mode					  */
 /**************************************************/
-
-void learn_channel_begin()
-{
-	
-}
-
 void learn_channel_progress()
 {
 	if (channel_count == 1)
@@ -127,7 +181,7 @@ void learn_channel_note_on(uint8_t midi_note)
 	{
 		ch = default_channels[channel_count];
 	}
-	channels[channel_count] = ch;
+	channel_prefs[channel_count] = ch;
 	
 	channel_count++;
 	learn_channel_progress();
@@ -135,12 +189,14 @@ void learn_channel_note_on(uint8_t midi_note)
 	if (channel_count == 3)
 	{
 		// we are leaving channel select mode
-		status1_off();
-		status2_off();
-		mctl.update_midi_channels(channels);
+		mctl.update_midi_channels(channel_prefs);
 		
 		save_config(mctl); /* save channels (and all other config) to EEPROM */
+		
+		register_midi_events();
 		mode = MidiRx;
+		status1_off();
+		status2_off();
 	}
 }
 
@@ -148,28 +204,31 @@ void learn_channel_note_on(uint8_t midi_note)
 /**************************************************/
 /*			Learn KEYBOARD Mode					  */
 /**************************************************/
-
-void learn_keyboard_begin()
+void learn_keyboard_note_on(uint8_t midi_note)
 {
+	keyboard_prefs[key_pref_count] = midi_note;
+	key_pref_count++;
 	
-}
-
-void learn_keyboard_note_on()
-{
+	mctl.advance_clock();
 	
+	if (key_pref_count == DFAM_STEPS)
+	{
+		// we are leaving channel select mode
+		mctl.update_keyboard_prefs(keyboard_prefs);
+		
+		save_config(mctl); /* save channels (and all other config) to EEPROM */
+		
+		register_midi_events();
+		mode = MidiRx;
+		status1_off();
+		status2_off();
+	}
 }
 
 
 /**************************************************/
 /*  INTERRUPTS: TIMERS, MIDI Rx, MIDI Tx ready    */
 /**************************************************/
-
-#ifdef ENABLE_MIDI_OUTPUT
-//  MIDI Tx is ready (i.e. "Data Register Empty") - tell the MidiController
-ISR(USART_UDRE_vect) {
-	mctl.tx_ready();
-}
-#endif
 
 // MIDI Rx message - there is a new byte in the data register
 ISR(USART_RX_vect) {
@@ -192,43 +251,27 @@ ISR(TIMER1_COMPB_vect) {
 	DISABLE_OCI1B();
 }
 
-ISR(PCINT0_vect){
-	if (mctl.millis() - last_momentary_press > MOMENTARY_SW_DEBOUNCE_MS)
-	{
-		last_momentary_press = mctl.millis();
-		if (bit_is_set(LEARN_SW_PIN, LEARN_SW) && mode != LearnChannel)
-		{
-			mode = LearnChannel;
-			channel_count = 0;
-			status1_red();
-			status2_red();
-		}
-	}
-}
-
-void handleCC(byte ch, byte cc_num, byte cc_val)   
-{
-	mctl.handleCC(ch, cc_num, cc_val); 
-}
-
-void handleNoteOff(byte ch, byte pitch, byte vel) 
-{
-	mctl.handleNoteOff(ch, pitch, vel);
-}
 
 void handleNoteOn(byte ch, byte pitch, byte vel) 
 {
-	toggle_bit(LED_BANK_PORT, LED2);
-	if (mode == LearnChannel)
+	switch (mode)
 	{
-		learn_channel_note_on(pitch);
-	}
-	else
-	{
-		mctl.handleNoteOn(ch, pitch, vel);
+		case LearnChannel:
+			learn_channel_note_on(pitch);
+			break;
+			
+		case LearnKeyboard:
+			learn_keyboard_note_on(pitch);
+			break;
+			
+		default:
+			mctl.handleNoteOn(ch, pitch, vel);
+			break;
 	}
 }
 
+void handleCC(byte ch, byte cc_num, byte cc_val) { mctl.handleCC(ch, cc_num, cc_val); }
+void handleNoteOff(byte ch, byte pitch, byte vel) { mctl.handleNoteOff(ch, pitch, vel); }
 void handleStart()						{ mctl.handleStart(); }
 void handleStop()						{ mctl.handleStop(); }
 void handleClock()						{ mctl.handleClock(); }
@@ -245,4 +288,16 @@ void register_midi_events()
 	mctl.midi.setHandleContinue(handleContinue);
 	mctl.midi.setHandlePitchBend(handlePitchBend);
 	mctl.midi.setHandleNoteOff(handleNoteOff);
+}
+
+void unregister_midi_events()
+{
+	mctl.midi.setHandleNoteOn(handleNoteOn);
+	mctl.midi.setHandleControlChange(nullptr);
+	mctl.midi.setHandleStart(nullptr);
+	mctl.midi.setHandleStop(nullptr);
+	mctl.midi.setHandleClock(nullptr);
+	mctl.midi.setHandleContinue(nullptr);
+	mctl.midi.setHandlePitchBend(nullptr);
+	mctl.midi.setHandleNoteOff(nullptr);
 }

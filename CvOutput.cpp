@@ -22,14 +22,16 @@
 #define MCP4822_SHDN 4
 #define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
-#define MAX_SLIDE_LENGTH 2000 // 500 ms?
-#define MAX_TRIG_LENGTH 50 // millis?
-#define PITCH_BEND_MAX 12 // semitones
+#define MAX_SLIDE_LENGTH 2000.0 // 500 ms?
+#define MAX_TRIG_LENGTH 50.0 // millis?
+#define PITCH_BEND_MAX 12.0 // semitones
 
-#define VIB_DELAY_MAX 2000 // ms
-#define VIB_DEPTH_MAX 800  // cents
-#define VIB_FREQ_MIN 0.5 // Hz --> 2000 ms period
-#define VIB_FREQ_MAX 10 // Hz --> 100 ms period
+#define VIB_DELAY_MAX 3000.0 // ms
+#define VIB_DEPTH_MAX 800.0  // cents
+#define VIB_FREQ_MIN 0.2 // Hz --> 5000 ms period
+#define VIB_FREQ_MAX 5.0 // Hz --> 200 ms period
+#define VIB_PERIOD_MAX (1000.0 / 1.0 / VIB_FREQ_MIN)
+#define VIB_PERIOD_MIN (1000.0 / 1.0 / VIB_FREQ_MAX)
 
 const float tempo_sync_divisions[8] = {
 	4.0, // whole
@@ -42,8 +44,8 @@ const float tempo_sync_divisions[8] = {
 	0.125, // 32nd
 };
 
-const RetrigMode retrig_modes[4] = { RetrigMode::Off, RetrigMode::Highest, RetrigMode::Lowest, RetrigMode::Latest };
-const TriggerMode trig_modes[3] = { TriggerMode::Trig, TriggerMode::Gate, TriggerMode::None };
+const RetrigMode retrig_modes[4] = { RetrigOff, Highest, Lowest, Latest };
+const TriggerMode trig_modes[3] = { Trig, Gate, TrigOff };
 
 CvOutput::CvOutput(MidiController& mc, uint8_t ch):
 			mctl(mc),
@@ -58,7 +60,7 @@ CvOutput::CvOutput(MidiController& mc, uint8_t ch):
 	slide_end_note = UINT8_MAX;
 	
 	vibrato_cur_offset = 0;
-	vib_lfo = HalfWave;
+	vib_lfo = Rectified;
 	
 	pitch_bend_amt = 0;
 	
@@ -76,9 +78,12 @@ void CvOutput::update_vibrato_offset()
 	
 	elapsed -= settings.vib_delay_ms;
 	
-	uint16_t period_ms = settings.vib_mode == VibratoMode::TempoSync
+	uint16_t period_ms = settings.vib_mode == TempoSync
 		? settings.vib_tempo_div * round(mctl.avg_midi_clock_period()) * 24
 		: settings.vib_period_ms;
+		
+	// if we haven't been getting MIDI beat clocks we won't have a good tempo to use
+	period_ms = in_range(period_ms, VIB_PERIOD_MIN, VIB_PERIOD_MAX);
 		
 	//double scale_factor = sine_wave(elapsed, period_ms);
 	double scale_factor = triangle_wave(elapsed, period_ms);
@@ -163,11 +168,11 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 	if (dac_ch == 0)
 	{
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
-		if (settings.trig_mode == TriggerMode::Trig)
+		if (settings.trig_mode == Trig)
 		{   // the MidiController handles triggers in Poly mode
 			trigger_A();
 		}
-		else if (settings.trig_mode == TriggerMode::Gate)
+		else if (settings.trig_mode == Gate)
 		{
 			set_bit(TRIG_PORT, TRIG_A_OUT);
 		}
@@ -179,11 +184,11 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 		}
 
-		if (settings.trig_mode == TriggerMode::Trig)
+		if (settings.trig_mode == Trig)
 		{   // the MidiController handles triggers in Poly mode
 			trigger_B();
 		}
-		else if (settings.trig_mode == TriggerMode::Gate)
+		else if (settings.trig_mode == Gate)
 		{
 			set_bit(TRIG_PORT, TRIG_B_OUT);
 		}
@@ -197,18 +202,18 @@ void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 	int16_t note;
 	switch (settings.retrig_mode)
 	{
-		case RetrigMode::Highest:	note = highest(); break;
-		case RetrigMode::Lowest:	note = lowest(); break;
-		case RetrigMode::Latest:	note = latest(); break;
-		default:					note = latest(); break;
+		case Highest:	note = highest(); break;
+		case Lowest:	note = lowest(); break;
+		case Latest:	note = latest(); break;
+		default:		note = latest(); break;
 	}
 	
-	if (note == -1 && settings.trig_mode == TriggerMode::Gate)
+	if (note == -1 && settings.trig_mode == Gate)
 	{
 		clear_bit(TRIG_PORT, dac_ch ? TRIG_B_OUT : TRIG_A_OUT);
 	}
 	
-	if (note > -1 && settings.retrig_mode != RetrigMode::Off)
+	if (note > -1 && settings.retrig_mode != RetrigOff)
 	{
 		note_on(note, notes_held[note], false, false);
 	}
@@ -271,23 +276,15 @@ void CvOutput::pitch_bend(int16_t amt)
 	output_dac(dac_ch, midi_to_data(slide_end_note));
 }
 
-int32_t in_range(int32_t val, int32_t min, int32_t max)
-{
-	if (val > max) val = max;
-	if (val < min) val = min;
-	return val;
-}
-
 /*
 	midi_to_data - converts a MIDI note into the data bits used by the DAC
 		midi_note 0 -> C-1
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
-	midi_note = (uint8_t) in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
+	midi_note = in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
 	midi_note -= MIDI_NOTE_MIN;
 	
-	// int32_t base_note = (midi_note) * DAC_CAL_VALUE;
 	double calibration_val = interpolate_calibration_value(midi_note);
 	int32_t base_note = midi_note * calibration_val;
 	int32_t pb_offset = pitch_bend_amt * settings.pitch_bend_range * DAC_CAL_VALUE;
@@ -371,7 +368,7 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 	switch (cc_num)
 	{
 		case MIDI_NAMESPACE::Legato:
-			settings.trig_mode = cc_val > 63 ? TriggerMode::Gate : TriggerMode::Trig;
+			settings.trig_mode = cc_val > 63 ? Gate : Trig;
 			break;
 			
 		case CC_PortamentoOnOff:
@@ -379,17 +376,17 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			break;
 			
 		case CC_PortamentoTime:
-			time = ((uint32_t)cc_val * MAX_SLIDE_LENGTH) / ((float) UINT8_MAX);
+			time = (cc_val * MAX_SLIDE_LENGTH) / 127.0;
 			settings.portamento_time_desc_user = time;
 			settings.portamento_time_asc_user = time;
 			break;
 			
 		case CC_PortamentoTimeDesc:
-			settings.portamento_time_desc_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			settings.portamento_time_desc_user =  (cc_val * MAX_SLIDE_LENGTH) / 127.0;
 			break;
 		
 		case CC_PortamentoTimeAsc:
-			settings.portamento_time_asc_user = ((uint32_t)cc_val * MAX_SLIDE_LENGTH / ((float) UINT8_MAX));
+			settings.portamento_time_asc_user =  (cc_val * MAX_SLIDE_LENGTH) / 127.0;
 			break;
 		
 		case CC_TrigLength:
@@ -403,15 +400,15 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			break;
 			
 		case CC_VibratoDepth:
-			settings.vib_depth_cents = ((uint32_t)cc_val * VIB_DEPTH_MAX) / 127.0;
+			settings.vib_depth_cents = cc_val * VIB_DEPTH_MAX / 127.0;
 			break;
 			
 		case CC_VibratoDelay:
-			settings.vib_delay_ms = ((uint32_t)cc_val * VIB_DELAY_MAX) / 127.0;
+			settings.vib_delay_ms = cc_val * VIB_DELAY_MAX / 127.0;
 			break;
 			
 		case CC_VibratoSync:
-			settings.vib_mode = cc_val > 63 ? VibratoMode::TempoSync : VibratoMode::Free;
+			settings.vib_mode = cc_val > 63 ? TempoSync : Free;
 			break;
 			
 		case CC_PitchBendRange:

@@ -80,10 +80,6 @@ void init_DAC_SPI()
 	// make the MOSI, SCK, and SS pins outputs
 	SPI_DDR |= (1 << SPI_MOSI) | ( 1 << SPI_SCK) | (1 << SPI_SS);
 
-	// TODO: no it is not, not used by DAC
-	// make sure the MISO pin is input
-	//SPI_DDR &= ~( 1 << SPI_MISO );
-
 	// set up the SPI module: SPI enabled, MSB first, master mode,
 	//  clock polarity and phase = 0, F_osc/16
 	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR );// | ( 1 << SPI_SPR0 );
@@ -103,8 +99,6 @@ void init_digital_outputs()
 
 void init_digital_inputs()
 {
-	// DDRB &= ~_BV(DDB4); // PB4 is input, this is MISO pin...?
-	
 	DDR_MODE_SW &= ~_BV(DD_MODE_SW);
 	DDR_SYNC_BTN &= ~_BV(DD_SYNC_BTN);
 	DDR_LEARN_SW &= ~_BV(DD_LEARN_SW);
@@ -114,6 +108,21 @@ void init_led_outputs()
 {
 	DDRC |= _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
 	DDRD |= _BV(DDD2) | _BV(DDD3);
+}
+
+void hardware_init()
+{
+	/* hardware/IO initialization */
+	init_led_outputs();
+	init_digital_outputs();
+	init_digital_inputs();
+	init_midi_UART();
+	init_DAC_SPI();
+	
+	/* configure timers/counters and interrupts */
+	init_pwm_output();
+	init_milli_counter_timer();
+	init_timer1();
 }
 
 

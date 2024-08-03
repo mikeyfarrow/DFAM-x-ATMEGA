@@ -24,52 +24,47 @@
 
 class MidiController;
 
-enum class TriggerMode { None, Trig, Gate };
-enum class RetrigMode  { Off, Highest, Lowest, Latest };
-enum class VibratoMode { Off, Free, TempoSync };
+enum TriggerMode { TrigOff, Trig, Gate };
+enum RetrigMode  { RetrigOff, Highest, Lowest, Latest };
+enum VibratoMode { VibratoOff, Free, TempoSync };
 enum VibratoLFO { Bipolar, HalfWave, Rectified };
+
+template <typename T, typename U, typename V>
+static T in_range(T val, U min, V max)
+{
+	if (val > max) val = static_cast<T>(max);
+	if (val < min) val = static_cast<T>(min);
+	return val;
+}
 
 class CvSettings : public Serializable
 {
 public:
-	TriggerMode trig_mode;
-	RetrigMode retrig_mode;
-	uint8_t trigger_duration_ms;
+	TriggerMode trig_mode = Trig;
+	RetrigMode retrig_mode = RetrigOff;
+	uint8_t trigger_duration_ms = 1;
 
 	/* Portamento configuration */
-	uint8_t portamento_on;
-	uint16_t portamento_time_asc_user;
-	uint16_t portamento_time_desc_user;
+	uint8_t portamento_on = false;
+	uint16_t portamento_time_asc_user = 0;
+	uint16_t portamento_time_desc_user = 0;
 
 	/* Vibrato configuration */
-	VibratoMode vib_mode;
-	uint16_t vib_period_ms;
-	uint16_t vib_depth_cents;
-	uint16_t vib_delay_ms;
-	float vib_tempo_div;
+	VibratoMode vib_mode = VibratoOff;
+	uint16_t vib_period_ms = 200;
+	uint16_t vib_depth_cents = 0;
+	uint16_t vib_delay_ms = 0;
+	float vib_tempo_div = 1.0;
 
 	/* Pitch Bend configuration */
-	uint8_t pitch_bend_range;
+	uint8_t pitch_bend_range = 2;
 
 	/* DAC V/oct digital calibration table: one calibration per C in each octave */
 	float calibration_points[NUM_CAL_POINTS];
 
-	CvSettings() : calibration_points{ DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE - 0.22, DAC_CAL_VALUE - 0.235,
+	CvSettings() : calibration_points { DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE - 0.22, DAC_CAL_VALUE - 0.235,
 									   DAC_CAL_VALUE - 0.21, DAC_CAL_VALUE - 0.15, DAC_CAL_VALUE - 0.15, DAC_CAL_VALUE - 0.15 }
-	{
-		trig_mode = TriggerMode::Trig;
-		retrig_mode = RetrigMode::Off;
-		trigger_duration_ms = 1;
-		pitch_bend_range = 2;
-		portamento_on = false;
-		portamento_time_asc_user = 0;
-		portamento_time_desc_user = 0;
-		vib_mode = VibratoMode::Off;
-		vib_tempo_div = 1.0;
-		vib_period_ms = 200;		// TODO MIN AND MAX??
-		vib_depth_cents = 0;
-		vib_delay_ms = 0;
-	}
+	{	}
 
 	void serialize(uint8_t* buffer) const override
 	{
