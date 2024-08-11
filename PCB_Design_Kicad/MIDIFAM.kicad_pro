@@ -508,15 +508,15 @@
   },
   "pcbnew": {
     "last_paths": {
-      "gencad": "",
+      "gencad": "MIDIFAM.cad",
       "idf": "",
       "netlist": "",
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "MIDIFAM.dsn",
-      "step": "",
+      "step": "MIDIFAM.step",
       "svg": "",
-      "vrml": ""
+      "vrml": "MIDIFAM.wrl"
     },
     "page_layout_descr_file": ""
   },
