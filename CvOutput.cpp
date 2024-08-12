@@ -319,6 +319,7 @@ void CvOutput::trigger_A()
 {
 	TIFR1 |= (1 << OCF1A);
 	set_bit(TRIG_PORT, TRIG_A_OUT);
+	leda_green();
 	
 	// Set the compare value for the specified duration in the future
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
@@ -335,6 +336,7 @@ void CvOutput::trigger_B()
 {
 	TIFR1 |= (1 << OCF1B);
 	set_bit(TRIG_PORT, TRIG_B_OUT);
+	ledb_green();
 	
 	// Set the compare value for the specified duration in the future
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)

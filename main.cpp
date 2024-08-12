@@ -35,11 +35,8 @@ bool button_state = false;
 bool last_button_state = false;
 bool long_press_fired = false;
 
-
-
 /** Instantiate the controller **/
 MidiController mctl;
-
 
 UiMode mode = MidiRx;
 
@@ -58,11 +55,15 @@ void learn_channel_progress();
 
 void learn_sw_single_click()
 {
-	if (mode == LearnChannel)
+	if (mode != MidiRx)
 	{
 		/* exit without saving */
 		channel_count = 0;
+		uint8_t key_pref_count = 0;
 		register_midi_events();
+		leda_off();
+		ledb_off();
+		ledc_off();
 		mode = MidiRx;
 	}
 	else {
@@ -74,8 +75,10 @@ void learn_sw_single_click()
 		unregister_midi_events();
 		mode = LearnChannel;
 		channel_count = 0;
-		status1_red();
-		status2_red();
+		
+		leda_green();
+		ledb_red();
+		ledc_red();
 	}
 }
 
@@ -83,6 +86,9 @@ void learn_sw_long_press()
 {
 	mode = LearnKeyboard;
 	unregister_midi_events();
+	leda_red();
+	ledb_red();
+	ledc_red();
 	mctl.advance_to_beginning();
 }
 
@@ -128,14 +134,14 @@ void check_learn_switch()
 int main()
 {
 	cli(); // disable interrupts globally
-	
 	mctl.midi.turnThruOff();
 	hardware_init();
-	register_midi_events();
 	
 	if (!load_config(mctl))
 		save_config(mctl);
+	ledc_off();
 	
+	register_midi_events();
 	sei(); // enable interrupts globally
 	
 	uint16_t idx = 0;
@@ -144,8 +150,8 @@ int main()
 		check_learn_switch();
 		if (mode == MidiRx)
 		{
-			if (idx % 2 == 0) { status1_green(); }
-			else { status1_red(); }
+			// LEDTODO: if (idx % 2 == 0) { status1_green(); }
+			// LEDTODO: else { status1_red(); }
 			
 			mctl.update();	
 		}
@@ -166,11 +172,29 @@ void learn_channel_progress()
 {
 	if (channel_count == 1)
 	{
-		status2_green();
+		leda_red();
+		ledb_green();
+		ledc_red();
 	}
 	else if (channel_count == 2)
 	{
-		status1_green();
+		leda_red();
+		ledb_red();
+		ledc_green();
+	}
+	else if (channel_count == 3)
+	{
+		// we are leaving channel select mode
+		mctl.update_midi_channels(channel_prefs);
+			
+		save_config(mctl); /* save channels (and all other config) to EEPROM */
+			
+		register_midi_events();
+		mode = MidiRx;
+		
+		leda_off();
+		ledb_off();
+		ledc_off();
 	}
 }
 
@@ -185,19 +209,6 @@ void learn_channel_note_on(uint8_t midi_note)
 	
 	channel_count++;
 	learn_channel_progress();
-
-	if (channel_count == 3)
-	{
-		// we are leaving channel select mode
-		mctl.update_midi_channels(channel_prefs);
-		
-		save_config(mctl); /* save channels (and all other config) to EEPROM */
-		
-		register_midi_events();
-		mode = MidiRx;
-		status1_off();
-		status2_off();
-	}
 }
 
 
@@ -220,8 +231,9 @@ void learn_keyboard_note_on(uint8_t midi_note)
 		
 		register_midi_events();
 		mode = MidiRx;
-		status1_off();
-		status2_off();
+		leda_off();
+		ledb_off();
+		ledc_off();
 	}
 }
 
@@ -243,11 +255,13 @@ ISR(TIMER2_COMPA_vect) {
 
 ISR(TIMER1_COMPA_vect) {
 	clear_bit(TRIG_PORT, TRIG_A_OUT);
+	leda_off();
 	DISABLE_OCI1A();
 }
 
 ISR(TIMER1_COMPB_vect) {
 	clear_bit(TRIG_PORT, TRIG_B_OUT);
+	ledb_off();
 	DISABLE_OCI1B();
 }
 

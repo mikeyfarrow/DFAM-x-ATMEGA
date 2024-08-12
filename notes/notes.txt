@@ -54,3 +54,13 @@ Settings that should be saved to EEPROM:
 - Velocity sensitivity?
 - MIDI root note?
 - Note mapping for KCS mode
+
+
+
+
+DAC Resolution...
+=================
+
+2^12 == 4096 codes, aka bits of resolution.
+
+piano range == 88 semitones == 8800 cents in a piano

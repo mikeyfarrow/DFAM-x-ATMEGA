@@ -26,7 +26,7 @@ void save_config(MidiController& mctl)
 {
 	cli(); // disable interrupts globally
 	
-	status2_red();
+	ledc_red();
 	
 	uint8_t offset = 0;
 	
@@ -37,18 +37,18 @@ void save_config(MidiController& mctl)
 	offset += save_object_to_eeprom(&mctl.cv_out_a.settings, offset);
 	offset += save_object_to_eeprom(&mctl.cv_out_b.settings, offset);
 	
-	status2_green();
+	ledc_green();
 	
 	sei(); // enable interrupts globally
 }
 
 bool load_config(MidiController& mctl)
 {
-	status2_red();
+	ledc_red();
 	
 	if (eeprom_read_byte((uint8_t*) 0) != 0xBB || eeprom_read_byte((uint8_t*) 1) != 0xBB)
 	{
-		status2_red();
+		ledc_red();
 		return false;
 	}
 	
@@ -67,7 +67,7 @@ bool load_config(MidiController& mctl)
 	mctl.cv_out_a.settings.deserialize(buf_cvA);
 	mctl.cv_out_b.settings.deserialize(buf_cvB);
 	
-	status2_green();
+	ledc_green();
 	
 	return true;
 }

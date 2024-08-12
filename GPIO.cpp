@@ -10,9 +10,6 @@
 
 #include "GPIO.h"
 
-
-uint8_t LED_BANK[3] = { LED1, LED2, LED3 };
-
 /***************************************************/
 /*	TIMER 0 - fast PWM with outputs on PD6 and PD3 */
 void init_pwm_output()
@@ -24,7 +21,7 @@ void init_pwm_output()
 	TCCR0A |= (1 << WGM01) | (1 << WGM00);	// set fast PWM Mode
 	OCR0A = 0x00;							// pwm out #1 duty cycle 0
 	OCR0B = 0x00;							// pwm out #2 duty cycle 0
-	TCCR0B |= (1 << CS00);					// set prescaler to none and start PWM (f=62500Hz)
+	TCCR0B |= (1 << CS00);					// set prescaler to none and start PWM (f = 62,500 Hz)
 }
 
 /*******************************************/
@@ -58,20 +55,18 @@ void init_milli_counter_timer()
 /*	init_midi_UART - Initialize the USART port
 		MIDI spec: no parity bit, 1 start bit, 8 data bits, 1 stop bit, baud=31250	
 */
-
-
 void init_midi_UART()
 {	
 	UBRR0H = BAUD_RATE_BYTES >> 8; // baud rate is uint16_t so it takes up two registers
 	UBRR0L = BAUD_RATE_BYTES;
 	
-	UCSR0B |= (1 << TXEN0 ); // enable transmitter
+	// Midi Tx pin:		UCSR0B |= (1 << TXEN0 ); // enable transmitter
 	UCSR0B |= (1 << RXEN0 ); // enable receiver
 	UCSR0B |= RX_COMPLETE_INTERRUPT; // enable Rx interrupt
 	
 	UCSR0C = (3 << UCSZ00 ); // Set for async operation, no parity, 1 stop bit, 8 data bits
 	
-	DDRD |= _BV(PORTD1);
+	// Midi Tx pin:		DDRD |= _BV(PORTD1);
 }
 
 // Initialize the SPI as master
@@ -106,8 +101,8 @@ void init_digital_inputs()
 
 void init_led_outputs()
 {
-	DDRC |= _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC4) | _BV(DDC5);
-	DDRD |= _BV(DDD2) | _BV(DDD3);
+	DDRC |= _BV(DDC0) | _BV(DDC1) | _BV(DDC2) | _BV(DDC3);
+	DDRD |= _BV(DDD1) | _BV(DDD2);
 }
 
 void hardware_init()
@@ -123,27 +118,4 @@ void hardware_init()
 	init_pwm_output();
 	init_milli_counter_timer();
 	init_timer1();
-}
-
-
-void set_all_LEDs()
-{
-	status1_green();
-	status2_green();
-	set_bank();
-}
-
-void clear_all_LEDs()
-{
-	status1_off();
-	status2_off();
-	clear_bank();
-}
-
-void bank(uint8_t i) {
-	set_bit(LED_BANK_PORT, LED_BANK[i]);
-}
-
-void bank_off(uint8_t i) {
-	clear_bit(LED_BANK_PORT, LED_BANK[i]);
 }

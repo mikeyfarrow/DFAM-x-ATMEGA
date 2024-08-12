@@ -170,7 +170,7 @@ void MidiController::advance_clock()
 		_NOP();
 	}
 	
-	clear_bit(ADV_PORT, ADV_OUT);	
+	clear_bit(ADV_PORT, ADV_OUT);
 }
 
 /*
@@ -210,12 +210,12 @@ void MidiController::check_mode_switch()
 
 	if (switch_state) // switched into "clock-controlled sequencer" mode
 	{
-		set_bit(LED_BANK_PORT, LED1);
+		//ledc_green();
 		cur_dfam_step = 0;
 	}
 	else			  // switched into "keyboard-controlled sequencer" mode
 	{
-		clear_bit(LED_BANK_PORT, LED1);
+		//ledc_red();
 		follow_midi_clock = false;
 		cur_dfam_step = 1;
 	}
@@ -225,7 +225,7 @@ void MidiController::advance_to_beginning()
 {
 	int steps_left = steps_between(cur_dfam_step, 1) + 1;
 	advance_clock(steps_left);
-	clear_bit(LED_BANK_PORT, LED1);
+	// LEDTODO: clear_bit(LED_BANK_PORT, LED1);
 	follow_midi_clock = false;
 	cur_dfam_step = 1;
 }
@@ -388,10 +388,10 @@ void MidiController::handleStop()
 */
 void MidiController::handleClock()
 {
-	uint32_t now = millis() / 2;
-	uint32_t period_ms = now - last_clock;
-	last_clock = now;
-	clock_period_buffer.put(period_ms);
+	//uint32_t now = millis() / 2;
+	//uint32_t period_ms = now - last_clock;
+	//last_clock = now;
+	//clock_period_buffer.put(period_ms);
 	
 	if (follow_midi_clock && switch_state)
 	{
@@ -402,6 +402,11 @@ void MidiController::handleClock()
 		{
 			cur_dfam_step = cur_dfam_step % NUM_STEPS + 1;
 			advance_clock();
+			ledc_green();
+		}
+		else
+		{
+			ledc_off();
 		}
 	}
 }

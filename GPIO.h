@@ -22,53 +22,41 @@
 #define clear_bit(sfr, bit) (_SFR_BYTE(sfr) &= ~(_BV(bit)))
 #define toggle_bit(sfr, bit) (_SFR_BYTE(sfr) ^= _BV(bit))
 
-
 #define RX_COMPLETE_INTERRUPT         (1<<RXCIE0)
 #define DATA_REGISTER_EMPTY_INTERRUPT (1<<UDRIE0)
 
 /************************************************************************/
 /*		LED outputs for debug											*/
 /************************************************************************/
-#define LED_BANK_PORT	PORTC
-#define LED1			PORTC0
-#define LED2			PORTC1
-#define LED3			PORTC2
+#define LED_A_PORT	PORTC
+#define LED_A_R		PORTC3
+#define LED_A_G		PORTC2
 
-#define BILED1_PORT		PORTC
-#define BILED1_R		PORTC4
-#define BILED1_G		PORTC5
+#define LED_B_PORT	PORTD
+#define LED_B_R		PORTD1
+#define LED_B_G		PORTD2
 
-#define BILED2_PORT		PORTD
-#define BILED2_R		PORTD2
-#define BILED2_G		PORTD3
-
-#define L1t (toggle_bit(LED_BANK_PORT, LED1))
-#define L2t (toggle_bit(LED_BANK_PORT, LED2))
-#define L3t (toggle_bit(LED_BANK_PORT, LED3))
-#define L1on (set_bit(LED_BANK_PORT, LED1))
-#define L2on (set_bit(LED_BANK_PORT, LED2))
-#define L3on (set_bit(LED_BANK_PORT, LED3))
-#define L1off (clear_bit(LED_BANK_PORT, LED1))
-#define L2off (clear_bit(LED_BANK_PORT, LED2))
-#define L3off (clear_bit(LED_BANK_PORT, LED3))
+#define LED_C_PORT	PORTC
+#define LED_C_R		PORTC0
+#define LED_C_G		PORTC1
 
 /************************************************************************/
 /*     INPUTS: mode switch & sync button & learn btn                    */
 /************************************************************************/
-#define DDR_MODE_SW		DDRC
-#define DD_MODE_SW		DDC3
-#define MODE_SWITCH_PIN PINC
-#define MODE_SWITCH		PINC3
+#define DDR_MODE_SW		DDRD
+#define DD_MODE_SW		DDD7
+#define MODE_SWITCH_PIN PIND
+#define MODE_SWITCH		PIND7
 
-#define DDR_SYNC_BTN	DDRB
-#define DD_SYNC_BTN		DDB1
-#define SYNC_BTN_PIN	PINB
-#define SYNC_BTN		PINB1
+#define DDR_SYNC_BTN	DDRC
+#define DD_SYNC_BTN		DDC4
+#define SYNC_BTN_PIN	PINC
+#define SYNC_BTN		PINC4
 
-#define DDR_LEARN_SW    DDRB
-#define DD_LEARN_SW		DDB4
-#define LEARN_SW_PIN	PINB
-#define LEARN_SW		PINB4
+#define DDR_LEARN_SW    DDRC
+#define DD_LEARN_SW		DDC5
+#define LEARN_SW_PIN	PINC
+#define LEARN_SW		PINC5
 
 
 
@@ -105,38 +93,21 @@
 
 /* Data Direction bits */
 #define DD_ADV		DDB0
-#define DD_TRIGA	DDD7
+#define DD_TRIGA	DDD3
 #define DD_TRIGB	DDD4
 #define DD_VELA		DDD6
 #define DD_VELB		DDD5
 
 /* Output pins */
 #define ADV_OUT		PORTB0
-#define TRIG_A_OUT	PORTD7
+#define TRIG_A_OUT	PORTD3
 #define TRIG_B_OUT	PORTD4
 #define VEL_A_OUT	PORTD6
-#define VEL_B_OUT	PORTD3
+#define VEL_B_OUT	PORTD5
 
 #define VEL_A_DUTY	OCR0A
 #define VEL_B_DUTY	OCR0B
 
-#define set_bank()		LED_BANK_PORT |= (1<<LED1) | (1<<LED2) | (1<<LED3)
-#define clear_bank()	LED_BANK_PORT &= ~((1<<LED1) | (1<<LED2) | (1<<LED3))
-
-#define status1_red()   set_bit(BILED1_PORT, BILED1_R); \
-						clear_bit(BILED1_PORT, BILED1_G);	
-#define status1_green()   set_bit(BILED1_PORT, BILED1_G); \
-						  clear_bit(BILED1_PORT, BILED1_R);
-#define status1_off()   clear_bit(BILED1_PORT, BILED1_G); \
-						clear_bit(BILED1_PORT, BILED1_R);
-						
-#define status2_red()   set_bit(BILED2_PORT, BILED2_R); \
-						clear_bit(BILED2_PORT, BILED2_G);	
-#define status2_green()   set_bit(BILED2_PORT, BILED2_G); \
-						  clear_bit(BILED2_PORT, BILED2_R);
-#define status2_off()   clear_bit(BILED2_PORT, BILED2_G); \
-						clear_bit(BILED2_PORT, BILED2_R);
-						
 // Macros to enable and disable Output Compare A Match Interrupt
 #define ENABLE_OCI1A()    (TIMSK1 |= (1 << OCIE1A))
 #define DISABLE_OCI1A()   (TIMSK1 &= ~(1 << OCIE1A))
@@ -145,11 +116,26 @@
 #define ENABLE_OCI1B()    (TIMSK1 |= (1 << OCIE1B))
 #define DISABLE_OCI1B()   (TIMSK1 &= ~(1 << OCIE1B))
 
-/* LED helpers */
-void set_all_LEDs();
-void clear_all_LEDs();
-void bank(uint8_t i);
-void bank_off(uint8_t i);
+#define leda_green()	set_bit(LED_A_PORT, LED_A_G);\
+						clear_bit(LED_A_PORT, LED_A_R);
+#define leda_red()		set_bit(LED_A_PORT, LED_A_R);\
+						clear_bit(LED_A_PORT, LED_A_G);
+#define leda_off()		clear_bit(LED_A_PORT, LED_A_G);\
+						clear_bit(LED_A_PORT, LED_A_R);
+
+#define ledb_green()	set_bit(LED_B_PORT, LED_B_G);\
+						clear_bit(LED_B_PORT, LED_B_R);
+#define ledb_red()		set_bit(LED_B_PORT, LED_B_R);\
+						clear_bit(LED_B_PORT, LED_B_G);
+#define ledb_off()		clear_bit(LED_B_PORT, LED_B_G);\
+						clear_bit(LED_B_PORT, LED_B_R);
+
+#define ledc_green()	set_bit(LED_C_PORT, LED_C_G);\
+						clear_bit(LED_C_PORT, LED_C_R);
+#define ledc_red()		set_bit(LED_C_PORT, LED_C_R);\
+						clear_bit(LED_C_PORT, LED_C_G);
+#define ledc_off()		clear_bit(LED_C_PORT, LED_C_G);\
+						clear_bit(LED_C_PORT, LED_C_R);
 
 void hardware_init();
 
