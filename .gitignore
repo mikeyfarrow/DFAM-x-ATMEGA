@@ -70,3 +70,4 @@ PCB_Design_Kicad/*.lck
 *.csv
 
 PCB_Design_Kicad/midifam_gerbers/
+~_autosave*
