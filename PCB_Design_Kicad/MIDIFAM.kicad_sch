@@ -4838,7 +4838,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 73.66) (xy 132.08 73.66)
+			(xy 127 73.66) (xy 134.62 73.66)
 		)
 		(stroke
 			(width 0)
@@ -4908,7 +4908,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 73.66) (xy 142.24 73.66)
+			(xy 139.7 73.66) (xy 142.24 73.66)
 		)
 		(stroke
 			(width 0)
@@ -4958,7 +4958,7 @@
 	)
 	(wire
 		(pts
-			(xy 137.16 39.37) (xy 142.24 39.37)
+			(xy 139.7 39.37) (xy 142.24 39.37)
 		)
 		(stroke
 			(width 0)
@@ -5448,7 +5448,7 @@
 	)
 	(wire
 		(pts
-			(xy 127 39.37) (xy 132.08 39.37)
+			(xy 127 39.37) (xy 134.62 39.37)
 		)
 		(stroke
 			(width 0)
@@ -7722,7 +7722,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2691405"
+		(property "LCSC" "C14663"
 			(at 255.905 151.13 0)
 			(effects
 				(font
@@ -8368,7 +8368,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 23.495 34.925 0)
 			(effects
 				(font
@@ -8607,7 +8607,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 229.87 135.89 0)
 			(effects
 				(font
@@ -8779,7 +8779,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 80.01 165.735 0)
 			(effects
 				(font
@@ -9545,7 +9545,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 229.87 146.685 0)
 			(effects
 				(font
@@ -10085,15 +10085,15 @@
 		(dnp no)
 		(uuid "47a44eaf-9580-4531-ac40-84cceb5cd80c")
 		(property "Reference" "R23"
-			(at 130.81 80.645 0)
+			(at 130.175 76.2 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "10k"
-			(at 130.81 78.74 0)
+		(property "Value" "56k"
+			(at 130.175 78.105 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10127,7 +10127,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C23206"
 			(at 127 77.47 0)
 			(effects
 				(font
@@ -10303,7 +10303,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 48.26 23.495 0)
 			(effects
 				(font
@@ -10477,7 +10477,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C143639"
+		(property "LCSC" "C14663"
 			(at 36.83 23.495 0)
 			(effects
 				(font
@@ -10939,7 +10939,7 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 134.62 39.37 270)
+		(at 137.16 39.37 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -10947,15 +10947,15 @@
 		(dnp no)
 		(uuid "58c816bf-d608-4789-9b72-333312ff2421")
 		(property "Reference" "R20"
-			(at 137.795 43.815 90)
+			(at 137.16 41.91 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "6k"
-			(at 137.795 41.91 90)
+		(property "Value" "33k"
+			(at 137.16 43.815 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10963,7 +10963,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 134.62 39.37 0)
+			(at 137.16 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10972,7 +10972,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 134.62 39.37 0)
+			(at 137.16 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10981,7 +10981,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 134.62 39.37 0)
+			(at 137.16 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10989,8 +10989,8 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
-			(at 134.62 39.37 0)
+		(property "LCSC" "C4216"
+			(at 137.16 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10999,7 +10999,7 @@
 			)
 		)
 		(property "Price (single)" ""
-			(at 134.62 39.37 0)
+			(at 137.16 39.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11715,7 +11715,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Vertical"
+		(property "Footprint" "Package_TO_SOT_THT:TO-220-3_Horizontal_TabUp"
 			(at 261.62 140.97 0)
 			(effects
 				(font
@@ -12423,14 +12423,14 @@
 		(dnp no)
 		(uuid "7ec964ab-9846-4cf0-b159-1b22d4659170")
 		(property "Reference" "R21"
-			(at 130.175 46.355 0)
+			(at 130.175 42.545 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "10k"
+		(property "Value" "56k"
 			(at 130.175 44.45 0)
 			(effects
 				(font
@@ -12465,7 +12465,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C23206"
 			(at 127 43.18 0)
 			(effects
 				(font
@@ -14048,24 +14048,23 @@
 	)
 	(symbol
 		(lib_id "Device:R_Small")
-		(at 134.62 73.66 270)
+		(at 137.16 73.66 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "d1d7d1b5-37e8-4177-b1fc-03d8c45d8884")
 		(property "Reference" "R22"
-			(at 137.795 77.47 90)
+			(at 137.16 76.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "6k"
-			(at 137.795 75.565 90)
+		(property "Value" "33k"
+			(at 137.16 78.74 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14073,7 +14072,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 134.62 73.66 0)
+			(at 137.16 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14082,7 +14081,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 134.62 73.66 0)
+			(at 137.16 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14091,7 +14090,7 @@
 			)
 		)
 		(property "Description" "Resistor, small symbol"
-			(at 134.62 73.66 0)
+			(at 137.16 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14099,8 +14098,8 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" ""
-			(at 134.62 73.66 0)
+		(property "LCSC" "C4216"
+			(at 137.16 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14109,7 +14108,7 @@
 			)
 		)
 		(property "Price (single)" ""
-			(at 134.62 73.66 0)
+			(at 137.16 73.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
