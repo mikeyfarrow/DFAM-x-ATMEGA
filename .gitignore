@@ -68,3 +68,5 @@ PCB_Design_Kicad/*.lck
 # Exported BOM files
 *.xml
 *.csv
+
+PCB_Design_Kicad/midifam_gerbers/

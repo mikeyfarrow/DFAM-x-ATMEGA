@@ -5,6 +5,174 @@
 	(uuid "aff1458b-be35-4c62-a3bc-0aea9d4a9b5c")
 	(paper "A4")
 	(lib_symbols
+		(symbol "Connector_Generic:Conn_01x03"
+			(pin_names
+				(offset 1.016) hide)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x03_1_1"
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
 		(symbol "Connector_Generic:Conn_01x07"
 			(pin_names
 				(offset 1.016) hide)
@@ -974,6 +1142,227 @@
 				)
 			)
 		)
+		(symbol "SamacSys_Parts:SD-50BV"
+			(pin_names
+				(offset 0.762)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 16.51 7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "SD-50BV"
+				(at 16.51 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" "SD-50BV"
+				(at 16.51 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 16.51 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Description" "Circular DIN Connectors DIN, 5P jack, vertical, through hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description_1" "Circular DIN Connectors DIN, 5P jack, vertical, through hole"
+				(at 16.51 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Height" ""
+				(at 16.51 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "490-SD-50BV"
+				(at 16.51 -7.62 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/CUI-Devices/SD-50BV?qs=WyjlAZoYn51vaJlJKU%252BCew%3D%3D"
+				(at 16.51 -10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Name" "CUI Devices"
+				(at 16.51 -12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "SD-50BV"
+				(at 16.51 -15.24 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+					(hide yes)
+				)
+			)
+			(symbol "SD-50BV_0_0"
+				(pin passive line
+					(at 0 0 0)
+					(length 5.08)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -2.54 0)
+					(length 5.08)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -5.08 0)
+					(length 5.08)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 20.32 0 180)
+					(length 5.08)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 20.32 -2.54 180)
+					(length 5.08)
+					(name "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "SD-50BV_0_1"
+				(polyline
+					(pts
+						(xy 5.08 2.54) (xy 15.24 2.54) (xy 15.24 -7.62) (xy 5.08 -7.62) (xy 5.08 2.54)
+					)
+					(stroke
+						(width 0.1524)
+						(type solid)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+		)
 		(symbol "Switch:SW_SPST"
 			(pin_names
 				(offset 0) hide)
@@ -1562,8 +1951,20 @@
 		)
 	)
 	(no_connect
+		(at 125.095 141.605)
+		(uuid "0c204c73-cd9a-4c35-9070-416197314043")
+	)
+	(no_connect
+		(at 145.415 139.065)
+		(uuid "0c98e878-bf31-4b19-b274-93027b4d5ba7")
+	)
+	(no_connect
 		(at 157.48 95.25)
 		(uuid "29e2511a-fda0-46b7-a8f9-ed8147827a2a")
+	)
+	(no_connect
+		(at 125.095 136.525)
+		(uuid "50525ba1-f4b1-4382-8bf6-1aeaa358989e")
 	)
 	(no_connect
 		(at 62.23 23.495)
@@ -1625,16 +2026,6 @@
 	)
 	(wire
 		(pts
-			(xy 132.715 239.395) (xy 132.715 222.885)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "17c44a0f-05ad-406d-81f1-9056ef9439ae")
-	)
-	(wire
-		(pts
 			(xy 180.975 64.135) (xy 201.295 64.135)
 		)
 		(stroke
@@ -1642,6 +2033,16 @@
 			(type default)
 		)
 		(uuid "1f33d46e-d82b-4da0-bae8-429bd0466a36")
+	)
+	(wire
+		(pts
+			(xy 119.38 139.065) (xy 125.095 139.065)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "20a3cf93-8e64-41e5-9f74-2828dc2c8015")
 	)
 	(wire
 		(pts
@@ -1682,6 +2083,16 @@
 			(type default)
 		)
 		(uuid "3522358c-fc59-4edb-aeee-85ac4b9f5680")
+	)
+	(wire
+		(pts
+			(xy 154.94 133.985) (xy 154.94 125.095)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "364b7b36-0809-48db-b37e-c23321b02e28")
 	)
 	(wire
 		(pts
@@ -1802,6 +2213,16 @@
 			(type default)
 		)
 		(uuid "617db5c6-a523-4b88-8ebd-2fd03fcdf438")
+	)
+	(wire
+		(pts
+			(xy 119.38 125.095) (xy 119.38 139.065)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "65ed816d-41e0-4263-a7c8-621c5c163d81")
 	)
 	(wire
 		(pts
@@ -1955,6 +2376,16 @@
 	)
 	(wire
 		(pts
+			(xy 154.94 125.095) (xy 119.38 125.095)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "be854c7d-2d60-46fd-b5d6-37751f10d201")
+	)
+	(wire
+		(pts
 			(xy 84.455 113.03) (xy 84.455 90.17)
 		)
 		(stroke
@@ -1982,6 +2413,16 @@
 			(type default)
 		)
 		(uuid "c7858662-5f9c-490d-82b1-93fee00921cd")
+	)
+	(wire
+		(pts
+			(xy 161.29 133.985) (xy 154.94 133.985)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c787f1ab-674f-4f16-b300-975096020600")
 	)
 	(wire
 		(pts
@@ -2065,6 +2506,26 @@
 	)
 	(wire
 		(pts
+			(xy 145.415 136.525) (xy 161.29 136.525)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f91c1dae-7009-4e68-aae8-39b2303dc7b0")
+	)
+	(wire
+		(pts
+			(xy 158.75 139.065) (xy 161.29 139.065)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f9962b6a-9bfb-435a-90c8-acd795339d97")
+	)
+	(wire
+		(pts
 			(xy 88.9 80.01) (xy 88.9 76.2)
 		)
 		(stroke
@@ -2072,16 +2533,6 @@
 			(type default)
 		)
 		(uuid "fc55c925-ec48-4a94-bca1-d633e304c03e")
-	)
-	(wire
-		(pts
-			(xy 132.715 222.885) (xy 165.735 222.885)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fea3e89a-4e2d-43a6-84b1-ef38366b9ef4")
 	)
 	(label "led_cl1_f"
 		(at 59.055 113.03 0)
@@ -2326,6 +2777,72 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 158.75 139.065 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "09692a7b-16b4-4b45-85ee-2a9836aeb8a8")
+		(property "Reference" "#PWR017"
+			(at 158.75 145.415 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 158.75 142.875 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 158.75 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 158.75 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 158.75 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ee60b685-3c29-4123-843c-f2df5869f3c7")
+		)
+		(instances
+			(project "MIDIFAM"
+				(path "/4d4d84f1-a7a8-42a8-95d1-cf69d5b591e2/3e3eaa13-9e26-46aa-8af9-974aac2282b2"
+					(reference "#PWR017")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 157.48 43.18 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -2506,6 +3023,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 39.37 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 39.37 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "15d61543-dd72-44b4-a73f-5ee0d80bde24")
 		)
@@ -2640,6 +3175,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 152.4 75.565 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 152.4 75.565 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "d2d4d6d5-78ec-4533-81af-6b08da7df9bb")
 		)
@@ -2703,6 +3256,24 @@
 			)
 		)
 		(property "Description" "Dual LED, bidirectional"
+			(at 53.975 55.245 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 53.975 55.245 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
 			(at 53.975 55.245 0)
 			(effects
 				(font
@@ -2779,6 +3350,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 152.4 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 152.4 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "198f0703-aa57-4813-8bcc-5a3fe7581649")
 		)
@@ -2798,42 +3387,52 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 165.735 225.425 0)
+		(lib_id "SamacSys_Parts:SD-50BV")
+		(at 125.095 136.525 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "48ec60d3-12e7-425c-969a-8fd771ab93c8")
-		(property "Reference" "#PWR038"
-			(at 165.735 231.775 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 165.735 229.235 0)
+		(uuid "5ddf32d7-4a2c-4422-9e45-189708a1d188")
+		(property "Reference" "J15"
+			(at 135.255 128.905 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Footprint" ""
-			(at 165.735 225.425 0)
+		(property "Value" "SD-50BV"
+			(at 135.255 131.445 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
+			)
+		)
+		(property "Footprint" "SamacSys_Parts:SD-50BV"
+			(at 141.605 133.985 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
 				(hide yes)
 			)
 		)
 		(property "Datasheet" ""
-			(at 165.735 225.425 0)
+			(at 141.605 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Description" "Circular DIN Connectors DIN, 5P jack, vertical, through hole"
+			(at 125.095 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2841,8 +3440,77 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 165.735 225.425 0)
+		(property "Description_1" "Circular DIN Connectors DIN, 5P jack, vertical, through hole"
+			(at 141.605 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Height" ""
+			(at 141.605 141.605 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "490-SD-50BV"
+			(at 141.605 144.145 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/CUI-Devices/SD-50BV?qs=WyjlAZoYn51vaJlJKU%252BCew%3D%3D"
+			(at 141.605 146.685 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" "CUI Devices"
+			(at 141.605 149.225 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" "SD-50BV"
+			(at 141.605 151.765 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 125.095 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 125.095 136.525 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2851,12 +3519,24 @@
 			)
 		)
 		(pin "1"
-			(uuid "723580d4-58ea-4574-99cb-1b071409c84d")
+			(uuid "81f87be8-c796-4714-94a0-97778a5873a1")
+		)
+		(pin "3"
+			(uuid "f61c396d-42d8-4688-9e13-2dbca681774e")
+		)
+		(pin "5"
+			(uuid "ab5dbcc3-b30a-4505-b0bc-db81cf696b08")
+		)
+		(pin "2"
+			(uuid "0d322e21-c203-48f0-8bb5-483961b46f2a")
+		)
+		(pin "4"
+			(uuid "53ba040d-fbd2-480d-b036-bcb35a65a569")
 		)
 		(instances
-			(project "MIDIFAM"
+			(project ""
 				(path "/4d4d84f1-a7a8-42a8-95d1-cf69d5b591e2/3e3eaa13-9e26-46aa-8af9-974aac2282b2"
-					(reference "#PWR038")
+					(reference "J15")
 					(unit 1)
 				)
 			)
@@ -2908,6 +3588,24 @@
 		(property "Description" ""
 			(at 151.892 36.449 0)
 			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 152.4 23.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 152.4 23.495 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -2985,6 +3683,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 36.83 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 36.83 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5d671238-ad36-4365-a815-a3056a59d3dd")
 		)
@@ -3046,6 +3762,24 @@
 		(property "Description" ""
 			(at 151.892 105.664 0)
 			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 152.4 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 152.4 92.71 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3118,6 +3852,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x07, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 206.375 64.135 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 206.375 64.135 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
 			(at 206.375 64.135 0)
 			(effects
 				(font
@@ -3209,6 +3961,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 57.15 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 57.15 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "60bf1937-3408-4d84-8ceb-fa46746650ff")
 		)
@@ -3272,6 +4042,24 @@
 		)
 		(property "Description" "Switch, single pole double throw"
 			(at 150.241 62.992 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 149.225 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 149.225 54.61 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3343,6 +4131,24 @@
 		(property "Description" ""
 			(at 151.892 121.539 0)
 			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 152.4 108.585 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 152.4 108.585 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3629,6 +4435,95 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 166.37 136.525 0)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a12d4756-4b04-4271-a220-2ebb89767617")
+		(property "Reference" "J16"
+			(at 166.37 145.415 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "midi"
+			(at 166.37 142.875 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Connector_PinSocket_2.54mm:PinSocket_1x03_P2.54mm_Vertical"
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "3"
+			(uuid "f9e03d04-96e8-4a65-8d74-edcb3e4de2fd")
+		)
+		(pin "1"
+			(uuid "8f4447a9-f8ef-4281-94bf-b0ee2b1d2825")
+		)
+		(pin "2"
+			(uuid "ba6b3011-f2a6-4a6e-a2b8-1e89f1cf6b3d")
+		)
+		(instances
+			(project "MIDIFAM"
+				(path "/4d4d84f1-a7a8-42a8-95d1-cf69d5b591e2/3e3eaa13-9e26-46aa-8af9-974aac2282b2"
+					(reference "J16")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 201.295 71.755 0)
 		(unit 1)
@@ -3811,6 +4706,24 @@
 				(hide yes)
 			)
 		)
+		(property "LCSC" ""
+			(at 51.435 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 51.435 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9f6d40e6-38dd-4f47-8244-7c2c8d743a55")
 		)
@@ -3870,6 +4783,24 @@
 			)
 		)
 		(property "Description" "Dual LED, bidirectional"
+			(at 57.785 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 57.785 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
 			(at 57.785 90.805 0)
 			(effects
 				(font
@@ -3939,6 +4870,24 @@
 		(property "Description" ""
 			(at 56.642 33.909 0)
 			(do_not_autoplace yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 57.15 20.955 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
+			(at 57.15 20.955 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -4076,6 +5025,24 @@
 			)
 		)
 		(property "Description" "Generic connector, single row, 01x11, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 102.87 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC" ""
+			(at 102.87 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price (single)" ""
 			(at 102.87 80.01 0)
 			(effects
 				(font
