@@ -3041,6 +3041,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 39.37 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "15d61543-dd72-44b4-a73f-5ee0d80bde24")
 		)
@@ -3193,6 +3202,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 152.4 75.565 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "d2d4d6d5-78ec-4533-81af-6b08da7df9bb")
 		)
@@ -3274,6 +3292,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 53.975 55.245 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 53.975 55.245 0)
 			(effects
 				(font
@@ -3368,6 +3395,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 152.4 38.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "198f0703-aa57-4813-8bcc-5a3fe7581649")
 		)
@@ -3411,7 +3447,7 @@
 				)
 			)
 		)
-		(property "Footprint" "SamacSys_Parts:SD-50BV"
+		(property "Footprint" "WeirdVibes_Eurorack:CUI SD-50BV MIDI DIN-5"
 			(at 141.605 133.985 0)
 			(effects
 				(font
@@ -3518,6 +3554,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 125.095 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "81f87be8-c796-4714-94a0-97778a5873a1")
 		)
@@ -3605,6 +3650,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 152.4 23.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 152.4 23.495 0)
 			(effects
 				(font
@@ -3701,6 +3755,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 36.83 76.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5d671238-ad36-4365-a815-a3056a59d3dd")
 		)
@@ -3779,6 +3842,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 152.4 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 152.4 92.71 0)
 			(effects
 				(font
@@ -3870,6 +3942,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 206.375 64.135 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 206.375 64.135 0)
 			(effects
 				(font
@@ -3979,6 +4060,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 57.15 34.29 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "S"
 			(uuid "60bf1937-3408-4d84-8ceb-fa46746650ff")
 		)
@@ -4059,6 +4149,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 149.225 54.61 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 149.225 54.61 0)
 			(effects
 				(font
@@ -4148,6 +4247,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 152.4 108.585 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 152.4 108.585 0)
 			(effects
 				(font
@@ -4505,6 +4613,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 166.37 136.525 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "f9e03d04-96e8-4a65-8d74-edcb3e4de2fd")
 		)
@@ -4724,6 +4841,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" ""
+			(at 51.435 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9f6d40e6-38dd-4f47-8244-7c2c8d743a55")
 		)
@@ -4801,6 +4927,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 57.785 90.805 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 57.785 90.805 0)
 			(effects
 				(font
@@ -4887,6 +5022,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 57.15 20.955 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 57.15 20.955 0)
 			(effects
 				(font
@@ -5043,6 +5187,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 102.87 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" ""
 			(at 102.87 80.01 0)
 			(effects
 				(font

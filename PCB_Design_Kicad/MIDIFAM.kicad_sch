@@ -7740,6 +7740,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "0.1u"
+			(at 255.905 151.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7c9cbd4f-ce29-44e7-8378-145fd8e1cbb1")
 		)
@@ -7817,6 +7826,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 151.765 127.635 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "240k"
 			(at 151.765 127.635 0)
 			(effects
 				(font
@@ -7978,6 +7996,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "6N137"
+			(at 87.63 175.895 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9353ff3b-6168-4720-9159-113ec53c7565")
 		)
@@ -8081,6 +8108,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "midi"
+			(at 53.975 175.895 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "4e804127-2b25-4038-9cad-7244ec8302f0")
 		)
@@ -8151,7 +8187,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2907042"
+		(property "LCSC" "C25819"
 			(at 130.175 137.795 0)
 			(effects
 				(font
@@ -8161,6 +8197,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 130.175 137.795 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "47k"
 			(at 130.175 137.795 0)
 			(effects
 				(font
@@ -8386,6 +8431,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "100n"
+			(at 23.495 34.925 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6cd61e61-5a8c-4f53-ac63-28f956d9b594")
 		)
@@ -8519,7 +8573,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2758735"
+		(property "LCSC" "C21190"
 			(at 155.575 140.335 0)
 			(effects
 				(font
@@ -8529,6 +8583,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 155.575 140.335 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1k"
 			(at 155.575 140.335 0)
 			(effects
 				(font
@@ -8625,6 +8688,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "100n"
+			(at 229.87 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7af187f3-e60f-4098-95cb-688a44857e73")
 		)
@@ -8693,7 +8765,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C365121"
+		(property "LCSC" "C22962"
 			(at 60.96 60.325 0)
 			(effects
 				(font
@@ -8703,6 +8775,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 60.96 60.325 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "220R"
 			(at 60.96 60.325 0)
 			(effects
 				(font
@@ -8789,6 +8870,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 80.01 165.735 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "100n"
 			(at 80.01 165.735 0)
 			(effects
 				(font
@@ -8932,7 +9022,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 81.915 70.485 0)
 			(effects
 				(font
@@ -8942,6 +9032,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 81.915 70.485 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 81.915 70.485 0)
 			(effects
 				(font
@@ -9018,7 +9117,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 81.915 67.945 0)
 			(effects
 				(font
@@ -9028,6 +9127,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 81.915 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 81.915 67.945 0)
 			(effects
 				(font
@@ -9103,7 +9211,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2758735"
+		(property "LCSC" "C21190"
 			(at 155.575 168.91 0)
 			(effects
 				(font
@@ -9113,6 +9221,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 155.575 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1k"
 			(at 155.575 168.91 0)
 			(effects
 				(font
@@ -9198,6 +9315,15 @@
 			)
 		)
 		(property "Price (single)" "$0.88"
+			(at 134.62 67.945 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "OPA4196xD"
 			(at 134.62 67.945 0)
 			(effects
 				(font
@@ -9321,6 +9447,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 167.005 43.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "back top"
 			(at 167.005 43.815 0)
 			(effects
 				(font
@@ -9563,6 +9698,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "100n"
+			(at 229.87 146.685 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c3256d00-2a00-4838-bbd8-a8e241e9de53")
 		)
@@ -9642,6 +9786,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 172.085 82.55 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "back bottom"
 			(at 172.085 82.55 0)
 			(effects
 				(font
@@ -9763,6 +9916,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "ISP connector"
+			(at 28.575 175.895 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "ecd9ccbb-3003-4780-b1f1-52eb951c785f")
 		)
@@ -9853,6 +10015,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 188.595 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "PWR_IN"
 			(at 188.595 140.97 0)
 			(effects
 				(font
@@ -9955,7 +10126,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C184235"
+		(property "LCSC" "C1647"
 			(at 144.145 161.925 0)
 			(effects
 				(font
@@ -9965,6 +10136,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 144.145 161.925 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "18p"
 			(at 144.145 161.925 0)
 			(effects
 				(font
@@ -10060,6 +10240,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "16MHz"
+			(at 79.375 51.435 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "add068e3-60a8-4dd6-bd5f-9f68f7ff670b")
 		)
@@ -10145,6 +10334,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "56k"
+			(at 127 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e32a4b1b-394f-4ead-9d1f-ea9932fd41d1")
 		)
@@ -10215,7 +10413,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C184235"
+		(property "LCSC" "C1647"
 			(at 144.145 133.35 0)
 			(effects
 				(font
@@ -10225,6 +10423,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 144.145 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "18p"
 			(at 144.145 133.35 0)
 			(effects
 				(font
@@ -10321,6 +10528,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "100n"
+			(at 48.26 23.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4a988e43-1d68-4cd3-bfd5-a5b497e58cdb")
 		)
@@ -10390,7 +10606,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2691405"
+		(property "LCSC" "C1623"
 			(at 245.745 135.255 0)
 			(effects
 				(font
@@ -10400,6 +10616,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 245.745 135.255 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "0.33u"
 			(at 245.745 135.255 0)
 			(effects
 				(font
@@ -10487,6 +10712,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 36.83 23.495 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "100n"
 			(at 36.83 23.495 0)
 			(effects
 				(font
@@ -10644,6 +10878,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "DAC8562SDGSR"
+			(at 93.98 127.635 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "859237be-5503-4fbb-aa56-0475243b3694")
 		)
@@ -10736,7 +10979,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 96.52 142.875 0)
 			(effects
 				(font
@@ -10746,6 +10989,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 96.52 142.875 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 96.52 142.875 0)
 			(effects
 				(font
@@ -10839,7 +11091,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C688896"
+		(property "LCSC" "C8598"
 			(at 198.755 130.81 0)
 			(effects
 				(font
@@ -10849,6 +11101,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 198.755 130.81 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "rpp diode"
 			(at 198.755 130.81 0)
 			(effects
 				(font
@@ -10999,6 +11260,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 137.16 39.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "33k"
 			(at 137.16 39.37 0)
 			(effects
 				(font
@@ -11158,6 +11428,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "240k"
+			(at 152.4 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "825305d3-4e39-4d07-a80d-66c9a8acab37")
 		)
@@ -11237,6 +11516,15 @@
 			)
 		)
 		(property "Price (single)" "$0.88"
+			(at 143.51 140.335 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "OPA4196xD"
 			(at 143.51 140.335 0)
 			(effects
 				(font
@@ -11415,7 +11703,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C336586"
+		(property "LCSC" "C263975"
 			(at 213.36 135.89 0)
 			(effects
 				(font
@@ -11425,6 +11713,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 213.36 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10u"
 			(at 213.36 135.89 0)
 			(effects
 				(font
@@ -11587,6 +11884,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "1u"
+			(at 42.545 132.715 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e64e9f11-19c9-4fab-a821-7824e693279e")
 		)
@@ -11672,6 +11978,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "1u"
+			(at 120.65 33.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "60182f3b-5a8f-45b5-8e35-bb3f2cc9776a")
 		)
@@ -11735,6 +12050,15 @@
 			)
 		)
 		(property "Description" "Positive 1A 35V Linear Regulator, Fixed Output 5V, TO-220"
+			(at 255.905 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "LM7805_TO220"
 			(at 255.905 140.97 0)
 			(effects
 				(font
@@ -11881,7 +12205,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2758735"
+		(property "LCSC" "C21190"
 			(at 97.79 170.815 0)
 			(effects
 				(font
@@ -11891,6 +12215,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 97.79 170.815 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1k"
 			(at 97.79 170.815 0)
 			(effects
 				(font
@@ -11966,7 +12299,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 114.3 31.115 0)
 			(effects
 				(font
@@ -11976,6 +12309,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 114.3 31.115 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 114.3 31.115 0)
 			(effects
 				(font
@@ -12051,7 +12393,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2907042"
+		(property "LCSC" "C25819"
 			(at 24.765 131.445 0)
 			(effects
 				(font
@@ -12061,6 +12403,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 24.765 131.445 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "47k"
 			(at 24.765 131.445 0)
 			(effects
 				(font
@@ -12214,6 +12565,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 41.275 65.405 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "ATmega328-A"
 			(at 41.275 65.405 0)
 			(effects
 				(font
@@ -12380,7 +12740,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C365121"
+		(property "LCSC" "C22962"
 			(at 67.945 173.355 0)
 			(effects
 				(font
@@ -12390,6 +12750,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 67.945 173.355 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "220R"
 			(at 67.945 173.355 0)
 			(effects
 				(font
@@ -12483,6 +12852,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "56k"
+			(at 127 43.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0cf94260-238c-437e-a4f7-d5ccc87c5dcb")
 		)
@@ -12550,7 +12928,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C365121"
+		(property "LCSC" "C22962"
 			(at 60.96 83.185 0)
 			(effects
 				(font
@@ -12560,6 +12938,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 60.96 83.185 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "220R"
 			(at 60.96 83.185 0)
 			(effects
 				(font
@@ -12766,7 +13153,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C365121"
+		(property "LCSC" "C22962"
 			(at 60.96 65.405 0)
 			(effects
 				(font
@@ -12776,6 +13163,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 60.96 65.405 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "220R"
 			(at 60.96 65.405 0)
 			(effects
 				(font
@@ -12851,7 +13247,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 114.3 65.405 0)
 			(effects
 				(font
@@ -12861,6 +13257,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 114.3 65.405 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 114.3 65.405 0)
 			(effects
 				(font
@@ -12936,7 +13341,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C184235"
+		(property "LCSC" "C1647"
 			(at 83.82 48.895 0)
 			(effects
 				(font
@@ -12946,6 +13351,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 83.82 48.895 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "18p"
 			(at 83.82 48.895 0)
 			(effects
 				(font
@@ -13033,6 +13447,15 @@
 			)
 		)
 		(property "Price (single)" "$0.88"
+			(at 143.51 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "OPA4196xD"
 			(at 143.51 168.91 0)
 			(effects
 				(font
@@ -13156,6 +13579,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 33.655 135.255 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "150n"
 			(at 33.655 135.255 0)
 			(effects
 				(font
@@ -13314,6 +13746,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "OPA4196xD"
+			(at 134.62 33.655 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "5"
 			(uuid "9b5bf67f-b78c-4050-ba23-df7216408414")
 		)
@@ -13456,7 +13897,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Diode_SMD:D_SOD-123"
+		(property "Footprint" "Diode_SMD:D_SOD-123F"
 			(at 198.755 152.4 90)
 			(effects
 				(font
@@ -13501,7 +13942,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C688896"
+		(property "LCSC" "C8598"
 			(at 198.755 152.4 0)
 			(effects
 				(font
@@ -13511,6 +13952,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 198.755 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "rpp diode"
 			(at 198.755 152.4 0)
 			(effects
 				(font
@@ -13588,7 +14038,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C336586"
+		(property "LCSC" "C263975"
 			(at 213.36 146.05 0)
 			(effects
 				(font
@@ -13598,6 +14048,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 213.36 146.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10u"
 			(at 213.36 146.05 0)
 			(effects
 				(font
@@ -13683,6 +14142,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 120.65 69.215 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1u"
 			(at 120.65 69.215 0)
 			(effects
 				(font
@@ -13778,7 +14246,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C108805"
+		(property "LCSC" "C2128"
 			(at 75.565 175.895 0)
 			(effects
 				(font
@@ -13788,6 +14256,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 75.565 175.895 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1N4148"
 			(at 75.565 175.895 0)
 			(effects
 				(font
@@ -13948,7 +14425,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C108805"
+		(property "LCSC" "C2128"
 			(at 83.82 76.835 0)
 			(effects
 				(font
@@ -13958,6 +14435,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 83.82 76.835 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "1N4148"
 			(at 83.82 76.835 0)
 			(effects
 				(font
@@ -14116,6 +14602,15 @@
 				(hide yes)
 			)
 		)
+		(property "Comment" "33k"
+			(at 137.16 73.66 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1f153a37-3c6d-4b39-9308-af14a7c16c66")
 		)
@@ -14183,7 +14678,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C184235"
+		(property "LCSC" "C1647"
 			(at 83.82 53.975 0)
 			(effects
 				(font
@@ -14193,6 +14688,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 83.82 53.975 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "18p"
 			(at 83.82 53.975 0)
 			(effects
 				(font
@@ -14269,7 +14773,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 83.82 73.025 0)
 			(effects
 				(font
@@ -14279,6 +14783,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 83.82 73.025 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 83.82 73.025 0)
 			(effects
 				(font
@@ -14354,7 +14867,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2907042"
+		(property "LCSC" "C25819"
 			(at 24.765 139.065 0)
 			(effects
 				(font
@@ -14364,6 +14877,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 24.765 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "47k"
 			(at 24.765 139.065 0)
 			(effects
 				(font
@@ -14440,7 +14962,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C845630"
+		(property "LCSC" "C25804"
 			(at 88.9 86.36 0)
 			(effects
 				(font
@@ -14450,6 +14972,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 88.9 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "10k"
 			(at 88.9 86.36 0)
 			(effects
 				(font
@@ -14525,7 +15056,7 @@
 				(hide yes)
 			)
 		)
-		(property "LCSC" "C2907042"
+		(property "LCSC" "C25819"
 			(at 130.175 166.37 0)
 			(effects
 				(font
@@ -14535,6 +15066,15 @@
 			)
 		)
 		(property "Price (single)" ""
+			(at 130.175 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "47k"
 			(at 130.175 166.37 0)
 			(effects
 				(font
@@ -14622,6 +15162,15 @@
 			)
 		)
 		(property "Price (single)" "$0.88"
+			(at 228.6 142.875 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Comment" "OPA4196xD"
 			(at 228.6 142.875 0)
 			(effects
 				(font
