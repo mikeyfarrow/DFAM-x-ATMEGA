@@ -76,6 +76,7 @@
 #define SPI_SPE		SPE
 #define SPI_MSTR	MSTR
 
+#define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
 
 
 /************************************************************************/
@@ -116,27 +117,28 @@
 #define ENABLE_OCI1B()    (TIMSK1 |= (1 << OCIE1B))
 #define DISABLE_OCI1B()   (TIMSK1 &= ~(1 << OCIE1B))
 
-#define leda_green()	set_bit(LED_A_PORT, LED_A_G);\
+#define leda_red()	set_bit(LED_A_PORT, LED_A_G);\
 						clear_bit(LED_A_PORT, LED_A_R);
-#define leda_red()		set_bit(LED_A_PORT, LED_A_R);\
+#define leda_green()		set_bit(LED_A_PORT, LED_A_R);\
 						clear_bit(LED_A_PORT, LED_A_G);
 #define leda_off()		clear_bit(LED_A_PORT, LED_A_G);\
 						clear_bit(LED_A_PORT, LED_A_R);
 
-#define ledb_green()	set_bit(LED_B_PORT, LED_B_G);\
+#define ledb_red()	set_bit(LED_B_PORT, LED_B_G);\
 						clear_bit(LED_B_PORT, LED_B_R);
-#define ledb_red()		set_bit(LED_B_PORT, LED_B_R);\
+#define ledb_green()		set_bit(LED_B_PORT, LED_B_R);\
 						clear_bit(LED_B_PORT, LED_B_G);
 #define ledb_off()		clear_bit(LED_B_PORT, LED_B_G);\
 						clear_bit(LED_B_PORT, LED_B_R);
 
-#define ledc_green()	set_bit(LED_C_PORT, LED_C_G);\
+#define ledc_red()	set_bit(LED_C_PORT, LED_C_G);\
 						clear_bit(LED_C_PORT, LED_C_R);
-#define ledc_red()		set_bit(LED_C_PORT, LED_C_R);\
+#define ledc_green()		set_bit(LED_C_PORT, LED_C_R);\
 						clear_bit(LED_C_PORT, LED_C_G);
 #define ledc_off()		clear_bit(LED_C_PORT, LED_C_G);\
 						clear_bit(LED_C_PORT, LED_C_R);
 
 void hardware_init();
+void configure_DAC();
 
 #endif /* _DFAM_GPIO_H_ */

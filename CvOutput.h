@@ -19,7 +19,7 @@
 
 #define MIDI_NOTE_MIN 24
 #define MIDI_NOTE_MAX 111
-#define DAC_CAL_VALUE 47.068966d
+#define DAC_CAL_VALUE 430
 #define NUM_CAL_POINTS 8
 
 class MidiController;
@@ -45,14 +45,14 @@ public:
 	uint8_t trigger_duration_ms = 1;
 
 	/* Portamento configuration */
-	uint8_t portamento_on = false;
-	uint16_t portamento_time_asc_user = 0;
-	uint16_t portamento_time_desc_user = 0;
+	uint8_t portamento_on = true;
+	uint16_t portamento_time_asc_user = 100;
+	uint16_t portamento_time_desc_user = 100;
 
 	/* Vibrato configuration */
-	VibratoMode vib_mode = VibratoOff;
+	VibratoMode vib_mode = Free;
 	uint16_t vib_period_ms = 200;
-	uint16_t vib_depth_cents = 0;
+	uint16_t vib_depth_cents = 10;
 	uint16_t vib_delay_ms = 0;
 	float vib_tempo_div = 1.0;
 

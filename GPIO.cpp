@@ -77,7 +77,7 @@ void init_DAC_SPI()
 
 	// set up the SPI module: SPI enabled, MSB first, master mode,
 	//  clock polarity and phase = 0, F_osc/16
-	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR );// | ( 1 << SPI_SPR0 );
+	SPI_SPCR = ( 1 << SPI_SPE ) | ( 1 << SPI_MSTR ) | (1 << CPOL);// | (1 << CPHA);// | ( 1 << SPI_SPR0 );
 	SPI_SPSR = 1;     // set double SPI speed for F_osc/2
 }
 
@@ -105,6 +105,35 @@ void init_led_outputs()
 	DDRD |= _BV(DDD1) | _BV(DDD2);
 }
 
+void write_to_dac(uint8_t cmd_byte, uint16_t data_word)
+{
+	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
+	
+	// write the command byte (#1 of 3 total bytes)
+	SPDR = cmd_byte;
+	spi_wait();
+	
+	// write the first byte of data (2/3)
+	SPDR = (uint8_t) (data_word >> 8);
+	spi_wait();
+	
+	// write the second byte of data (3/3)
+	SPDR = (uint8_t) (data_word & 0x00FF);
+	spi_wait();
+	
+	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
+}
+
+void configure_DAC()
+{
+	// ** maybe the internal reference needs to be enabled *after* the DACs power up
+	write_to_dac(0b00101000, 0b00000001); // "reset all registers and update all DACs (Power-on reset update)"
+	write_to_dac(0b00111000, 0b00000001); // "enable internal reference and set gain=2"
+	write_to_dac(0b00110000, 0b00000011); // "LDAC pin inactive for A and B"
+	write_to_dac(0b00000010, 0b00000011); // set gain=1 for A and B (cmd=000, addr=010)
+	write_to_dac(0b00100000, 0b00000011); // "power up DAC-A and DAC-B"
+}
+
 void hardware_init()
 {
 	/* hardware/IO initialization */
@@ -113,6 +142,7 @@ void hardware_init()
 	init_digital_inputs();
 	init_midi_UART();
 	init_DAC_SPI();
+	configure_DAC();
 	
 	/* configure timers/counters and interrupts */
 	init_pwm_output();

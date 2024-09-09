@@ -16,12 +16,6 @@
 #define DAC_MIN 0x00
 #define DAC_MAX 0x0FFF
 
-#define MCP4822_ABSEL 7
-#define MCP4822_IGN 6
-#define MCP4822_GAIN 5
-#define MCP4822_SHDN 4
-#define spi_wait()	while (!(SPI_SPSR & (1 << SPI_SPIF)));
-
 #define MAX_SLIDE_LENGTH 2000.0 // 500 ms?
 #define MAX_TRIG_LENGTH 50.0 // millis?
 #define PITCH_BEND_MAX 12.0 // semitones
@@ -282,18 +276,20 @@ void CvOutput::pitch_bend(int16_t amt)
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
-	midi_note = in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
-	midi_note -= MIDI_NOTE_MIN;
+	//midi_note = in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
+	//midi_note -= MIDI_NOTE_MIN;
+	//
+	//double calibration_val = interpolate_calibration_value(midi_note);
+	//int32_t base_note = midi_note * DAC_CAL_VALUE;
+	//int32_t pb_offset = pitch_bend_amt * settings.pitch_bend_range * DAC_CAL_VALUE;
+	//int32_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
+	//
+	//int32_t dac_data = base_note + pb_offset + vib_offset;
+	//dac_data = in_range(dac_data, DAC_MIN, DAC_MAX);
+	//return dac_data;
 	
-	double calibration_val = interpolate_calibration_value(midi_note);
-	int32_t base_note = midi_note * calibration_val;
-	int32_t pb_offset = pitch_bend_amt * settings.pitch_bend_range * DAC_CAL_VALUE;
-	int32_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
-	
-	int32_t dac_data = base_note + pb_offset + vib_offset;
-	dac_data = in_range(dac_data, DAC_MIN, DAC_MAX);
-	
-	return dac_data;
+	uint8_t note = 127 - midi_note;
+	return note * DAC_CAL_VALUE;
 }
 
 /*
@@ -301,12 +297,20 @@ uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 */
 void CvOutput::output_dac(uint8_t channel, uint16_t data)
 {
+	// TODO: this function can be removed and combined with write_to_dac
+	
 	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
 	
-	SPDR = (channel<<MCP4822_ABSEL) | (0<<MCP4822_IGN) | (0<<MCP4822_GAIN) | (1<<MCP4822_SHDN) | ((data>>8) & 0x0F);
+	// command is "011" for write to dac, rest of bits specify channel A or B
+	SPDR = !channel ? 0x18 : 0x19;
 	spi_wait();
 	
-	SPDR = data & 0x00FF;
+	// write high byte of data
+	SPDR = data >> 8;
+	spi_wait();
+	
+	// write low byte of data
+	SPDR = data & 0xFF;
 	spi_wait();
 	
 	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data

@@ -23,7 +23,7 @@
 #define MIDDLE_C 60
 #define NUM_CHANNELS 16
 
-enum UiMode { MidiRx, LearnChannel, LearnKeyboard };
+enum UiMode { MidiRx, LearnChannel, LearnKeyboard, CalibrateVoct };
 
 
 #define DEBOUNCE_DELAY 50
@@ -40,6 +40,7 @@ MidiController mctl;
 
 UiMode mode = MidiRx;
 
+uint8_t calibration_count = 0;
 const uint8_t default_channels[3] = {1, 2, 10};
 uint8_t channel_prefs[3] {}; // CV A, CV B, KCS
 uint8_t channel_count = 0;
@@ -55,7 +56,7 @@ void learn_channel_progress();
 
 void learn_sw_single_click()
 {
-	if (mode != MidiRx)
+	if (mode == LearnChannel || mode == LearnKeyboard)
 	{
 		/* exit without saving */
 		channel_count = 0;
@@ -65,6 +66,11 @@ void learn_sw_single_click()
 		ledb_off();
 		ledc_off();
 		mode = MidiRx;
+	}
+	else if (mode == CalibrateVoct) 
+	{
+		// todo: advance to next octave/cal. point
+		calibration_count++;
 	}
 	else {
 		/* 
@@ -144,6 +150,15 @@ int main()
 	register_midi_events();
 	sei(); // enable interrupts globally
 	
+	
+	bool learn_held = !bit_is_set(LEARN_SW_PIN, LEARN_SW);
+	bool mode_held = !bit_is_set(SYNC_BTN_PIN, SYNC_BTN);
+	if (learn_held && mode_held)
+	{
+		mode = CalibrateVoct;
+		calibration_count = 0;
+	}
+	
 	uint16_t idx = 0;
 	while (1)
 	{
@@ -154,6 +169,14 @@ int main()
 			// LEDTODO: else { status1_red(); }
 			
 			mctl.update();	
+		}
+		else if (mode == CalibrateVoct)
+		{
+			leda_green();
+			ledb_green();
+			ledc_green();
+			// TODO: implement calibration procedure...
+			// probably best to keep track of state inside CvOutput
 		}
 		else
 		{

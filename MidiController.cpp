@@ -47,9 +47,10 @@ MidiController::MidiController():
 	last_clock = 0;
 	
 	/*  A settings  */
-	cv_out_a.settings.retrig_mode = RetrigOff;
+	cv_out_a.settings.retrig_mode = Lowest;
+	cv_out_a.settings.vib_mode = Free;
 	cv_out_a.settings.trigger_duration_ms = 10;
-	cv_out_a.settings.portamento_on = false;
+	cv_out_a.settings.portamento_on = true;
 	cv_out_a.settings.portamento_time_asc_user = 100;
 	cv_out_a.settings.portamento_time_desc_user = 100;
 	
@@ -62,7 +63,7 @@ MidiController::MidiController():
 	cv_out_b.settings.vib_depth_cents = 0;
 	
 	cv_out_b.settings.vib_mode = Free;
-	cv_out_b.settings.portamento_on = true;
+	cv_out_b.settings.portamento_on = false;
 	cv_out_b.settings.portamento_time_asc_user = 2000;
 	cv_out_b.settings.portamento_time_desc_user = 2000;
 	
