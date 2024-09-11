@@ -1,6 +1,18 @@
 NOTES, TODO, and IMPLEMENTATION DETAILS
 =======================================
 
+
+############################
+### CALIBRATION PROCEDURE
+
+- Select which CV output to calibrate (or just do them in order)
+- Starting at -3V and going to +7V, do the following:
+	- Use CC #?? for coarse adjust
+	- Use CC #?? for fine adjust
+	- Press "Learn" button to save the calibration point and move to next octave
+	- Adjust so that voltage at CV out is equal to one of [-3, -2, -1, 0, 1, ..., 7]
+	
+
 - How does Yarns's calibration and DAC out work?
 
 CHANNEL SELECT MODE - when enabled, the program waits for three note on events from ANY channel

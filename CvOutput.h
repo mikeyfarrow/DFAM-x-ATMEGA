@@ -17,10 +17,23 @@
 
 #define LATEST_NOTES_SIZE 20 
 
-#define MIDI_NOTE_MIN 24
-#define MIDI_NOTE_MAX 111
+#define MIDI_NOTE_MAX 127
 #define DAC_CAL_VALUE 430
-#define NUM_CAL_POINTS 8
+#define NUM_CAL_POINTS 11
+
+#define DAC_MIN 0x0000
+#define DAC_MAX 0xFFFF
+
+#define MAX_SLIDE_LENGTH 2000.0 // 500 ms?
+#define MAX_TRIG_LENGTH 50.0 // millis?
+#define PITCH_BEND_MAX 12.0 // semitones
+
+#define VIB_DELAY_MAX 3000.0 // ms
+#define VIB_DEPTH_MAX 800.0  // cents
+#define VIB_FREQ_MIN 0.2 // Hz --> 5000 ms period
+#define VIB_FREQ_MAX 5.0 // Hz --> 200 ms period
+#define VIB_PERIOD_MAX (1000.0 / 1.0 / VIB_FREQ_MIN)
+#define VIB_PERIOD_MIN (1000.0 / 1.0 / VIB_FREQ_MAX)
 
 class MidiController;
 
@@ -45,13 +58,13 @@ public:
 	uint8_t trigger_duration_ms = 1;
 
 	/* Portamento configuration */
-	uint8_t portamento_on = true;
+	uint8_t portamento_on = false;
 	uint16_t portamento_time_asc_user = 100;
 	uint16_t portamento_time_desc_user = 100;
 
 	/* Vibrato configuration */
-	VibratoMode vib_mode = Free;
-	uint16_t vib_period_ms = 200;
+	VibratoMode vib_mode = VibratoOff;
+	uint16_t vib_period_ms = 1000;
 	uint16_t vib_depth_cents = 10;
 	uint16_t vib_delay_ms = 0;
 	float vib_tempo_div = 1.0;
@@ -62,9 +75,9 @@ public:
 	/* DAC V/oct digital calibration table: one calibration per C in each octave */
 	float calibration_points[NUM_CAL_POINTS];
 
-	CvSettings() : calibration_points { DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE - 0.22, DAC_CAL_VALUE - 0.235,
-									   DAC_CAL_VALUE - 0.21, DAC_CAL_VALUE - 0.15, DAC_CAL_VALUE - 0.15, DAC_CAL_VALUE - 0.15 }
-	{	}
+	CvSettings() : calibration_points { DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE,
+										DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE,
+										DAC_CAL_VALUE, DAC_CAL_VALUE, DAC_CAL_VALUE} {	}
 
 	void serialize(uint8_t* buffer) const override
 	{
@@ -195,10 +208,9 @@ public:
 	double triangle_wave(double t, double period, bool desc_first = false);
 	double sine_wave(double t, double period);
 	
-	void trigger_A();
-	void trigger_B();
+	void trigger();
 	
-	static void output_dac(uint8_t channel, uint16_t data);
+	void output_dac(uint16_t data);
 	uint16_t midi_to_data(uint8_t midi_note);
 	
 	uint16_t calculate_ocr_value(uint16_t duration_ms);
@@ -207,6 +219,8 @@ public:
 	
 	double linear_interpolation(double xValues[], double yValues[], int numValues, double pointX);
 	double interpolate_calibration_value(uint8_t note);
+	float get_calibration_value(uint8_t kOctave);
+	void adjust_calibration(uint8_t kOctave, float cal_adjust);
 	
 	int16_t highest();
 	int16_t lowest();

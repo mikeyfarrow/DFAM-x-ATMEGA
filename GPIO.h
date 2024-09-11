@@ -140,5 +140,6 @@
 
 void hardware_init();
 void configure_DAC();
+void write_to_dac(uint8_t cmd_byte, uint16_t data_word);
 
 #endif /* _DFAM_GPIO_H_ */

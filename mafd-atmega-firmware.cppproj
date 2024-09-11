@@ -207,6 +207,9 @@
     <Compile Include="GPIO.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="main.h">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="Serializable.h">
       <SubType>compile</SubType>
     </Compile>
@@ -259,6 +262,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="notes\MIDI spec notes.txt">
+      <SubType>compile</SubType>
+    </None>
+    <None Include="notes\MIDIFAM User Manual.md">
       <SubType>compile</SubType>
     </None>
     <None Include="notes\notes.txt">

@@ -20,8 +20,6 @@
 #define KCS_MODE !switch_state
 #define CCS_MODE switch_state
 
-#define SECS_PER_MIN 60.0
-
 #define NUM_STEPS 8
 #define PPQN 24
 #define MIDI_ROOT_NOTE 48  // an octave below middle C
@@ -45,27 +43,6 @@ MidiController::MidiController():
 	midi((SMT&) transport)
 {
 	last_clock = 0;
-	
-	/*  A settings  */
-	cv_out_a.settings.retrig_mode = Lowest;
-	cv_out_a.settings.vib_mode = Free;
-	cv_out_a.settings.trigger_duration_ms = 10;
-	cv_out_a.settings.portamento_on = true;
-	cv_out_a.settings.portamento_time_asc_user = 100;
-	cv_out_a.settings.portamento_time_desc_user = 100;
-	
-	/*  B settings  */
-	cv_out_b.settings.retrig_mode = Highest;
-	cv_out_b.settings.trigger_duration_ms = 10;
-	
-	cv_out_b.settings.vib_delay_ms = 0;
-	cv_out_b.settings.vib_period_ms = 400;
-	cv_out_b.settings.vib_depth_cents = 0;
-	
-	cv_out_b.settings.vib_mode = Free;
-	cv_out_b.settings.portamento_on = false;
-	cv_out_b.settings.portamento_time_asc_user = 2000;
-	cv_out_b.settings.portamento_time_desc_user = 2000;
 	
 	millis_last = 0;
 	last_sw_read = 0;
@@ -138,10 +115,10 @@ void MidiController::update()
 
 void MidiController::tx_ready()
 {
-/*
-	tx_ready - called to notify the MIDI controller that the USART data register
-		is empty and so is ready for a MIDI Tx
-*/
+	/*
+		tx_ready - called to notify the MIDI controller that the USART data register
+			is empty and so is ready for a MIDI Tx
+	*/
 	uint8_t midi_byte;
 	if (transport.midi_tx_buffer.get(&midi_byte))
 	{
@@ -247,8 +224,8 @@ void MidiController::check_sync_switch()
 /*		EVENT HANDLERS                                                  */
 /************************************************************************/
 
-#define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController7
-#define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController8
+#define CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController7 // cc #82
+#define CC_ClockDiv		  MIDI_NAMESPACE::GeneralPurposeController8 // cc #83
 
 void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 {
@@ -313,7 +290,7 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 		}
 		
 		// trigger A on every note on, regardless of voice allocation
-		cv_out_a.trigger_A();
+		cv_out_a.trigger();
 	}
 	
 	if (settings.midi_mode == Mono)

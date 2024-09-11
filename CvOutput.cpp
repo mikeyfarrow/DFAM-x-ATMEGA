@@ -13,20 +13,8 @@
 #include "GPIO.h"
 #include "MidiController.h"
 
-#define DAC_MIN 0x00
-#define DAC_MAX 0x0FFF
-
-#define MAX_SLIDE_LENGTH 2000.0 // 500 ms?
-#define MAX_TRIG_LENGTH 50.0 // millis?
-#define PITCH_BEND_MAX 12.0 // semitones
-
-#define VIB_DELAY_MAX 3000.0 // ms
-#define VIB_DEPTH_MAX 800.0  // cents
-#define VIB_FREQ_MIN 0.2 // Hz --> 5000 ms period
-#define VIB_FREQ_MAX 5.0 // Hz --> 200 ms period
-#define VIB_PERIOD_MAX (1000.0 / 1.0 / VIB_FREQ_MIN)
-#define VIB_PERIOD_MIN (1000.0 / 1.0 / VIB_FREQ_MAX)
-
+double xVals[NUM_CAL_POINTS] = {0, 12, 24, 36, 48, 60, 72, 84, 96, 108, 120};
+	
 const float tempo_sync_divisions[8] = {
 	4.0, // whole
 	2.0, // half
@@ -151,7 +139,7 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 	
 	if (!is_sliding)
 	{
-		output_dac(dac_ch, midi_to_data(slide_end_note));
+		output_dac(midi_to_data(slide_end_note));
 	}
 	else
 	{
@@ -164,11 +152,12 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 		VEL_A_DUTY = velocity * 0xFF / 0x7F;
 		if (settings.trig_mode == Trig)
 		{   // the MidiController handles triggers in Poly mode
-			trigger_A();
+			trigger();
 		}
 		else if (settings.trig_mode == Gate)
 		{
 			set_bit(TRIG_PORT, TRIG_A_OUT);
+			leda_green();
 		}
 	}
 	else
@@ -180,11 +169,12 @@ void CvOutput::note_on(uint8_t midi_note, uint8_t velocity, uint8_t send_velocit
 
 		if (settings.trig_mode == Trig)
 		{   // the MidiController handles triggers in Poly mode
-			trigger_B();
+			trigger();
 		}
 		else if (settings.trig_mode == Gate)
 		{
 			set_bit(TRIG_PORT, TRIG_B_OUT);
+			ledb_green();
 		}
 	}
 }
@@ -205,6 +195,14 @@ void CvOutput::note_off(uint8_t midi_note, uint8_t vel)
 	if (note == -1 && settings.trig_mode == Gate)
 	{
 		clear_bit(TRIG_PORT, dac_ch ? TRIG_B_OUT : TRIG_A_OUT);
+		if (dac_ch == 0)
+		{
+			leda_off();
+		}
+		else
+		{
+			ledb_off();
+		}
 	}
 	
 	if (note > -1 && settings.retrig_mode != RetrigOff)
@@ -240,7 +238,7 @@ void CvOutput::slide_progress()
 			// the slide is complete
 			is_sliding = false;
 			
-			output_dac(dac_ch, midi_to_data(slide_end_note));
+			output_dac(midi_to_data(slide_end_note));
 		}
 		else
 		{
@@ -250,12 +248,12 @@ void CvOutput::slide_progress()
 			int16_t interval = end_data - start_data;
 			int16_t inc = ((float) elapsed  * interval) / (float) slide_cur_length;
 
-			output_dac(dac_ch, start_data + inc);
+			output_dac(start_data + inc);
 		}
 	}
 	else // check for vibrato
 	{
-		output_dac(dac_ch, midi_to_data(slide_end_note));
+		output_dac(midi_to_data(slide_end_note));
 	}		
 }
 
@@ -267,7 +265,7 @@ void CvOutput::pitch_bend(int16_t amt)
 	// get it into the range -1 to 1
 	pitch_bend_amt = (((float) amt + 8192) / 16383) * 2 - 1;
 
-	output_dac(dac_ch, midi_to_data(slide_end_note));
+	output_dac(midi_to_data(slide_end_note));
 }
 
 /*
@@ -276,96 +274,80 @@ void CvOutput::pitch_bend(int16_t amt)
 */
 uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
-	//midi_note = in_range(midi_note, MIDI_NOTE_MIN, MIDI_NOTE_MAX);
-	//midi_note -= MIDI_NOTE_MIN;
-	//
-	//double calibration_val = interpolate_calibration_value(midi_note);
-	//int32_t base_note = midi_note * DAC_CAL_VALUE;
-	//int32_t pb_offset = pitch_bend_amt * settings.pitch_bend_range * DAC_CAL_VALUE;
-	//int32_t vib_offset = vibrato_cur_offset * DAC_CAL_VALUE;
-	//
-	//int32_t dac_data = base_note + pb_offset + vib_offset;
-	//dac_data = in_range(dac_data, DAC_MIN, DAC_MAX);
-	//return dac_data;
+	midi_note = in_range(midi_note, 0, MIDI_NOTE_MAX);
 	
-	uint8_t note = 127 - midi_note;
-	return note * DAC_CAL_VALUE;
+	//double dac_cal = settings.calibration_points[midi_note / 12]; // = interpolate_calibration_value(note);
+	double dac_cal = interpolate_calibration_value(midi_note);
+	
+	int32_t base_note = (127 - midi_note) * dac_cal;
+	int32_t vib_offset = vibrato_cur_offset * dac_cal;
+	int32_t pb_offset = pitch_bend_amt * settings.pitch_bend_range * dac_cal;
+	
+	int32_t dac_data = base_note - vib_offset - pb_offset;
+	dac_data = in_range(dac_data, DAC_MIN, DAC_MAX);
+	return dac_data;
 }
 
 /*
 	output_dac - sends config bits and 12 bits of data to DAC
 */
-void CvOutput::output_dac(uint8_t channel, uint16_t data)
+void CvOutput::output_dac(uint16_t data)
 {
-	// TODO: this function can be removed and combined with write_to_dac
-	
-	DAC_CS_PORT &= ~(1<<DAC_CS);	//pull CS low to enable DAC
-	
-	// command is "011" for write to dac, rest of bits specify channel A or B
-	SPDR = !channel ? 0x18 : 0x19;
-	spi_wait();
-	
-	// write high byte of data
-	SPDR = data >> 8;
-	spi_wait();
-	
-	// write low byte of data
-	SPDR = data & 0xFF;
-	spi_wait();
-	
-	DAC_CS_PORT |= (1<<DAC_CS);		//pull CS high to latch data
+	write_to_dac(!dac_ch ? 0x18 : 0x19, data);
 }
 
 /*
 	trigger_A - sends a pulse on the trigger A output 
 */
-void CvOutput::trigger_A()
+void CvOutput::trigger()
 {
-	TIFR1 |= (1 << OCF1A);
-	set_bit(TRIG_PORT, TRIG_A_OUT);
-	leda_green();
-	
-	// Set the compare value for the specified duration in the future
+	// enable the timer interrupt to turn OFF the trigger out
+	uint8_t ocf_bit = (dac_ch == 0) ? OCF1A : OCF1B;
+	TIFR1 |= (1 << ocf_bit);
+
+	// turn ON the trigger output
+	uint8_t trig_out = (dac_ch == 0) ? TRIG_A_OUT : TRIG_B_OUT;
+	set_bit(TRIG_PORT, trig_out);
+
+	// turn ON the LED and set the timer compare value for the interrupt
 	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
 	{
-		OCR1A = TCNT1 + calculate_ocr_value(settings.trigger_duration_ms);
-		ENABLE_OCI1A();
+		uint16_t ms_end_trig = TCNT1 + calculate_ocr_value(settings.trigger_duration_ms);
+		if (dac_ch == 0)
+		{
+			leda_green();
+			OCR1A = ms_end_trig;
+			ENABLE_OCI1A();
+		}
+		else
+		{
+			ledb_green();
+			OCR1B = ms_end_trig;
+			ENABLE_OCI1B();
+		}
 	}
 }
 
-/*
-	trigger_A - sends a pulse on the trigger A output 
-*/
-void CvOutput::trigger_B()
-{
-	TIFR1 |= (1 << OCF1B);
-	set_bit(TRIG_PORT, TRIG_B_OUT);
-	ledb_green();
-	
-	// Set the compare value for the specified duration in the future
-	ATOMIC_BLOCK(ATOMIC_RESTORESTATE)
-	{
-		OCR1B = TCNT1 + calculate_ocr_value(settings.trigger_duration_ms);
-		ENABLE_OCI1B();
-	}
-}
 
 // Calculate OCR value for a given duration in milliseconds
 uint16_t CvOutput::calculate_ocr_value(uint16_t ms) {
 	return (F_CPU / 64) * ms / 1000;
 }
 
-#define CC_TrigLength			MIDI_NAMESPACE::GeneralPurposeController1 // 16
 #define CC_PitchBendRange		MIDI_NAMESPACE::GeneralPurposeController2 // 17
-#define CC_PortamentoOnOff		MIDI_NAMESPACE::Portamento			// cc# 65
-#define CC_PortamentoTime		MIDI_NAMESPACE::PortamentoTime		// cc# 5
+
+#define CC_PortamentoOnOff		MIDI_NAMESPACE::Portamento				  // cc# 65
+#define CC_PortamentoTime		MIDI_NAMESPACE::PortamentoTime			  // cc# 5
 #define CC_PortamentoTimeDesc	MIDI_NAMESPACE::GeneralPurposeController3 // cc# 18
 #define CC_PortamentoTimeAsc	MIDI_NAMESPACE::GeneralPurposeController4 // cc# 19
+
+#define CC_TrigLength			MIDI_NAMESPACE::GeneralPurposeController1 //     16
 #define CC_RetrigMode			MIDI_NAMESPACE::GeneralPurposeController5 // cc# 80
-#define CC_TrigMode				MIDI_NAMESPACE::GeneralPurposeController6
-#define CC_VibratoRate			MIDI_NAMESPACE::SoundController7 // 76
-#define CC_VibratoDepth			MIDI_NAMESPACE::SoundController8
-#define CC_VibratoDelay			MIDI_NAMESPACE::SoundController9
+#define CC_TrigMode				MIDI_NAMESPACE::GeneralPurposeController6 // cc# 81
+
+#define CC_VibratoRate			MIDI_NAMESPACE::SoundController7  // 76
+#define CC_VibratoDepth			MIDI_NAMESPACE::SoundController8  // 77
+#define CC_VibratoDelay			MIDI_NAMESPACE::SoundController9  // 78
 #define CC_VibratoSync			MIDI_NAMESPACE::SoundController10 // 79. Value: on or off
 
 void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
@@ -446,7 +428,6 @@ double CvOutput::linear_interpolation(double xValues[], double yValues[], int nu
 	else if (pointX >= xValues[numValues - 1])
 	   return yValues[numValues - 1];
 	
-
 	// Find the interval [x0, x1] where x0 <= pointX <= x1
 	for (int i = 0; i < numValues - 1; i++) {
 		if (pointX >= xValues[i] && pointX <= xValues[i + 1]) {
@@ -466,12 +447,30 @@ double CvOutput::linear_interpolation(double xValues[], double yValues[], int nu
 }
 
 double CvOutput::interpolate_calibration_value(uint8_t note) {
-	double xVals[NUM_CAL_POINTS] = {0, 12, 24, 36, 48, 60, 72, 84};
+	
 	double yVals[NUM_CAL_POINTS];
 	for (int i = 0; i < NUM_CAL_POINTS; i++) {
 		yVals[i] = (double) settings.calibration_points[i];
 	}
 	return linear_interpolation(xVals, yVals, NUM_CAL_POINTS, (double)note);
+}
+
+float CvOutput::get_calibration_value(uint8_t kOctave)
+{
+	if (kOctave < 0 || kOctave >= NUM_CAL_POINTS)
+	{
+		return DAC_CAL_VALUE;
+	}
+	
+	return settings.calibration_points[kOctave];
+}
+
+void CvOutput::adjust_calibration(uint8_t kOctave, float cal_adjust)
+{
+	if (kOctave >= 0 && kOctave < NUM_CAL_POINTS)
+	{
+		settings.calibration_points[kOctave] += cal_adjust;
+	}
 }
 
 int16_t CvOutput::highest()
