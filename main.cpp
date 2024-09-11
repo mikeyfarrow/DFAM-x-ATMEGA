@@ -255,6 +255,10 @@ void calibration_cc(byte cc_num, byte cc_val)
 	{
 		cur_cal_offset = 3 * val;
 	}
+	else if (cc_num == 104)
+	{
+		cur_cal_offset = 25 * val;
+	}
 	output_calibration_voltage();
 }
 

@@ -276,8 +276,7 @@ uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
 	midi_note = in_range(midi_note, 0, MIDI_NOTE_MAX);
 	
-	//double dac_cal = settings.calibration_points[midi_note / 12]; // = interpolate_calibration_value(note);
-	double dac_cal = interpolate_calibration_value(midi_note);
+	double dac_cal = settings.calibration_points[midi_note / 12];
 	
 	int32_t base_note = (127 - midi_note) * dac_cal;
 	int32_t vib_offset = vibrato_cur_offset * dac_cal;
@@ -419,40 +418,6 @@ void CvOutput::control_change(uint8_t cc_num, uint8_t cc_val)
 			
 		default: break;
 	}
-}
-
-double CvOutput::linear_interpolation(double xValues[], double yValues[], int numValues, double pointX) {
-	// Handle out-of-bound points
-	if (pointX <= xValues[0])
-	   return yValues[0];
-	else if (pointX >= xValues[numValues - 1])
-	   return yValues[numValues - 1];
-	
-	// Find the interval [x0, x1] where x0 <= pointX <= x1
-	for (int i = 0; i < numValues - 1; i++) {
-		if (pointX >= xValues[i] && pointX <= xValues[i + 1]) {
-			double x0 = xValues[i];
-			double y0 = yValues[i];
-			double x1 = xValues[i + 1];
-			double y1 = yValues[i + 1];
-
-			// Linear interpolation formula
-			double slope = (y1 - y0) / (x1 - x0);
-			return y0 + slope * (pointX - x0);
-		}
-	}
-
-	// If we didn't find the interval, return an error value (shouldn't happen)
-	return -1;
-}
-
-double CvOutput::interpolate_calibration_value(uint8_t note) {
-	
-	double yVals[NUM_CAL_POINTS];
-	for (int i = 0; i < NUM_CAL_POINTS; i++) {
-		yVals[i] = (double) settings.calibration_points[i];
-	}
-	return linear_interpolation(xVals, yVals, NUM_CAL_POINTS, (double)note);
 }
 
 float CvOutput::get_calibration_value(uint8_t kOctave)

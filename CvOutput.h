@@ -217,8 +217,6 @@ public:
 	
 	void all_notes_off();
 	
-	double linear_interpolation(double xValues[], double yValues[], int numValues, double pointX);
-	double interpolate_calibration_value(uint8_t note);
 	float get_calibration_value(uint8_t kOctave);
 	void adjust_calibration(uint8_t kOctave, float cal_adjust);
 	
