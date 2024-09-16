@@ -48,7 +48,6 @@ NM             = $(TOOLCHAIN_PATH)avr-nm
 AVRDUDE        = /usr/bin/avrdude
 REMOVE         = rm -f
 CAT            = cat
-MIDIFAM_HEX    = ../mafd-atmega-firmware.hex
 
 CPPFLAGS  = -mmcu=$(MCU) -I. \
 			-g -Os -w -Wall \
@@ -137,10 +136,6 @@ bin:	$(TARGET_BIN)
 upload:    $(TARGET_HEX)
 		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
 			-U flash:w:$(TARGET_HEX):i -U lock:w:0x$(LOCK):m
-
-midifam:    $(TARGET_HEX)
-		$(AVRDUDE) $(AVRDUDE_COM_OPTS) $(AVRDUDE_ISP_OPTS) \
-			-U flash:w:$(MIDIFAM_HEX):i -U lock:w:0x$(LOCK):m
 
 clean:
 		$(REMOVE) $(OBJS) $(TARGETS) $(DEP_FILE) $(DEPS)
