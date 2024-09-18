@@ -42,15 +42,14 @@ ASFLAGS       = -mmcu=$(MCU) -I. -x assembler-with-cpp
 LDFLAGS       = -mmcu=$(MCU) -lm -Os -Wl,--gc-sections$(EXTRA_LD_FLAGS)
 
 PYTHON	       = /usr/local/Python-2.5/python
-TOOLCHAIN_PATH = /usr/local/avr8-gnu-toolchain/bin/
 AVRDUDE 	   = avrdude -c $(PRG) -p $(MCU)
-CC             = $(TOOLCHAIN_PATH)avr-gcc
-CXX            = $(TOOLCHAIN_PATH)avr-g++
-OBJCOPY        = $(TOOLCHAIN_PATH)avr-objcopy
-OBJDUMP        = $(TOOLCHAIN_PATH)avr-objdump
-AR             = $(TOOLCHAIN_PATH)avr-ar
-SIZE           = $(TOOLCHAIN_PATH)avr-size --format=avr --mcu=$(MCU)
-NM             = $(TOOLCHAIN_PATH)avr-nm
+CC             = avr-gcc
+CXX            = avr-g++
+OBJCOPY        = avr-objcopy
+OBJDUMP        = avr-objdump
+AR             = avr-ar
+SIZE           = avr-size --format=avr --mcu=$(MCU)
+NM             = avr-nm
 
 AVRDUDE_CONF      = /etc/avrdude.conf
 AVRDUDE_COM_OPTS  = -V -p $(DMCU)
@@ -64,11 +63,10 @@ OBJECTS = $(SOURCES:.cpp=.o)
 all:    $(BUILD_DIR) $(TARGET_MID)
 
 $(BUILD_DIR):
-		mkdir -p $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)
 
 $(TARGET_BIN): $(OBJECTS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
-	# mv $(BASE_DIR)/*.o $(BUILD_DIR)/
 
 $(TARGET_HEX): $(TARGET_BIN)
 	$(OBJCOPY) -O ihex -R .eeprom $(TARGET_BIN) $(TARGET_HEX)
@@ -83,4 +81,5 @@ upload: $(TARGET_HEX)
 .PHONY: clean 
 
 clean:
+	rm $(OBJECTS)
 	rm -rf $(BUILD_DIR)
