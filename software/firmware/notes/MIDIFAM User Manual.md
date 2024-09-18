@@ -6,6 +6,12 @@ MIDIFAM User Manual
 
 ## Midi Channel Settings
 
+*** MIDI CHANNEL SETTING
+TODO: should be based on what channel the next message is received on
+TODO: click the button should cycle through outputs, not exit mode
+
+
+
 By default:
 - CV output A receives MIDI on channel #1
 - CV output B receives MIDI on channel #2
@@ -44,29 +50,46 @@ The third MIDI note will select the MIDI channel for "Keyboard-Controlled Sequen
 After receiving the third Note On message, the module will **save the new settings** so that the MIDI channel
 selections will be restored after the device is power cycled. In addition to saving the MIDI channel selections, **all other settings will also be saved** (e.g. portamento, vibrato, polyphony, and any other configuration made using MIDI CC messages).
 
-## Playing the DFAM with a Keyboard
+## Channel-specific CC messages
+
+These will only apply when they are sent on the MIDI channel to which the CV output is assigned.
+
+**Portamento**
+
+|CC | Function           | Values                         | Notes |
+|---|--------------------|--------------------------------|-------|
+|65  |   Enable or disable portamento | On/Off | |
+|18	|   Time (desc.) | 0 to 2 sec | Duration of slides for descending notes |
+|19	|   Time (asc.) | 0 to 2 sec |  Duration of slides for ascending notes |
+|5	|   Time (master) | 0 to 2 sec | Master duration  |
 
 
+**Gate/Trig Behavior**
 
-## MIDI CC Messages
+|CC | Function           | Values                         | Notes |
+|---|--------------------|--------------------------------|--------- |
+|16 | Trigger duration   | 1ms to about 50ms              | |
+|80 | Retrigger behavior | Off, Highest, Lowest, Latest   | What note to re-trigger if any notes are still held when a Note Off message is received |
+|81 | Gate/Trig mode     | Off, Trigger, Gate             | "Trigger" means a short pulse for every MIDI Note On. "Gate" means the output is high as long as a note is held. |
 
-Defined in CvOutput:
-    -   Legato aka Trig Mode (Off=Trig, On=Gate)       MIDI CC# 60
-    -   CC_PitchBendRange		MIDI_NAMESPACE::GeneralPurposeController2 // 17
 
-    -   CC_PortamentoOnOff		MIDI_NAMESPACE::Portamento				  // cc# 65
-    -   CC_PortamentoTime		MIDI_NAMESPACE::PortamentoTime			  // cc# 5
-    -   CC_PortamentoTimeDesc	MIDI_NAMESPACE::GeneralPurposeController3 // cc# 18
-    -   CC_PortamentoTimeAsc	MIDI_NAMESPACE::GeneralPurposeController4 // cc# 19
+**Vibrato**
 
-    -   CC_TrigLength			MIDI_NAMESPACE::GeneralPurposeController1 //     16
-    -   CC_RetrigMode			MIDI_NAMESPACE::GeneralPurposeController5 // cc# 80
-    -   CC_TrigMode				MIDI_NAMESPACE::GeneralPurposeController6 // cc# 81
+|CC | Function       | Values                         | Notes|
+|---|----------------|--------------------------------|-------------|
+|76 | Rate           | 5 sec to 200 ms period    |  |
+|77 | Depth          | 0 to 1 semitone           | What note to re-trigger if any notes are still held when a Note Off message is received|
+|78 | Delay          | 0 to 3 seconds            | How long to wait before beginning the vibrato|
 
-    -   CC_VibratoRate			MIDI_NAMESPACE::SoundController7  // 76
-    -   CC_VibratoDepth			MIDI_NAMESPACE::SoundController8  // 77
-    -   CC_VibratoDelay			MIDI_NAMESPACE::SoundController9  // 78
-    -   CC_VibratoSync			MIDI_NAMESPACE::SoundController10 // 79. Value: on or off
+**Pitch Bend**
+
+
+|CC | Function       | Values                         | Notes|
+|---|----------------|--------------------------------|-------------|
+|17 | Pitch bend range           | 0 to 12 semitones   |  | 
+
+
+## Global CC Messages
 
 Defined in MidiController
     CC_AdvClockWidth  MIDI_NAMESPACE::GeneralPurposeController7 // cc #82

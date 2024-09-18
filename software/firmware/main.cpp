@@ -39,7 +39,6 @@ bool last_button_state = false;
 bool long_press_fired = false;
 
 /* "Learn" CV Midi Channel state */
-const uint8_t default_channels[3] = {1, 2, 10};
 uint8_t channel_prefs[3] {}; // CV A, CV B, KCS
 uint8_t channel_count = 0;
 
@@ -47,9 +46,17 @@ uint8_t channel_count = 0;
 uint8_t keyboard_prefs[8] {};
 uint8_t key_pref_count = 0;
 
+struct adj
+{
+	float coarse = 0;
+	float med = 0;
+	float fine = 0;
+};
+
+
 /* V/oct Calibration state */
 uint8_t		k_voct_cal		= 0;	/* Number of octaves calibrated, aka current index in the calibration array */
-float		cur_cal_offset	= 0.0;  /* Value used to adjust the current calibration point */
+struct adj  cal_offset	    = {0.0, 0.0, 0.0};  /* Value used to adjust the current calibration point */
 uint32_t	last_blink		= 0;    /* Last time the CvOutput LED blinked (to indicate which octave is being calibrated */
 uint8_t		k_blink			= 0;	/* Number of times LED has blinked */
 uint8_t		k_blink_wait	= 0;	/* Number of cycles to wait between sequences of blinks */
@@ -65,7 +72,7 @@ int main()
 	hardware_init();
 	
 	if (!load_config(mctl))
-	save_config(mctl);
+		save_config(mctl);
 	ledc_off();
 	
 	register_midi_events();
@@ -73,14 +80,19 @@ int main()
 	
 	sei(); // enable interrupts globally
 	
+	mctl.cv_out_a.settings.portamento_on = true;
 	mctl.cv_out_a.settings.trigger_duration_ms = 10;
-	mctl.cv_out_b.settings.trigger_duration_ms = 10;
 	mctl.cv_out_a.settings.trig_mode = Gate;
 	mctl.cv_out_a.settings.retrig_mode = Highest;
 	mctl.cv_out_a.settings.vib_mode = Free;
 	
+	mctl.cv_out_b.settings.retrig_mode = Highest;
+	mctl.cv_out_b.settings.trigger_duration_ms = 10;
+	mctl.cv_out_b.settings.portamento_on = true;
+	
+	mctl.settings.midi_ch_KCS = 10;
 	mctl.settings.midi_ch_A = 1;
-	mctl.settings.midi_ch_B = 1;
+	mctl.settings.midi_ch_B = 2;
 	
 	
 	uint16_t idx = 0;
@@ -115,7 +127,7 @@ void resume_midi_rx()
 
 void learn_sw_single_click()
 {
-	if (mode == LearnChannel || mode == LearnKeyboard)
+	if (mode == LearnKeyboard)
 	{
 		channel_count = 0;
 		uint8_t key_pref_count = 0;
@@ -125,7 +137,12 @@ void learn_sw_single_click()
 	{
 		iterate_voct_calibration();
 	}
-	else
+	else if (mode == LearnChannel)
+	{
+		// skip to next channel
+		learn_channel_note_on(UINT8_MAX);
+	}
+	else // MidiRx mode
 	{
 		/* 
 			ENTERING "learn channel" mode - MIDI events will be intercepted
@@ -202,8 +219,7 @@ void check_learn_switch()
 void check_calibration_mode()
 {
 	bool learn_held = !bit_is_set(LEARN_SW_PIN, LEARN_SW);
-	bool mode_held = !bit_is_set(SYNC_BTN_PIN, SYNC_BTN);
-	if (learn_held && mode_held)
+	if (learn_held)
 	{
 		/* We are in calibration mode. */
 		leda_green();
@@ -213,7 +229,7 @@ void check_calibration_mode()
 		/* Begin with CvOutput A */
 		mode = CalibrateVoct;
 		k_voct_cal = 0;
-		cur_cal_offset = 0.0;
+		cal_offset = {0.0, 0.0, 0.0};
 		
 		output_calibration_voltage();
 	}
@@ -249,15 +265,15 @@ void calibration_cc(byte cc_num, byte cc_val)
 	float val = (cc_val / 127.0) - 0.5;
 	if (cc_num == 102)
 	{
-		cur_cal_offset = 15 * val;
+		cal_offset.med = 15 * val;
 	}
 	else if (cc_num == 103)
 	{
-		cur_cal_offset = 3 * val;
+		cal_offset.fine = 3 * val;
 	}
 	else if (cc_num == 104)
 	{
-		cur_cal_offset = 25 * val;
+		cal_offset.coarse = 40 * val;
 	}
 	output_calibration_voltage();
 }
@@ -267,7 +283,7 @@ void output_calibration_voltage()
 	uint8_t midi_note = k_voct_cal * 12; // 0, 12, 24, ..., 120
 	float cur_cal = cal_output->get_calibration_value(k_voct_cal);
 	uint8_t note = 127 - midi_note;
-	uint16_t dac_data = note * (cur_cal + cur_cal_offset);
+	uint16_t dac_data = note * (cur_cal + cal_offset.coarse + cal_offset.fine + cal_offset.med);
 	
 	cal_output->output_dac(dac_data);
 }
@@ -275,11 +291,11 @@ void output_calibration_voltage()
 void iterate_voct_calibration()
 {
 	// update the output's settings for this octave
-	cal_output->adjust_calibration(k_voct_cal, cur_cal_offset);
+	cal_output->adjust_calibration(k_voct_cal, cal_offset.coarse + cal_offset.fine + cal_offset.med);
 		
 	// advance to the next octave
 	k_voct_cal++;
-	cur_cal_offset = 0;
+	cal_offset = {0.0, 0.0, 0.0 };
 		
 	// check if we just completed the output's calibration
 	if (k_voct_cal == 11)
@@ -334,14 +350,14 @@ void learn_channel_progress()
 	}
 }
 
-void learn_channel_note_on(uint8_t midi_note)
+void learn_channel_note_on(uint8_t channel)
 {
-	uint8_t ch = midi_note - MIDDLE_C + 1;
-	if (ch < 0 || ch >= NUM_CHANNELS)
+	if (channel < 0 || channel >= NUM_CHANNELS)
 	{
-		ch = default_channels[channel_count];
+		uint8_t defaults[3] = { mctl.settings.midi_ch_A, mctl.settings.midi_ch_B, mctl.settings.midi_ch_KCS };
+		channel = defaults[channel_count];
 	}
-	channel_prefs[channel_count] = ch;
+	channel_prefs[channel_count] = channel;
 	
 	channel_count++;
 	learn_channel_progress();
@@ -407,7 +423,7 @@ void handleNoteOn(byte ch, byte pitch, byte vel)
 	switch (mode)
 	{
 		case LearnChannel:
-			learn_channel_note_on(pitch);
+			learn_channel_note_on(ch);
 			break;
 			
 		case LearnKeyboard:

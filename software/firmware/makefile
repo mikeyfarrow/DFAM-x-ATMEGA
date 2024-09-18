@@ -68,6 +68,7 @@ $(BUILD_DIR):
 
 $(TARGET_BIN): $(OBJECTS)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	# mv $(BASE_DIR)/*.o $(BUILD_DIR)/
 
 $(TARGET_HEX): $(TARGET_BIN)
 	$(OBJCOPY) -O ihex -R .eeprom $(TARGET_BIN) $(TARGET_HEX)
