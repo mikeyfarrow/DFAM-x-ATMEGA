@@ -73,27 +73,13 @@ int main()
 	
 	if (!load_config(mctl))
 		save_config(mctl);
+
 	ledc_off();
 	
 	register_midi_events();
 	check_calibration_mode();
 	
 	sei(); // enable interrupts globally
-	
-	mctl.cv_out_a.settings.portamento_on = true;
-	mctl.cv_out_a.settings.trigger_duration_ms = 10;
-	mctl.cv_out_a.settings.trig_mode = Gate;
-	mctl.cv_out_a.settings.retrig_mode = Highest;
-	mctl.cv_out_a.settings.vib_mode = Free;
-	
-	mctl.cv_out_b.settings.retrig_mode = Highest;
-	mctl.cv_out_b.settings.trigger_duration_ms = 10;
-	mctl.cv_out_b.settings.portamento_on = true;
-	
-	mctl.settings.midi_ch_KCS = 10;
-	mctl.settings.midi_ch_A = 1;
-	mctl.settings.midi_ch_B = 2;
-	
 	
 	uint16_t idx = 0;
 	while (1)
@@ -295,7 +281,7 @@ void iterate_voct_calibration()
 		
 	// advance to the next octave
 	k_voct_cal++;
-	cal_offset = {0.0, 0.0, 0.0 };
+	cal_offset = {0.0, 0.0, 0.0};
 		
 	// check if we just completed the output's calibration
 	if (k_voct_cal == 11)

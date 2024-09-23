@@ -276,7 +276,7 @@ uint16_t CvOutput::midi_to_data(uint8_t midi_note)
 {
 	midi_note = in_range(midi_note, 0, MIDI_NOTE_MAX);
 	
-	double dac_cal = settings.calibration_points[midi_note / 12];
+	float dac_cal = settings.calibration_points[midi_note / 12];
 	
 	int32_t base_note = (127 - midi_note) * dac_cal;
 	int32_t vib_offset = vibrato_cur_offset * dac_cal;

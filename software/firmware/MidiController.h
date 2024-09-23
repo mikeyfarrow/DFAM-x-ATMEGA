@@ -110,6 +110,9 @@ private:
 	volatile uint32_t time_counter;
 	CircularBuffer<float, BPM_BUFFER_SIZE> clock_period_buffer;
 
+	uint32_t last_kcs_trigger;
+	uint8_t kcs_triggered;
+
 public:
 	MctlSettings settings;
 	CvOutput cv_out_a;

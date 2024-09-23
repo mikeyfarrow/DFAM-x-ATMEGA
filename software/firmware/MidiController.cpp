@@ -53,6 +53,8 @@ MidiController::MidiController():
 	switch_state = -1;
 	
 	time_counter = 0;
+	kcs_triggered = false;
+	last_kcs_trigger = 0;
 }
 
 void MidiController::update_midi_channels(uint8_t* ch)
@@ -92,6 +94,13 @@ uint32_t MidiController::millis()
 	{
 		tms = time_counter;
 	}
+
+	if (tms - last_kcs_trigger > 10 && kcs_triggered)
+	{
+		kcs_triggered = false;
+		ledc_off();
+	}
+	
 	return tms;
 }
 
@@ -257,7 +266,8 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 			break;
 		
 		case MIDI_NAMESPACE::PolyModeOn:
-			settings.midi_mode = Poly;
+			// TODO: remove! poly mode is not fully implemented yet
+			// settings.midi_mode = Poly;
 			break;
 		
 		case MIDI_NAMESPACE::AllNotesOff:
@@ -266,6 +276,10 @@ void MidiController::handleCC(byte channel, byte cc_num, byte cc_val)
 			break;
 
 		case MIDI_NAMESPACE::ResetAllControllers:
+			// TODO: is this what this MIDI message means?
+			cv_out_a.all_notes_off();
+			cv_out_b.all_notes_off();
+			cur_dfam_step = 1;
 			break;
 		
 		default:
@@ -297,20 +311,29 @@ void MidiController::handleNoteOn(uint8_t channel, uint8_t midi_note, uint8_t ve
 	{
 		if (channel == settings.midi_ch_A)
 			cv_out_a.note_on(midi_note, velocity, true, true);
-		
-		if (channel == settings.midi_ch_B) // only send vel. B in CCS mode
+
+		// only send vel. B in CCS mode - because in KCS mode, DFAM key decides velocity B
+		if (channel == settings.midi_ch_B) 
 			cv_out_b.note_on(midi_note, velocity, CCS_MODE, true);
 	}
 
 	if (channel == settings.midi_ch_KCS && KCS_MODE)
 	{
 		uint8_t dfam_step = midi_note_to_step(midi_note);
+		
+		// TODO: turn on ledc, turn it off 10 ms later
+		last_kcs_trigger = millis();
+		kcs_triggered = true;
+		ledc_green();
+
 		if (dfam_step) {
-			VEL_B_DUTY = velocity << 1;
+			VEL_B_DUTY = velocity * 0xFF / 0x7F;
 			int steps_left = steps_between(cur_dfam_step, dfam_step) + 1;
 			advance_clock(steps_left);
 			cur_dfam_step = dfam_step;
 		}
+
+
 	}
 }
 
